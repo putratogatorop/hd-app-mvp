@@ -41,7 +41,8 @@ export default async function LoyaltyPage() {
     .order('created_at', { ascending: false })
     .limit(15)
 
-  const tier = TIER_CONFIG[profile?.tier ?? 'silver']
+  const tierKey = (profile?.tier ?? 'silver') as keyof typeof TIER_CONFIG
+  const tier = TIER_CONFIG[tierKey]
   const points = profile?.loyalty_points ?? 0
   const progress = tier.nextPoints
     ? Math.min((points / tier.nextPoints) * 100, 100)
