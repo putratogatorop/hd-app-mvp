@@ -1,5 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
+import type { Database } from '@/lib/supabase/database.types'
 import MenuItemCard from './MenuItemCard'
+
+type ProfileRow = Database['public']['Tables']['profiles']['Row']
+type MenuItemRow = Database['public']['Tables']['menu_items']['Row']
 
 export default async function MenuPage() {
   const supabase = await createClient()
@@ -7,19 +11,20 @@ export default async function MenuPage() {
   const { data: profile } = await supabase
     .from('profiles')
     .select('full_name, loyalty_points, tier')
-    .single()
+    .single() as unknown as { data: Pick<ProfileRow, 'full_name' | 'loyalty_points' | 'tier'> | null }
 
   const { data: menuItems } = await supabase
     .from('menu_items')
     .select('*')
     .eq('is_available', true)
-    .order('category')
+    .order('category') as unknown as { data: MenuItemRow[] | null }
 
-  const tierColor = {
+  const tierColorMap: Record<string, string> = {
     silver: 'text-gray-500',
     gold: 'text-yellow-600',
     platinum: 'text-blue-600',
-  }[profile?.tier ?? 'silver']
+  }
+  const tierColor = tierColorMap[profile?.tier ?? 'silver'] ?? 'text-gray-500'
 
   return (
     <div className="page-enter">

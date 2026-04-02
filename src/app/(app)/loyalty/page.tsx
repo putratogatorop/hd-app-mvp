@@ -1,4 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
+import type { Database } from '@/lib/supabase/database.types'
+
+type ProfileRow = Database['public']['Tables']['profiles']['Row']
+type LoyaltyTxRow = Database['public']['Tables']['loyalty_transactions']['Row']
 
 const TIER_CONFIG = {
   silver: {
@@ -33,13 +37,13 @@ export default async function LoyaltyPage() {
   const { data: profile } = await supabase
     .from('profiles')
     .select('full_name, loyalty_points, tier')
-    .single()
+    .single() as unknown as { data: Pick<ProfileRow, 'full_name' | 'loyalty_points' | 'tier'> | null }
 
   const { data: transactions } = await supabase
     .from('loyalty_transactions')
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(15)
+    .limit(15) as unknown as { data: LoyaltyTxRow[] | null }
 
   const tierKey = (profile?.tier ?? 'silver') as keyof typeof TIER_CONFIG
   const tier = TIER_CONFIG[tierKey]

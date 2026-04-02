@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
+import type { Database } from '@/lib/supabase/database.types'
 import { redirect } from 'next/navigation'
 import LogoutButton from './LogoutButton'
+
+type ProfileRow = Database['public']['Tables']['profiles']['Row']
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -12,7 +15,7 @@ export default async function ProfilePage() {
     .from('profiles')
     .select('*')
     .eq('id', user.id)
-    .single()
+    .single() as unknown as { data: ProfileRow | null }
 
   return (
     <div className="page-enter">

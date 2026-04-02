@@ -1,4 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
+import type { Database } from '@/lib/supabase/database.types'
+
+type OrderRow = Database['public']['Tables']['orders']['Row']
+type OrderItemRow = Database['public']['Tables']['order_items']['Row']
+type MenuItemRow = Database['public']['Tables']['menu_items']['Row']
+type OrderWithItems = OrderRow & {
+  order_items: (Pick<OrderItemRow, 'quantity' | 'unit_price' | 'menu_item_id'> & {
+    menu_items: Pick<MenuItemRow, 'name'> | null
+  })[]
+}
 
 function formatRupiah(amount: number) {
   return new Intl.NumberFormat('id-ID', {
@@ -34,7 +44,7 @@ export default async function OrdersPage() {
     .from('orders')
     .select('*, order_items(quantity, unit_price, menu_item_id, menu_items(name))')
     .order('created_at', { ascending: false })
-    .limit(20)
+    .limit(20) as unknown as { data: OrderWithItems[] | null }
 
   return (
     <div className="page-enter">
@@ -60,7 +70,7 @@ export default async function OrdersPage() {
 
                 {/* Order items */}
                 <div className="space-y-1 mb-3">
-                  {(order.order_items as any[])?.map((item, i) => (
+                  {order.order_items?.map((item, i) => (
                     <div key={i} className="flex justify-between text-sm">
                       <span className="text-gray-700">{item.menu_items?.name} ×{item.quantity}</span>
                       <span className="text-gray-500">{formatRupiah(item.unit_price * item.quantity)}</span>
