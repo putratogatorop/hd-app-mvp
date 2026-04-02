@@ -18,13 +18,34 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+
     if (error) {
       setError(error.message)
       setLoading(false)
+      return
+    }
+
+    if (!data.user) {
+      setError('Login gagal. Coba lagi.')
+      setLoading(false)
+      return
+    }
+
+    // Fetch role to decide where to redirect
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', data.user.id)
+      .single()
+
+    const role = (profile as { role?: string } | null)?.role ?? 'customer'
+
+    router.refresh()
+    if (role === 'staff' || role === 'admin') {
+      router.push('/pos/orders')
     } else {
       router.push('/menu')
-      router.refresh()
     }
   }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Database } from '@/lib/supabase/database.types'
 
@@ -35,38 +35,84 @@ function formatRupiah(n: number) {
 
 function timeAgo(dateStr: string) {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
-  if (diff < 60) return `${diff}s ago`
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
-  return `${Math.floor(diff / 3600)}h ago`
+  if (diff < 60) return `${diff}d lalu`
+  if (diff < 3600) return `${Math.floor(diff / 60)}m lalu`
+  return `${Math.floor(diff / 3600)}j lalu`
+}
+
+/** Plays a short "ding" alert using the Web Audio API — no file needed */
+function playAlert() {
+  try {
+    const ctx = new AudioContext()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.frequency.setValueAtTime(880, ctx.currentTime)
+    osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1)
+    gain.gain.setValueAtTime(0.4, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
+    osc.start(ctx.currentTime)
+    osc.stop(ctx.currentTime + 0.4)
+  } catch {
+    // AudioContext blocked (e.g. tab not focused) — silent fail is fine
+  }
 }
 
 export default function RealtimeOrderQueue({ initialOrders }: { initialOrders: OrderWithItems[] }) {
   const [orders, setOrders] = useState<OrderWithItems[]>(initialOrders)
   const [updating, setUpdating] = useState<string | null>(null)
   const [filter, setFilter] = useState<string>('active')
+  const [newAlert, setNewAlert] = useState(false)
+  const knownIdsRef = useRef<Set<string>>(new Set(initialOrders.map(o => o.id)))
   const supabase = createClient()
 
-  // Re-fetch orders from server
+  // Re-fetch and detect new pending orders
   const refetch = useCallback(async () => {
     const { data } = await supabase
       .from('orders')
       .select('*, order_items(quantity, unit_price, menu_items(name)), profiles(full_name, email)')
       .order('created_at', { ascending: false })
       .limit(50) as unknown as { data: OrderWithItems[] | null }
-    if (data) setOrders(data)
+
+    if (!data) return
+
+    // Detect brand-new pending orders
+    const incoming = data.filter(
+      o => o.status === 'pending' && !knownIdsRef.current.has(o.id)
+    )
+    if (incoming.length > 0) {
+      playAlert()
+      setNewAlert(true)
+      setTimeout(() => setNewAlert(false), 3000)
+      // Request browser notification if permission granted
+      if (typeof window !== 'undefined' && Notification.permission === 'granted') {
+        new Notification('📋 Pesanan Baru!', {
+          body: `${incoming.length} pesanan baru masuk`,
+          icon: '/icons/icon-192x192.png',
+        })
+      }
+    }
+
+    data.forEach(o => knownIdsRef.current.add(o.id))
+    setOrders(data)
   }, [supabase])
+
+  // Request notification permission on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+  }, [])
 
   // Subscribe to realtime changes
   useEffect(() => {
     const channel = supabase
       .channel('pos-orders')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'orders' },
-        () => { refetch() }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+        refetch()
+      })
       .subscribe()
-
     return () => { supabase.removeChannel(channel) }
   }, [supabase, refetch])
 
@@ -97,6 +143,14 @@ export default function RealtimeOrderQueue({ initialOrders }: { initialOrders: O
 
   return (
     <div>
+      {/* New order alert banner */}
+      {newAlert && (
+        <div className="mb-4 bg-yellow-400 text-yellow-900 font-bold text-sm px-4 py-3 rounded-xl flex items-center gap-3 animate-bounce">
+          <span className="text-xl">🔔</span>
+          Pesanan baru masuk!
+        </div>
+      )}
+
       {/* Filter tabs + live badge */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex gap-2">
@@ -144,7 +198,9 @@ export default function RealtimeOrderQueue({ initialOrders }: { initialOrders: O
               <div
                 key={order.id}
                 className={`bg-white rounded-2xl shadow-sm border-2 p-4 transition-all ${
-                  order.status === 'pending' ? 'border-yellow-300' : 'border-gray-100'
+                  order.status === 'pending'
+                    ? 'border-yellow-300 shadow-yellow-100'
+                    : 'border-gray-100'
                 }`}
               >
                 {/* Order header */}
@@ -168,7 +224,9 @@ export default function RealtimeOrderQueue({ initialOrders }: { initialOrders: O
                   {order.order_items.map((item, i) => (
                     <div key={i} className="flex justify-between text-sm">
                       <span className="text-gray-700">{item.menu_items?.name} ×{item.quantity}</span>
-                      <span className="text-gray-500 font-medium">{formatRupiah(item.unit_price * item.quantity)}</span>
+                      <span className="text-gray-500 font-medium">
+                        {formatRupiah(item.unit_price * item.quantity)}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -185,9 +243,9 @@ export default function RealtimeOrderQueue({ initialOrders }: { initialOrders: O
                     <button
                       onClick={() => advanceStatus(order.id, cfg.next!)}
                       disabled={isUpdating}
-                      className="flex-1 py-2 bg-hd-dark text-white text-sm font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      className="flex-1 py-2.5 bg-hd-dark text-white text-sm font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
-                      {isUpdating ? '...' : cfg.nextLabel}
+                      {isUpdating ? '⏳' : cfg.nextLabel}
                     </button>
                     {order.status === 'pending' && (
                       <button
