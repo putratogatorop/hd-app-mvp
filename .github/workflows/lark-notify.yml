@@ -1,0 +1,106 @@
+name: Lark Notifications
+
+on:
+  push:
+    branches: [main, develop, 'feature/**']
+  pull_request:
+    types: [opened, closed, merged]
+  workflow_run:
+    workflows: ["Deploy to Vercel"]
+    types: [completed]
+
+env:
+  LARK_APP_ID: ${{ secrets.LARK_APP_ID }}
+  LARK_APP_SECRET: ${{ secrets.LARK_APP_SECRET }}
+  LARK_CHAT_GIT: ${{ secrets.LARK_CHAT_GIT_ACTIVITY }}
+  LARK_CHAT_DEPLOY: ${{ secrets.LARK_CHAT_DEPLOY }}
+  LARK_CHAT_GENERAL: ${{ secrets.LARK_CHAT_GENERAL }}
+
+jobs:
+  notify-git:
+    name: Notify Git Activity
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    steps:
+      - name: Get Lark Token
+        id: token
+        run: |
+          TOKEN=$(curl -s -X POST "https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal" \
+            -H "Content-Type: application/json" \
+            -d "{\"app_id\": \"$LARK_APP_ID\", \"app_secret\": \"$LARK_APP_SECRET\"}" \
+            | python3 -c "import sys,json; print(json.load(sys.stdin)['tenant_access_token'])")
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Send Push Notification
+        if: github.event_name == 'push'
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          COMMIT="${{ github.sha }}"
+          SHORT_SHA="${COMMIT:0:7}"
+          AUTHOR="${{ github.actor }}"
+          MSG="${{ github.event.head_commit.message }}"
+          REPO="${{ github.repository }}"
+
+          curl -s -X POST "https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=chat_id" \
+            -H "Authorization: Bearer ${{ steps.token.outputs.token }}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"receive_id\": \"$LARK_CHAT_GIT\",
+              \"msg_type\": \"text\",
+              \"content\": \"{\\\"text\\\": \\\"🔀 *Push to $BRANCH*\\n👤 $AUTHOR\\n📝 $MSG\\n🔗 https://github.com/$REPO/commit/$SHORT_SHA\\\"}\"
+            }"
+
+      - name: Send PR Notification
+        if: github.event_name == 'pull_request'
+        run: |
+          ACTION="${{ github.event.action }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          AUTHOR="${{ github.actor }}"
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+          EMOJI="🔔"
+          if [ "$ACTION" = "closed" ] && [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+            EMOJI="✅"
+            ACTION="merged"
+          fi
+
+          curl -s -X POST "https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=chat_id" \
+            -H "Authorization: Bearer ${{ steps.token.outputs.token }}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"receive_id\": \"$LARK_CHAT_GIT\",
+              \"msg_type\": \"text\",
+              \"content\": \"{\\\"text\\\": \\\"$EMOJI *PR $ACTION*: $PR_TITLE\\n👤 $AUTHOR | Branch: $BRANCH\\n🔗 $PR_URL\\\"}\"
+            }"
+
+  notify-deploy:
+    name: Notify Deploy Status
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_run'
+    steps:
+      - name: Get Lark Token
+        id: token
+        run: |
+          TOKEN=$(curl -s -X POST "https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal" \
+            -H "Content-Type: application/json" \
+            -d "{\"app_id\": \"$LARK_APP_ID\", \"app_secret\": \"$LARK_APP_SECRET\"}" \
+            | python3 -c "import sys,json; print(json.load(sys.stdin)['tenant_access_token'])")
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Send Deploy Notification
+        run: |
+          STATUS="${{ github.event.workflow_run.conclusion }}"
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          RUN_URL="${{ github.event.workflow_run.html_url }}"
+          EMOJI="🚀"
+          if [ "$STATUS" = "failure" ]; then EMOJI="❌"; fi
+          if [ "$STATUS" = "success" ]; then EMOJI="✅"; fi
+
+          curl -s -X POST "https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=chat_id" \
+            -H "Authorization: Bearer ${{ steps.token.outputs.token }}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"receive_id\": \"$LARK_CHAT_DEPLOY\",
+              \"msg_type\": \"text\",
+              \"content\": \"{\\\"text\\\": \\\"$EMOJI *Deploy $STATUS* on branch: $BRANCH\\n🔗 $RUN_URL\\\"}\"
+            }"
