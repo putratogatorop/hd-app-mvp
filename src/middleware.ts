@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // Protect these routes — redirect to login if not authenticated
-  const protectedPaths = ['/menu', '/orders', '/loyalty', '/profile']
+  const protectedPaths = ['/menu', '/orders', '/loyalty', '/profile', '/cart', '/pos']
   const isProtected = protectedPaths.some(p => request.nextUrl.pathname.startsWith(p))
 
   if (!user && isProtected) {
@@ -35,6 +35,8 @@ export async function middleware(request: NextRequest) {
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
+
+  // POS role check is handled in (pos)/layout.tsx (server component)
 
   return supabaseResponse
 }

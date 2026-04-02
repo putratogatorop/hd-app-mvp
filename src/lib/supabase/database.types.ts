@@ -18,6 +18,7 @@ export type Database = {
           avatar_url: string | null
           loyalty_points: number
           tier: 'silver' | 'gold' | 'platinum'
+          role: 'customer' | 'staff' | 'admin'
           created_at: string
           updated_at: string
         }
@@ -29,6 +30,7 @@ export type Database = {
           avatar_url?: string | null
           loyalty_points?: number
           tier?: 'silver' | 'gold' | 'platinum'
+          role?: 'customer' | 'staff' | 'admin'
           created_at?: string
           updated_at?: string
         }
@@ -38,8 +40,10 @@ export type Database = {
           avatar_url?: string | null
           loyalty_points?: number
           tier?: 'silver' | 'gold' | 'platinum'
+          role?: 'customer' | 'staff' | 'admin'
           updated_at?: string
         }
+        Relationships: []
       }
       menu_items: {
         Row: {
@@ -73,6 +77,7 @@ export type Database = {
           is_available?: boolean
           calories?: number | null
         }
+        Relationships: []
       }
       orders: {
         Row: {
@@ -104,6 +109,15 @@ export type Database = {
           points_earned?: number
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'orders_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          }
+        ]
       }
       order_items: {
         Row: {
@@ -120,11 +134,29 @@ export type Database = {
           menu_item_id: string
           quantity: number
           unit_price: number
+          subtotal?: number
         }
         Update: {
           quantity?: number
           unit_price?: number
+          subtotal?: number
         }
+        Relationships: [
+          {
+            foreignKeyName: 'order_items_order_id_fkey'
+            columns: ['order_id']
+            isOneToOne: false
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'order_items_menu_item_id_fkey'
+            columns: ['menu_item_id']
+            isOneToOne: false
+            referencedRelation: 'menu_items'
+            referencedColumns: ['id']
+          }
+        ]
       }
       loyalty_transactions: {
         Row: {
@@ -148,7 +180,25 @@ export type Database = {
         Update: {
           description?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: 'loyalty_transactions_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          }
+        ]
       }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
     }
   }
 }
