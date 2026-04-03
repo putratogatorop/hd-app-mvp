@@ -53,17 +53,11 @@ jobs:
           # Truncate long commit messages
           MSG="${MSG:0:100}"
 
-          RESPONSE=$(curl -s -X POST \
+          curl -sf -X POST \
             "https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=chat_id" \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"receive_id\": \"$CHAT_ID\",
-              \"msg_type\": \"text\",
-              \"content\": \"{\\\"text\\\":\\\"🔀 Push to \`$BRANCH\`\\n👤 $AUTHOR\\n📝 $MSG\\n🔗 https://github.com/$REPO/commit/$SHORT_SHA\\\"}\"
-            }")
-          echo "Lark response: $RESPONSE"
-          echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); exit(0 if d.get('code')==0 else 1)"
+            -d "{\"receive_id\":\"$CHAT_ID\",\"msg_type\":\"text\",\"content\":\"{\\\"text\\\":\\\"🔀 Push to \`$BRANCH\`\\\\n👤 $AUTHOR\\\\n📝 $MSG\\\\n🔗 https://github.com/$REPO/commit/$SHORT_SHA\\\"}\"}"
 
   # -- PR opened/ready -> PM Decisions --------------------------------------
   notify-pr-opened:
@@ -90,7 +84,7 @@ jobs:
             -d "{
               \"receive_id\": \"$CHAT_ID\",
               \"msg_type\": \"text\",
-              \"content\": \"{\\\"text\\\":\\\"🔔 New PR: $PR_TITLE\\n👤 $AUTHOR | \`$BRANCH\` -> \`$BASE\`\\n🔗 $PR_URL\\\"}\"
+              \"content\": \"{\\\"text\\\":\\\"🔔 New PR: $PR_TITLE\\\\n👤 $AUTHOR | \`$BRANCH\` -> \`$BASE\`\\\\n🔗 $PR_URL\\\"}\"
             }"
 
   # -- PR merged -> PM Decisions + Git Activity -----------------------------
@@ -128,7 +122,7 @@ jobs:
             -d "{
               \"receive_id\": \"$CHAT_ID\",
               \"msg_type\": \"text\",
-              \"content\": \"{\\\"text\\\":\\\"✅ PR Merged: $PR_TITLE\\n👤 $AUTHOR | \`$BRANCH\` -> \`$BASE\`\\n🔗 $PR_URL\\\"}\"
+              \"content\": \"{\\\"text\\\":\\\"✅ PR Merged: $PR_TITLE\\\\n👤 $AUTHOR | \`$BRANCH\` -> \`$BASE\`\\\\n🔗 $PR_URL\\\"}\"
             }"
 
   # -- Deploy result -> Deploy + (QA on failure) ----------------------------
@@ -166,7 +160,7 @@ jobs:
             -d "{
               \"receive_id\": \"$CHAT_MOBILE\",
               \"msg_type\": \"text\",
-              \"content\": \"{\\\"text\\\":\\\"$EMOJI $MSG\\n🔗 $RUN_URL\\\"}\"
+              \"content\": \"{\\\"text\\\":\\\"$EMOJI $MSG\\\\n🔗 $RUN_URL\\\"}\"
             }"
 
           # Also notify QA Bugs group on failure
@@ -178,6 +172,6 @@ jobs:
               -d "{
                 \"receive_id\": \"$CHAT_QA\",
                 \"msg_type\": \"text\",
-                \"content\": \"{\\\"text\\\":\\\"$EMOJI Deploy failed on \`$BRANCH\`! Please check logs.\\n🔗 $RUN_URL\\\"}\"
+                \"content\": \"{\\\"text\\\":\\\"$EMOJI Deploy failed on \`$BRANCH\`! Please check logs.\\\\n🔗 $RUN_URL\\\"}\"
               }"
           fi
