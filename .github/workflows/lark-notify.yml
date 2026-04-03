@@ -14,14 +14,11 @@ env:
   LARK_APP_SECRET: ${{ secrets.LARK_APP_SECRET }}
 
 jobs:
-  # ââ Helper: get a tenant_access_token ââââââââââââââââââââââââââââââââââââââ
+  # -- Helper: get a tenant_access_token ------------------------------------
   get-token:
     name: Get Lark Token
     runs-on: ubuntu-latest
-    if: >
-      github.event_name == 'push' ||
-      github.event_name == 'pull_request' ||
-      github.event_name == 'workflow_run'
+    if: "github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'workflow_run'"
     outputs:
       token: ${{ steps.token.outputs.token }}
     steps:
@@ -35,7 +32,7 @@ jobs:
             | python3 -c "import sys,json; print(json.load(sys.stdin)['tenant_access_token'])")
           echo "token=$TOKEN" >> $GITHUB_OUTPUT
 
-  # ââ Push â Git Activity (Tech Lead) ââââââââââââââââââââââââââââââââââââââââ
+  # -- Push -> Git Activity (Tech Lead) -------------------------------------
   notify-push:
     name: Notify Push
     needs: get-token
@@ -63,17 +60,15 @@ jobs:
             -d "{
               \"receive_id\": \"$CHAT_ID\",
               \"msg_type\": \"text\",
-              \"content\": \"{\\\"text\\\":\\\"ð Push to \`$BRANCH\`\\nð¤ $AUTHOR\\nð $MSG\\nð https://github.com/$REPO/commit/$SHORT_SHA\\\"}\"
+              \"content\": \"{\\\"text\\\":\\\"🔀 Push to \`$BRANCH\`\\n👤 $AUTHOR\\n📝 $MSG\\n🔗 https://github.com/$REPO/commit/$SHORT_SHA\\\"}\"
             }"
 
-  # ââ PR opened/ready â PM Decisions ââââââââââââââââââââââââââââââââââââââââ
+  # -- PR opened/ready -> PM Decisions --------------------------------------
   notify-pr-opened:
     name: Notify PR Opened
     needs: get-token
     runs-on: ubuntu-latest
-    if: >
-      github.event_name == 'pull_request' &&
-      (github.event.action == 'opened' || github.event.action == 'ready_for_review')
+    if: "github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'ready_for_review')"
     steps:
       - name: Send message
         env:
@@ -93,18 +88,15 @@ jobs:
             -d "{
               \"receive_id\": \"$CHAT_ID\",
               \"msg_type\": \"text\",
-              \"content\": \"{\\\"text\\\":\\\"ð New PR: $PR_TITLE\\nð¤ $AUTHOR | \`$BRANCH\` â \`$BASE\`\\nð $PR_URL\\\"}\"
+              \"content\": \"{\\\"text\\\":\\\"🔔 New PR: $PR_TITLE\\n👤 $AUTHOR | \`$BRANCH\` -> \`$BASE\`\\n🔗 $PR_URL\\\"}\"
             }"
 
-  # ââ PR merged â PM Decisions + Git Activity ââââââââââââââââââââââââââââââââ
+  # -- PR merged -> PM Decisions + Git Activity -----------------------------
   notify-pr-merged:
     name: Notify PR Merged
     needs: get-token
     runs-on: ubuntu-latest
-    if: >
-      github.event_name == 'pull_request' &&
-      github.event.action == 'closed' &&
-      github.event.pull_request.merged == true
+    if: "github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true"
     strategy:
       matrix:
         chat: [PM, TECH_LEAD]
@@ -134,10 +126,10 @@ jobs:
             -d "{
               \"receive_id\": \"$CHAT_ID\",
               \"msg_type\": \"text\",
-              \"content\": \"{\\\"text\\\":\\\"â PR Merged: $PR_TITLE\\nð¤ $AUTHOR | \`$BRANCH\` â \`$BASE\`\\nð $PR_URL\\\"}\"
+              \"content\": \"{\\\"text\\\":\\\"✅ PR Merged: $PR_TITLE\\n👤 $AUTHOR | \`$BRANCH\` -> \`$BASE\`\\n🔗 $PR_URL\\\"}\"
             }"
 
-  # ââ Deploy result â Deploy + (QA on failure) ââââââââââââââââââââââââââââââ
+  # -- Deploy result -> Deploy + (QA on failure) ----------------------------
   notify-deploy:
     name: Notify Deploy
     needs: get-token
@@ -157,10 +149,10 @@ jobs:
           SHORT_SHA="${COMMIT:0:7}"
 
           if [ "$STATUS" = "success" ]; then
-            EMOJI="ð"
+            EMOJI="🚀"
             MSG="Deploy success on \`$BRANCH\` ($SHORT_SHA)"
           else
-            EMOJI="â"
+            EMOJI="❌"
             MSG="Deploy FAILED on \`$BRANCH\` ($SHORT_SHA)"
           fi
 
@@ -172,7 +164,7 @@ jobs:
             -d "{
               \"receive_id\": \"$CHAT_MOBILE\",
               \"msg_type\": \"text\",
-              \"content\": \"{\\\"text\\\":\\\"$EMOJI $MSG\\nð $RUN_URL\\\"}\"
+              \"content\": \"{\\\"text\\\":\\\"$EMOJI $MSG\\n🔗 $RUN_URL\\\"}\"
             }"
 
           # Also notify QA Bugs group on failure
@@ -184,6 +176,6 @@ jobs:
               -d "{
                 \"receive_id\": \"$CHAT_QA\",
                 \"msg_type\": \"text\",
-                \"content\": \"{\\\"text\\\":\\\"$EMOJI Deploy failed on \`$BRANCH\`! Please check logs.\\nð $RUN_URL\\\"}\"
+                \"content\": \"{\\\"text\\\":\\\"$EMOJI Deploy failed on \`$BRANCH\`! Please check logs.\\n🔗 $RUN_URL\\\"}\"
               }"
           fi
