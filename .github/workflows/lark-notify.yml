@@ -50,14 +50,13 @@ jobs:
           AUTHOR="${{ github.actor }}"
           MSG="${{ github.event.head_commit.message }}"
           REPO="${{ github.repository }}"
-          # Truncate long commit messages
           MSG="${MSG:0:100}"
-
+          PAYLOAD=$(python3 -c 'import json,sys;c,b,a,m,r,s=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5],sys.argv[6];t="ð Push to `{}`\nð¤ {}\nð {}\nð https://github.com/{}/commit/{}".format(b,a,m,r,s);print(json.dumps({"receive_id":c,"msg_type":"text","content":json.dumps({"text":t})}))' "$CHAT_ID" "$BRANCH" "$AUTHOR" "$MSG" "$REPO" "$SHORT_SHA")
           curl -sf -X POST \
             "https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=chat_id" \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"receive_id\":\"$CHAT_ID\",\"msg_type\":\"text\",\"content\":\"{\\\"text\\\":\\\"🔀 Push to \`$BRANCH\`\\\\n👤 $AUTHOR\\\\n📝 $MSG\\\\n🔗 https://github.com/$REPO/commit/$SHORT_SHA\\\"}\"}"
+            -d "$PAYLOAD"
 
   # -- PR opened/ready -> PM Decisions --------------------------------------
   notify-pr-opened:
@@ -76,16 +75,12 @@ jobs:
           AUTHOR="${{ github.actor }}"
           BRANCH="${{ github.event.pull_request.head.ref }}"
           BASE="${{ github.event.pull_request.base.ref }}"
-
+          PAYLOAD=$(python3 -c 'import json,sys;c,t,a,b,ba,u=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5],sys.argv[6];txt="ð New PR: {}\nð¤ {} | `{}` -> `{}`\nð {}".format(t,a,b,ba,u);print(json.dumps({"receive_id":c,"msg_type":"text","content":json.dumps({"text":txt})}))' "$CHAT_ID" "$PR_TITLE" "$AUTHOR" "$BRANCH" "$BASE" "$PR_URL")
           curl -sf -X POST \
             "https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=chat_id" \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"receive_id\": \"$CHAT_ID\",
-              \"msg_type\": \"text\",
-              \"content\": \"{\\\"text\\\":\\\"🔔 New PR: $PR_TITLE\\\\n👤 $AUTHOR | \`$BRANCH\` -> \`$BASE\`\\\\n🔗 $PR_URL\\\"}\"
-            }"
+            -d "$PAYLOAD"
 
   # -- PR merged -> PM Decisions + Git Activity -----------------------------
   notify-pr-merged:
@@ -108,22 +103,17 @@ jobs:
           AUTHOR="${{ github.actor }}"
           BRANCH="${{ github.event.pull_request.head.ref }}"
           BASE="${{ github.event.pull_request.base.ref }}"
-
           if [ "${{ matrix.chat }}" = "PM" ]; then
             CHAT_ID="$CHAT_PM"
           else
             CHAT_ID="$CHAT_TECH_LEAD"
           fi
-
+          PAYLOAD=$(python3 -c 'import json,sys;c,t,a,b,ba,u=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5],sys.argv[6];txt="â PR Merged: {}\nð¤ {} | `{}` -> `{}`\nð {}".format(t,a,b,ba,u);print(json.dumps({"receive_id":c,"msg_type":"text","content":json.dumps({"text":txt})}))' "$CHAT_ID" "$PR_TITLE" "$AUTHOR" "$BRANCH" "$BASE" "$PR_URL")
           curl -sf -X POST \
             "https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=chat_id" \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"receive_id\": \"$CHAT_ID\",
-              \"msg_type\": \"text\",
-              \"content\": \"{\\\"text\\\":\\\"✅ PR Merged: $PR_TITLE\\\\n👤 $AUTHOR | \`$BRANCH\` -> \`$BASE\`\\\\n🔗 $PR_URL\\\"}\"
-            }"
+            -d "$PAYLOAD"
 
   # -- Deploy result -> Deploy + (QA on failure) ----------------------------
   notify-deploy:
@@ -143,35 +133,24 @@ jobs:
           RUN_URL="${{ github.event.workflow_run.html_url }}"
           COMMIT="${{ github.event.workflow_run.head_sha }}"
           SHORT_SHA="${COMMIT:0:7}"
-
           if [ "$STATUS" = "success" ]; then
-            EMOJI="🚀"
-            MSG="Deploy success on \`$BRANCH\` ($SHORT_SHA)"
+            EMOJI="ð"
+            DMSG="Deploy success on \`$BRANCH\` ($SHORT_SHA)"
           else
-            EMOJI="❌"
-            MSG="Deploy FAILED on \`$BRANCH\` ($SHORT_SHA)"
+            EMOJI="â"
+            DMSG="Deploy FAILED on \`$BRANCH\` ($SHORT_SHA)"
           fi
-
-          # Always notify Deploy group
+          PAYLOAD=$(python3 -c 'import json,sys;c,e,m,u=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4];t="{} {}\nð {}".format(e,m,u);print(json.dumps({"receive_id":c,"msg_type":"text","content":json.dumps({"text":t})}))' "$CHAT_MOBILE" "$EMOJI" "$DMSG" "$RUN_URL")
           curl -sf -X POST \
             "https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=chat_id" \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"receive_id\": \"$CHAT_MOBILE\",
-              \"msg_type\": \"text\",
-              \"content\": \"{\\\"text\\\":\\\"$EMOJI $MSG\\\\n🔗 $RUN_URL\\\"}\"
-            }"
-
-          # Also notify QA Bugs group on failure
+            -d "$PAYLOAD"
           if [ "$STATUS" != "success" ]; then
+            PAYLOAD_QA=$(python3 -c 'import json,sys;c,e,b,u=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4];t="{} Deploy failed on `{}`! Please check logs.\nð {}".format(e,b,u);print(json.dumps({"receive_id":c,"msg_type":"text","content":json.dumps({"text":t})}))' "$CHAT_QA" "$EMOJI" "$BRANCH" "$RUN_URL")
             curl -sf -X POST \
               "https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=chat_id" \
               -H "Authorization: Bearer $TOKEN" \
               -H "Content-Type: application/json" \
-              -d "{
-                \"receive_id\": \"$CHAT_QA\",
-                \"msg_type\": \"text\",
-                \"content\": \"{\\\"text\\\":\\\"$EMOJI Deploy failed on \`$BRANCH\`! Please check logs.\\\\n🔗 $RUN_URL\\\"}\"
-              }"
+              -d "$PAYLOAD_QA"
           fi
