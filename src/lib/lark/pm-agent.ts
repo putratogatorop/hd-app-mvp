@@ -1,269 +1,81 @@
 /**
- * PM Agent — Brain of the orchestration system
- *
- * Flow:
- *   1. Putra posts sprint brief in Lark PM group
- *   2. Webhook triggers runPMAgent()
- *   3. PM Agent calls Claude → structured task breakdown JSON
- *   4. ALL 7 agents dispatched IN PARALLEL (Promise.all)
- *   5. Each agent posts progress updates to their own Lark group
- *   6. PM compiles results → sends approval card to Putra's PM group
- *   7. Putra taps APPROVE or REVISE in Lark
- *   8. On APPROVE → agents receive final "proceed to code" signal
+ * PM Agent — template-based, no Anthropic API needed
  */
-
-import Anthropic from '@anthropic-ai/sdk'
 import { AGENTS, getAgentChatId, ALL_AGENT_IDS, type Agent } from './agents'
-import {
-  sendText,
-  sendCard,
-  buildApprovalCard,
-  buildApprovedCard,
-  buildRevisedCard,
-} from './client'
+import { sendText, sendCard, buildApprovalCard, buildApprovedCard, buildRevisedCard } from './client'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
-/** Shape PM Agent expects from Claude's structured breakdown */
 interface SprintBreakdown {
-  sprint_id: string
-  summary: string
-  tasks: {
-    agent_id: string
-    task: string
-  }[]
-  risks: string
+  sprint_id: string; summary: string; tasks: { agent_id: string; task: string }[]; risks: string
+}
+const activeSprints = new Map<string, { brief: string; breakdown: SprintBreakdown; pmChatId: string; pmMessageId?: string; agentResults: Record<string, string> }>()
+
+function generateSprintId(): string {
+  const now = new Date(); const pad = (n: number) => String(n).padStart(2, '0')
+  return `sprint_${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}`
 }
 
-/** Stored sprint state (in-memory, good enough for MVP) */
-const activeSprints = new Map<string, {
-  brief: string
-  breakdown: SprintBreakdown
-  pmChatId: string
-  pmMessageId?: string
-  agentResults: Record<string, string>
-}>()
+function extractTopics(brief: string): string[] {
+  const lower = brief.toLowerCase(); const topics: string[] = []
+  const kw: Record<string,string> = { auth:'authentication',login:'authentication',order:'order management',cart:'shopping cart',checkout:'checkout flow',payment:'payment integration',menu:'menu listing',loyalty:'loyalty/points',notif:'notifications',push:'push notifications',admin:'admin panel',dashboard:'analytics',profile:'user profile',pwa:'PWA/offline',pos:'POS',realtime:'real-time',supabase:'Supabase',api:'API layer',ui:'UI',design:'design',test:'QA',search:'search',lark:'Lark' }
+  for (const [k,v] of Object.entries(kw)) { if (lower.includes(k) && !topics.includes(v)) topics.push(v) }
+  return topics.length > 0 ? topics : ['general feature development']
+}
 
-/**
- * Step 1 — PM Agent: parse brief → dispatch agents → send approval card
- */
+function parseBriefWithTemplate(brief: string): SprintBreakdown {
+  const sprintId = generateSprintId(); const fl = extractTopics(brief).join(', ')
+  const summary = brief.split(/[.!?]/).map(s=>s.trim()).filter(Boolean).slice(0,2).join('. ').substring(0,200) || brief.substring(0,150)
+  const tasks = [
+    {agent_id:'tech_lead', task:`Architecture & types for: ${fl}.`},
+    {agent_id:'backend', task:`Supabase schema, RLS, Server Actions for: ${fl}.`},
+    {agent_id:'frontend', task:`React components, data fetching for: ${fl}.`},
+    {agent_id:'uiux', task:`UI/UX design, Tailwind specs for: ${fl}.`},
+    {agent_id:'data_engineer', task:`Migrations, TypeScript types for: ${fl}.`},
+    {agent_id:'qa', task:`Test cases, acceptance criteria for: ${fl}.`},
+    {agent_id:'mobile', task:`PWA, service worker, mobile perf for: ${fl}.`},
+  ]
+  const lower = brief.toLowerCase(); const risks: string[] = []
+  if (lower.includes('payment')) risks.push('payment complexity')
+  if (lower.includes('realtime')) risks.push('real-time latency')
+  if (lower.includes('auth')) risks.push('session edge cases')
+  if (!risks.length) risks.push('scope creep','mobile responsiveness','RLS gaps')
+  return { sprint_id:sprintId, summary, tasks, risks:risks.slice(0,3).join(', ') }
+}
+
 export async function runPMAgent(brief: string, pmChatId: string): Promise<void> {
-  // Notify PM group that we're processing
-  await sendText(pmChatId, `🤖 *PM Agent aktif!*\n\nMemproses sprint brief kamu...\n⏳ Mendispatch ${ALL_AGENT_IDS.length} agents secara paralel, tunggu sebentar ya!`)
-
-  // ── Step 1: Ask Claude to structure the brief into per-agent tasks ──
+  await sendText(pmChatId, `🤖 *PM Agent aktif!* ⏳ Dispatching ${ALL_AGENT_IDS.length} agents...`)
   let breakdown: SprintBreakdown
-
-  try {
-    const pmResponse = await anthropic.messages.create({
-      model: 'claude-opus-4-6',
-      max_tokens: 1024,
-      messages: [{ role: 'user', content: brief }],
-      system: `You are the Project Manager AI for the Häagen-Dazs Super App MVP (Next.js 14 + Supabase + Vercel).
-Your job: Parse the sprint brief and produce a structured JSON breakdown for the engineering team.
-
-Return ONLY valid JSON, no markdown, no explanation. Format:
-{
-  "sprint_id": "sprint_<YYYYMMDD_HHMM>",
-  "summary": "2-3 sentence summary of what this sprint delivers",
-  "tasks": [
-    { "agent_id": "tech_lead", "task": "specific task for tech lead" },
-    { "agent_id": "backend", "task": "specific task for backend" },
-    { "agent_id": "frontend", "task": "specific task for frontend" },
-    { "agent_id": "uiux", "task": "specific task for ui/ux" },
-    { "agent_id": "data_engineer", "task": "specific task for data engineer" },
-    { "agent_id": "qa", "task": "specific task for qa" },
-    { "agent_id": "mobile", "task": "specific task for mobile/pwa engineer" }
-  ],
-  "risks": "comma-separated list of top 3 risks or blockers, or empty string if none"
-}
-
-Agent IDs must be exactly: tech_lead, backend, frontend, uiux, data_engineer, qa, mobile`,
-    })
-
-    const raw = (pmResponse.content[0] as { type: string; text: string }).text.trim()
-    breakdown = JSON.parse(raw) as SprintBreakdown
-  } catch (err) {
-    await sendText(pmChatId, `❌ PM Agent error saat parse brief:\n${String(err)}\n\nCoba kirim ulang brief dengan format yang lebih jelas ya!`)
-    return
-  }
-
-  // Store sprint state
-  activeSprints.set(breakdown.sprint_id, {
-    brief,
-    breakdown,
-    pmChatId,
-    agentResults: {},
-  })
-
-  // Notify PM group: agents dispatching
-  const taskList = breakdown.tasks
-    .map(t => `• *${AGENTS[t.agent_id]?.emoji ?? '🤖'} ${AGENTS[t.agent_id]?.name ?? t.agent_id}*: ${t.task}`)
-    .join('\n')
-
-  await sendText(
-    pmChatId,
-    `📋 *Sprint ${breakdown.sprint_id}*\n\n${breakdown.summary}\n\n*Tasks yang di-dispatch:*\n${taskList}\n\n🚀 Semua agents mulai kerja paralel sekarang...`
-  )
-
-  // ── Step 2: Dispatch ALL agents in PARALLEL ──
-  await Promise.all(
-    breakdown.tasks.map(({ agent_id, task }) => {
-      const agent = AGENTS[agent_id]
-      if (!agent) return Promise.resolve()
-      return runAgent(agent, task, breakdown.sprint_id, breakdown)
-    })
-  )
-
-  // ── Step 3: Compile results and send approval card to Putra ──
+  try { breakdown = parseBriefWithTemplate(brief) }
+  catch (err) { await sendText(pmChatId, `❌ Error: ${String(err)}`); return }
+  activeSprints.set(breakdown.sprint_id, { brief, breakdown, pmChatId, agentResults: {} })
+  await sendText(pmChatId, `📋 *${breakdown.sprint_id}*\n${breakdown.summary}\n🚀 Agents mulai paralel!`)
+  await Promise.all(breakdown.tasks.map(({agent_id,task})=>{ const a=AGENTS[agent_id]; return a?runAgent(a,task,breakdown.sprint_id,breakdown):Promise.resolve() }))
   const sprint = activeSprints.get(breakdown.sprint_id)!
-  const completedCount = Object.keys(sprint.agentResults).length
-
-  const tasksMarkdown = breakdown.tasks
-    .map(t => {
-      const agent = AGENTS[t.agent_id]
-      const result = sprint.agentResults[t.agent_id]
-      return `**${agent?.emoji} ${agent?.name}**\n${t.task}\n${result ? `_✅ Done — lihat di grup ${agent?.name}_` : '_⏳ Processing..._'}`
-    })
-    .join('\n\n')
-
-  const card = buildApprovalCard({
-    sprintId: breakdown.sprint_id,
-    summary: breakdown.summary,
-    tasksMarkdown,
-    risks: breakdown.risks,
-  })
-
-  const cardResult = await sendCard(pmChatId, card)
-  if (cardResult?.data?.message_id) {
-    sprint.pmMessageId = cardResult.data.message_id
-  }
-
-  await sendText(
-    pmChatId,
-    `✅ Semua ${completedCount}/${breakdown.tasks.length} agents sudah selesai!\n\nTap tombol di atas untuk APPROVE atau REVISE sprint ini.`
-  )
+  const md = breakdown.tasks.map(t=>`**${AGENTS[t.agent_id]?.emoji} ${AGENTS[t.agent_id]?.name}**: ${t.task}`).join('\n\n')
+  const card = buildApprovalCard({sprintId:breakdown.sprint_id,summary:breakdown.summary,tasksMarkdown:md,risks:breakdown.risks})
+  const res = await sendCard(pmChatId,card); if (res?.data?.message_id) sprint.pmMessageId=res.data.message_id
+  await sendText(pmChatId, `✅ ${Object.keys(sprint.agentResults).length}/7 agents notified! Tap APPROVE atau REVISE.`)
 }
 
-/**
- * Step 2 helper — Run a single agent: Claude call → post to agent's Lark group
- */
-async function runAgent(
-  agent: Agent,
-  task: string,
-  sprintId: string,
-  breakdown: SprintBreakdown
-): Promise<void> {
-  const chatId = getAgentChatId(agent)
-  if (!chatId) {
-    console.warn(`No chat ID for agent ${agent.id} (env var: ${agent.chatIdEnvVar})`)
-    return
-  }
-
-  // 1. Post "starting" notification to agent's group
-  await sendText(chatId, `🚀 *Sprint ${sprintId} dimulai!*\n\n📋 *Task kamu:*\n${task}\n\n⏳ Sedang menganalisis...`)
-
-  // 2. Call Claude with agent's system prompt
-  let result: string
-  try {
-    const response = await anthropic.messages.create({
-      model: 'claude-opus-4-6',
-      max_tokens: 600,
-      messages: [
-        {
-          role: 'user',
-          content: `Sprint: ${breakdown.summary}\n\nYour specific task: ${task}`,
-        },
-      ],
-      system: agent.systemPrompt,
-    })
-    result = (response.content[0] as { type: string; text: string }).text
-  } catch (err) {
-    result = `⚠️ Error: ${String(err)}`
-  }
-
-  // 3. Post result to agent's Lark group
-  await sendText(
-    chatId,
-    `${agent.emoji} *${agent.name} — Sprint ${sprintId}*\n\n${result}\n\n---\n_Menunggu approval dari Putra..._`
-  )
-
-  // 4. Store result in sprint state
-  const sprint = activeSprints.get(sprintId)
-  if (sprint) {
-    sprint.agentResults[agent.id] = result
-  }
+async function runAgent(agent: Agent, task: string, sprintId: string, breakdown: SprintBreakdown): Promise<void> {
+  const chatId = getAgentChatId(agent); if (!chatId) return
+  await sendText(chatId, `🚀 *Sprint ${sprintId}*\n📋 *Task (${agent.name}):*\n${task}\n📝 ${breakdown.summary}\n⚠️ Risks: ${breakdown.risks}\n_Post progress di sini 🙏_`)
+  const sprint = activeSprints.get(sprintId); if (sprint) sprint.agentResults[agent.id]='notified'
 }
 
-/**
- * Step 3a — Handle APPROVE action from Lark card
- */
 export async function handleApprove(sprintId: string): Promise<void> {
-  const sprint = activeSprints.get(sprintId)
-  if (!sprint) return
-
-  const { breakdown, pmChatId } = sprint
-
-  // Update PM group card to approved state
-  const approvedCard = buildApprovedCard(
-    `✅ Sprint *${sprintId}* diapprove!\n\n${breakdown.summary}\n\nSemua agents sekarang proceed ke implementasi. Pantau progress di masing-masing grup ya!`
-  )
-  await sendCard(pmChatId, approvedCard)
-
-  // Notify all agent groups: APPROVED, proceed to code
-  await Promise.all(
-    breakdown.tasks.map(({ agent_id }) => {
-      const agent = AGENTS[agent_id]
-      if (!agent) return Promise.resolve()
-      const chatId = getAgentChatId(agent)
-      if (!chatId) return Promise.resolve()
-      return sendText(
-        chatId,
-        `✅ *Sprint ${sprintId} APPROVED oleh Putra!*\n\nProceed ke implementasi sesuai plan di atas.\n\nPost update progress di sini ya! 🚀`
-      )
-    })
-  )
-
-  // Clean up
+  const sprint = activeSprints.get(sprintId); if (!sprint) return
+  const {breakdown,pmChatId}=sprint
+  await sendCard(pmChatId,buildApprovedCard(`✅ *${sprintId} APPROVED!* Proceed ke implementasi 🚀`))
+  await Promise.all(breakdown.tasks.map(({agent_id})=>{ const a=AGENTS[agent_id]; const c=a&&getAgentChatId(a); return c?sendText(c,`✅ *APPROVED!* Proceed! 🚀`):Promise.resolve() }))
   activeSprints.delete(sprintId)
 }
 
-/**
- * Step 3b — Handle REVISE action from Lark card
- */
 export async function handleRevise(sprintId: string, feedback: string): Promise<void> {
-  const sprint = activeSprints.get(sprintId)
-  if (!sprint) return
-
-  const { breakdown, pmChatId } = sprint
-
-  // Update PM group card to revised state
-  const revisedCard = buildRevisedCard(feedback || 'Putra minta revisi — cek feedback di grup PM')
-  await sendCard(pmChatId, revisedCard)
-
-  // Notify all agent groups: REVISE requested
-  await Promise.all(
-    breakdown.tasks.map(({ agent_id }) => {
-      const agent = AGENTS[agent_id]
-      if (!agent) return Promise.resolve()
-      const chatId = getAgentChatId(agent)
-      if (!chatId) return Promise.resolve()
-      return sendText(
-        chatId,
-        `✏️ *Sprint ${sprintId} dikembalikan untuk revisi*\n\n*Feedback dari Putra:*\n${feedback || '(Cek grup PM untuk detail feedback)'}\n\nTunggu sprint brief yang direvisi ya.`
-      )
-    })
-  )
-
-  // Re-run PM agent with revised brief incorporating feedback
-  if (feedback) {
-    const revisedBrief = `${sprint.brief}\n\n[REVISION FEEDBACK FROM PUTRA]: ${feedback}`
-    activeSprints.delete(sprintId)
-    await runPMAgent(revisedBrief, pmChatId)
-  }
+  const sprint = activeSprints.get(sprintId); if (!sprint) return
+  const {breakdown,pmChatId}=sprint
+  await sendCard(pmChatId,buildRevisedCard(feedback||'Revisi requested'))
+  await Promise.all(breakdown.tasks.map(({agent_id})=>{ const a=AGENTS[agent_id]; const c=a&&getAgentChatId(a); return c?sendText(c,`✏️ *REVISI*\n${feedback||'(cek PM group)'}`):Promise.resolve() }))
+  if (feedback) { activeSprints.delete(sprintId); await runPMAgent(`${sprint.brief}\n[REVISION]:${feedback}`,pmChatId) }
 }
 
-/** Get active sprint IDs (for debugging) */
-export function getActiveSprints(): string[] {
-  return Array.from(activeSprints.keys())
-}
+export function getActiveSprints(): string[] { return Array.from(activeSprints.keys()) }
