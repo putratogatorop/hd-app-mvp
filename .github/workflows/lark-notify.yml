@@ -51,7 +51,7 @@ jobs:
           MSG="${{ github.event.head_commit.message }}"
           REPO="${{ github.repository }}"
           MSG="${MSG:0:100}"
-          PAYLOAD=$(python3 -c 'import json,sys;c,b,a,m,r,s=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5],sys.argv[6];t="ð Push to `{}`\nð¤ {}\nð {}\nð https://github.com/{}/commit/{}".format(b,a,m,r,s);print(json.dumps({"receive_id":c,"msg_type":"text","content":json.dumps({"text":t})}))' "$CHAT_ID" "$BRANCH" "$AUTHOR" "$MSG" "$REPO" "$SHORT_SHA")
+          PAYLOAD=$(python3 -c 'import json,sys;c,b,a,m,r,s=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5],sys.argv[6];t="🔀 Push to `{}`\n👤 {}\n📝 {}\n🔗 https://github.com/{}/commit/{}".format(b,a,m,r,s);print(json.dumps({"receive_id":c,"msg_type":"text","content":json.dumps({"text":t})}))' "$CHAT_ID" "$BRANCH" "$AUTHOR" "$MSG" "$REPO" "$SHORT_SHA")
           curl -sf -X POST \
             "https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=chat_id" \
             -H "Authorization: Bearer $TOKEN" \
@@ -75,7 +75,7 @@ jobs:
           AUTHOR="${{ github.actor }}"
           BRANCH="${{ github.event.pull_request.head.ref }}"
           BASE="${{ github.event.pull_request.base.ref }}"
-          PAYLOAD=$(python3 -c 'import json,sys;c,t,a,b,ba,u=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5],sys.argv[6];txt="ð New PR: {}\nð¤ {} | `{}` -> `{}`\nð {}".format(t,a,b,ba,u);print(json.dumps({"receive_id":c,"msg_type":"text","content":json.dumps({"text":txt})}))' "$CHAT_ID" "$PR_TITLE" "$AUTHOR" "$BRANCH" "$BASE" "$PR_URL")
+          PAYLOAD=$(python3 -c 'import json,sys;c,t,a,b,ba,u=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5],sys.argv[6];txt="🔔 New PR: {}\n👤 {} | `{}` -> `{}`\n🔗 {}".format(t,a,b,ba,u);print(json.dumps({"receive_id":c,"msg_type":"text","content":json.dumps({"text":txt})}))' "$CHAT_ID" "$PR_TITLE" "$AUTHOR" "$BRANCH" "$BASE" "$PR_URL")
           curl -sf -X POST \
             "https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=chat_id" \
             -H "Authorization: Bearer $TOKEN" \
@@ -108,7 +108,7 @@ jobs:
           else
             CHAT_ID="$CHAT_TECH_LEAD"
           fi
-          PAYLOAD=$(python3 -c 'import json,sys;c,t,a,b,ba,u=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5],sys.argv[6];txt="â PR Merged: {}\nð¤ {} | `{}` -> `{}`\nð {}".format(t,a,b,ba,u);print(json.dumps({"receive_id":c,"msg_type":"text","content":json.dumps({"text":txt})}))' "$CHAT_ID" "$PR_TITLE" "$AUTHOR" "$BRANCH" "$BASE" "$PR_URL")
+          PAYLOAD=$(python3 -c 'import json,sys;c,t,a,b,ba,u=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5],sys.argv[6];txt="✅ PR Merged: {}\n👤 {} | `{}` -> `{}`\n🔗 {}".format(t,a,b,ba,u);print(json.dumps({"receive_id":c,"msg_type":"text","content":json.dumps({"text":txt})}))' "$CHAT_ID" "$PR_TITLE" "$AUTHOR" "$BRANCH" "$BASE" "$PR_URL")
           curl -sf -X POST \
             "https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=chat_id" \
             -H "Authorization: Bearer $TOKEN" \
@@ -134,20 +134,20 @@ jobs:
           COMMIT="${{ github.event.workflow_run.head_sha }}"
           SHORT_SHA="${COMMIT:0:7}"
           if [ "$STATUS" = "success" ]; then
-            EMOJI="ð"
+            EMOJI="🚀"
             DMSG="Deploy success on \`$BRANCH\` ($SHORT_SHA)"
           else
-            EMOJI="â"
+            EMOJI="❌"
             DMSG="Deploy FAILED on \`$BRANCH\` ($SHORT_SHA)"
           fi
-          PAYLOAD=$(python3 -c 'import json,sys;c,e,m,u=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4];t="{} {}\nð {}".format(e,m,u);print(json.dumps({"receive_id":c,"msg_type":"text","content":json.dumps({"text":t})}))' "$CHAT_MOBILE" "$EMOJI" "$DMSG" "$RUN_URL")
+          PAYLOAD=$(python3 -c 'import json,sys;c,e,m,u=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4];t="{} {}\n🔗 {}".format(e,m,u);print(json.dumps({"receive_id":c,"msg_type":"text","content":json.dumps({"text":t})}))' "$CHAT_MOBILE" "$EMOJI" "$DMSG" "$RUN_URL")
           curl -sf -X POST \
             "https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=chat_id" \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD"
           if [ "$STATUS" != "success" ]; then
-            PAYLOAD_QA=$(python3 -c 'import json,sys;c,e,b,u=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4];t="{} Deploy failed on `{}`! Please check logs.\nð {}".format(e,b,u);print(json.dumps({"receive_id":c,"msg_type":"text","content":json.dumps({"text":t})}))' "$CHAT_QA" "$EMOJI" "$BRANCH" "$RUN_URL")
+            PAYLOAD_QA=$(python3 -c 'import json,sys;c,e,b,u=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4];t="{} Deploy failed on `{}`! Please check logs.\n🔗 {}".format(e,b,u);print(json.dumps({"receive_id":c,"msg_type":"text","content":json.dumps({"text":t})}))' "$CHAT_QA" "$EMOJI" "$BRANCH" "$RUN_URL")
             curl -sf -X POST \
               "https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=chat_id" \
               -H "Authorization: Bearer $TOKEN" \
