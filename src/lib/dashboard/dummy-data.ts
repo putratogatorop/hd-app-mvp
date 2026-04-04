@@ -282,47 +282,28 @@ export function getRevenueByStore(): StoreRevenue[] {
  * Peaks: Fri/Sat 19:00–21:00
  */
 export function getRevenueHeatmap(): HeatmapPoint[] {
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-  const hours = Array.from({ length: 15 }, (_, i) => i + 9) // 09:00–23:00
+  const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
+  const hours = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
 
-  // Base value matrix: [day][hour offset from 9]
-  // Uses a lookup table approach — deterministic
-  const dayBase: Record<string, number> = {
-    Mon: 55,
-    Tue: 50,
-    Wed: 48,
-    Thu: 58,
-    Fri: 82,
-    Sat: 90,
-    Sun: 72,
+  // Base pattern: lunch bump, afternoon dip, evening peak
+  const hourWeights: Record<number, number> = {
+    10: 0.3, 11: 0.5, 12: 0.8, 13: 0.7, 14: 0.4, 15: 0.3,
+    16: 0.4, 17: 0.6, 18: 0.8, 19: 1.0, 20: 0.9, 21: 0.6,
+  }
+  // Day multipliers: weekends peak, Sel/Rab dip
+  const dayWeights: Record<string, number> = {
+    Sen: 0.7, Sel: 0.5, Rab: 0.5, Kam: 0.7, Jum: 0.9, Sab: 1.0, Min: 0.95,
   }
 
-  const hourMultiplier: Record<number, number> = {
-    9: 0.4, 10: 0.55, 11: 0.75, 12: 1.1, 13: 1.2,
-    14: 0.7, 15: 0.6, 16: 0.75, 17: 0.9, 18: 1.15,
-    19: 1.35, 20: 1.45, 21: 1.2, 22: 0.8, 23: 0.45,
-  }
-
-  // Dead-zone suppression for Tue/Wed 14:00–16:00
-  const deadZone = (day: string, hour: number) =>
-    (day === 'Tue' || day === 'Wed') && hour >= 14 && hour <= 16
-
-  // Peak boost for Fri/Sat 19:00–21:00
-  const peakBoost = (day: string, hour: number) =>
-    (day === 'Fri' || day === 'Sat') && hour >= 19 && hour <= 21
-
-  const result: HeatmapPoint[] = []
-
+  const points: HeatmapPoint[] = []
   for (const day of days) {
     for (const hour of hours) {
-      let value = Math.round(dayBase[day] * (hourMultiplier[hour] ?? 0.6))
-      if (deadZone(day, hour)) value = Math.round(value * 0.35)
-      if (peakBoost(day, hour)) value = Math.round(value * 1.55)
-      result.push({ day, hour, value })
+      const base = 45 // base orders per hour
+      const value = Math.round(base * (hourWeights[hour] ?? 0.5) * (dayWeights[day] ?? 0.7))
+      points.push({ day, hour, value })
     }
   }
-
-  return result
+  return points
 }
 
 // ── Customer Segments ────────────────────────────────────────
