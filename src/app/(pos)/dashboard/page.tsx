@@ -477,7 +477,7 @@ export default function DashboardPage() {
                           ))}
                         </Pie>
                         <Tooltip
-                          formatter={(value: number, name: string) => [value.toLocaleString('id-ID') + ' pesanan', name]}
+                          formatter={(value: unknown, name: unknown) => [Number(value).toLocaleString('id-ID') + ' pesanan', String(name)]}
                         />
                       </PieChart>
                     </ResponsiveContainer>
