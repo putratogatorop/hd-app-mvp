@@ -10,6 +10,7 @@ import { useCartStore } from '@/lib/store/cart'
 import { formatRupiah } from '@/lib/utils/format'
 import StoreSelector from '@/components/StoreSelector'
 import FloatingCartButton from '@/components/FloatingCartButton'
+import QRScanner from '@/components/QRScanner'
 
 type ProfileRow = Database['public']['Tables']['profiles']['Row']
 type MenuItem = Database['public']['Tables']['menu_items']['Row']
@@ -64,6 +65,7 @@ export default function HomeClient({
   voucherCount,
 }: HomeClientProps) {
   const [storeOpen, setStoreOpen] = useState(false)
+  const [qrOpen, setQrOpen] = useState(false)
 
   const { mode, setMode, selectedStore } = useOrderContext()
   const addItem = useCartStore((s) => s.addItem)
@@ -115,7 +117,14 @@ export default function HomeClient({
           {orderModes.map(({ key, label }) => (
             <button
               key={key}
-              onClick={() => setMode(key)}
+              onClick={() => {
+                if (key === 'dinein') {
+                  setMode('dinein')
+                  setQrOpen(true)
+                } else {
+                  setMode(key)
+                }
+              }}
               className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
                 mode === key
                   ? 'bg-hd-red text-white shadow-sm'
@@ -239,6 +248,13 @@ export default function HomeClient({
         stores={stores}
         open={storeOpen}
         onClose={() => setStoreOpen(false)}
+      />
+
+      {/* ── QR Scanner ── */}
+      <QRScanner
+        stores={stores}
+        open={qrOpen}
+        onClose={() => setQrOpen(false)}
       />
 
       {/* ── Floating cart button ── */}
