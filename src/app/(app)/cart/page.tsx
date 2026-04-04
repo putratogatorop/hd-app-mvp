@@ -160,7 +160,7 @@ export default function CartPage() {
           {items.map(({ item, quantity }) => (
             <div key={item.id} className="p-4 flex items-center gap-3">
               <div className="w-11 h-11 bg-gradient-to-br from-red-50 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <span className="text-2xl">{item.emoji ?? '🍨'}</span>
+                <span className="text-2xl">🍨</span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-hd-dark text-sm truncate">{item.name}</p>
