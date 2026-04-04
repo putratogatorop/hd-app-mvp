@@ -29,18 +29,18 @@ export default function BottomNav() {
               key={href}
               href={href}
               className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-colors relative ${
-                isActive ? 'text-hd-red' : 'text-gray-400 hover:text-gray-600'
+                isActive ? 'text-hd-burgundy' : 'text-gray-400 hover:text-gray-600'
               }`}
             >
               <span className="relative">
                 <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
                 {isMenu && itemCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2.5 bg-hd-red text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">
+                  <span className="absolute -top-1.5 -right-2.5 bg-hd-burgundy text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">
                     {itemCount > 9 ? '9+' : itemCount}
                   </span>
                 )}
               </span>
-              <span className={`text-[10px] font-medium ${isActive ? 'text-hd-red' : ''}`}>
+              <span className={`text-[10px] font-medium ${isActive ? 'text-hd-burgundy' : ''}`}>
                 {label}
               </span>
             </Link>

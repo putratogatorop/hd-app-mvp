@@ -72,23 +72,23 @@ export default function QRScanner({ open, onClose, stores }: QRScannerProps) {
               {/* Burgundy corner brackets */}
               {/* Top-left */}
               <div className="absolute top-0 left-0 w-8 h-8">
-                <div className="absolute top-0 left-0 w-full h-[3px] bg-hd-red rounded-tl-sm" />
-                <div className="absolute top-0 left-0 h-full w-[3px] bg-hd-red rounded-tl-sm" />
+                <div className="absolute top-0 left-0 w-full h-[3px] bg-hd-burgundy rounded-tl-sm" />
+                <div className="absolute top-0 left-0 h-full w-[3px] bg-hd-burgundy rounded-tl-sm" />
               </div>
               {/* Top-right */}
               <div className="absolute top-0 right-0 w-8 h-8">
-                <div className="absolute top-0 right-0 w-full h-[3px] bg-hd-red rounded-tr-sm" />
-                <div className="absolute top-0 right-0 h-full w-[3px] bg-hd-red rounded-tr-sm" />
+                <div className="absolute top-0 right-0 w-full h-[3px] bg-hd-burgundy rounded-tr-sm" />
+                <div className="absolute top-0 right-0 h-full w-[3px] bg-hd-burgundy rounded-tr-sm" />
               </div>
               {/* Bottom-left */}
               <div className="absolute bottom-0 left-0 w-8 h-8">
-                <div className="absolute bottom-0 left-0 w-full h-[3px] bg-hd-red rounded-bl-sm" />
-                <div className="absolute bottom-0 left-0 h-full w-[3px] bg-hd-red rounded-bl-sm" />
+                <div className="absolute bottom-0 left-0 w-full h-[3px] bg-hd-burgundy rounded-bl-sm" />
+                <div className="absolute bottom-0 left-0 h-full w-[3px] bg-hd-burgundy rounded-bl-sm" />
               </div>
               {/* Bottom-right */}
               <div className="absolute bottom-0 right-0 w-8 h-8">
-                <div className="absolute bottom-0 right-0 w-full h-[3px] bg-hd-red rounded-br-sm" />
-                <div className="absolute bottom-0 right-0 h-full w-[3px] bg-hd-red rounded-br-sm" />
+                <div className="absolute bottom-0 right-0 w-full h-[3px] bg-hd-burgundy rounded-br-sm" />
+                <div className="absolute bottom-0 right-0 h-full w-[3px] bg-hd-burgundy rounded-br-sm" />
               </div>
             </div>
 
@@ -131,7 +131,7 @@ export default function QRScanner({ open, onClose, stores }: QRScannerProps) {
               <select
                 value={selectedStoreId}
                 onChange={(e) => setSelectedStoreId(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-hd-dark bg-white outline-none focus:border-hd-red transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-hd-dark bg-white outline-none focus:border-hd-burgundy transition-colors"
               >
                 <option value="">-- Pilih toko --</option>
                 {openStores.map((store) => (
@@ -153,7 +153,7 @@ export default function QRScanner({ open, onClose, stores }: QRScannerProps) {
                 onChange={(e) => setTableNumber(e.target.value)}
                 placeholder="Masukkan nomor meja"
                 min={1}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-hd-dark outline-none focus:border-hd-red transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-hd-dark outline-none focus:border-hd-burgundy transition-colors"
               />
             </div>
 
@@ -161,7 +161,7 @@ export default function QRScanner({ open, onClose, stores }: QRScannerProps) {
             <button
               onClick={handleConfirm}
               disabled={!selectedStoreId || !tableNumber}
-              className="w-full py-3 rounded-xl bg-hd-red text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+              className="w-full py-3 rounded-xl bg-hd-burgundy text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
             >
               Konfirmasi
             </button>
@@ -170,7 +170,7 @@ export default function QRScanner({ open, onClose, stores }: QRScannerProps) {
             <div className="flex justify-center mt-4">
               <button
                 onClick={() => setViewMode('camera')}
-                className="text-hd-red text-sm underline underline-offset-2 hover:opacity-70 transition-opacity"
+                className="text-hd-burgundy text-sm underline underline-offset-2 hover:opacity-70 transition-opacity"
               >
                 Kembali ke scanner
               </button>

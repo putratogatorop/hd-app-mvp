@@ -4,8 +4,8 @@
   "description": "Order ice cream & earn loyalty rewards",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FFF8F0",
-  "theme_color": "#C8102E",
+  "background_color": "#FEF2E3",
+  "theme_color": "#650A30",
   "orientation": "portrait",
   "icons": [
     {

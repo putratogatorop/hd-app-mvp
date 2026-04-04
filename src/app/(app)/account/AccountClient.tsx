@@ -97,8 +97,8 @@ export default function AccountClient({ profile }: AccountClientProps) {
       <div className="px-4 mb-4">
         <Link href="/voucher">
           <div className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3">
-            <div className="w-10 h-10 bg-hd-red/10 rounded-full flex items-center justify-center shrink-0">
-              <Users className="w-5 h-5 text-hd-red" />
+            <div className="w-10 h-10 bg-hd-burgundy/10 rounded-full flex items-center justify-center shrink-0">
+              <Users className="w-5 h-5 text-hd-burgundy" />
             </div>
             <div className="flex-1">
               <p className="text-sm font-semibold text-hd-dark">Ajak Teman, Dapat Voucher!</p>

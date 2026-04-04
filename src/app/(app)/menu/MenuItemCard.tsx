@@ -15,7 +15,7 @@ const categoryEmoji: Record<MenuItem['category'], string> = {
 }
 
 const categoryGradient: Record<MenuItem['category'], string> = {
-  ice_cream: 'from-red-50 to-pink-100',
+  ice_cream: 'from-hd-cream to-pink-100',
   cake: 'from-amber-50 to-orange-100',
   beverage: 'from-blue-50 to-cyan-100',
   topping: 'from-purple-50 to-fuchsia-100',
@@ -59,7 +59,7 @@ export default function MenuItemCard({ item, onTap, disabled = false }: MenuItem
       <div className="p-3">
         <h3 className="text-sm font-semibold text-hd-dark truncate">{item.name}</h3>
         <div className="flex items-center justify-between mt-1.5">
-          <span className="text-sm font-bold text-hd-red">{formatRupiah(item.price)}</span>
+          <span className="text-sm font-bold text-hd-burgundy">{formatRupiah(item.price)}</span>
           <button
             onClick={handleAdd}
             disabled={disabled}
@@ -67,7 +67,7 @@ export default function MenuItemCard({ item, onTap, disabled = false }: MenuItem
             className={`w-7 h-7 flex items-center justify-center rounded-full border-2 transition-colors ${
               disabled
                 ? 'border-gray-300 text-gray-300 cursor-default'
-                : 'border-hd-red text-hd-red hover:bg-hd-red hover:text-white active:scale-95'
+                : 'border-hd-burgundy text-hd-burgundy hover:bg-hd-burgundy hover:text-white active:scale-95'
             }`}
           >
             <Plus className="w-4 h-4" />

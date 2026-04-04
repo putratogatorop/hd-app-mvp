@@ -3,23 +3,25 @@
 @tailwind utilities;
 
 :root {
-  --hd-red: #C8102E;
+  --hd-burgundy: #650A30;
+  --hd-burgundy-dark: #40061E;
+  --hd-burgundy-light: #801237;
   --hd-gold: #B8922A;
-  --hd-cream: #FFF8F0;
+  --hd-cream: #FEF2E3;
   color-scheme: light;
 }
 
 /* Force light mode — prevent Android/iOS dark mode from overriding */
 html, body {
   background-color: var(--hd-cream) !important;
-  color: #1A1A1A !important;
+  color: #2B2B2B !important;
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 input, select, textarea {
   background-color: #fff !important;
-  color: #1A1A1A !important;
+  color: #2B2B2B !important;
 }
 
 @media (prefers-color-scheme: dark) {

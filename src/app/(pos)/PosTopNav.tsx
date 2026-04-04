@@ -17,7 +17,7 @@ export default function PosTopNav({ staffName }: { staffName: string }) {
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-hd-red rounded-full flex items-center justify-center">
+          <div className="w-8 h-8 bg-hd-burgundy rounded-full flex items-center justify-center">
             <span className="text-white text-xs font-bold">HD</span>
           </div>
           <span className="font-bold text-white hidden sm:block">POS System</span>
@@ -33,7 +33,7 @@ export default function PosTopNav({ staffName }: { staffName: string }) {
                 href={link.href}
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-hd-red text-white'
+                    ? 'bg-hd-burgundy text-white'
                     : 'text-gray-300 hover:bg-white/10 hover:text-white'
                 }`}
               >

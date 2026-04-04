@@ -52,7 +52,7 @@ export default function PromoPopup() {
         <Link
           href="/menu"
           onClick={() => setVisible(false)}
-          className="mt-4 block w-full py-4 bg-white text-hd-red font-bold text-[15px] text-center rounded-2xl shadow-lg active:scale-[0.98] transition-transform"
+          className="mt-4 block w-full py-4 bg-white text-hd-burgundy font-bold text-[15px] text-center rounded-2xl shadow-lg active:scale-[0.98] transition-transform"
         >
           Pesan Sekarang →
         </Link>
