@@ -45,30 +45,9 @@ const tierConfig: Record<string, { color: string; label: string; target: number 
 }
 
 const promoBanners = [
-  {
-    id: 1,
-    title: 'Bundle Spesial',
-    subtitle: 'Mulai Dari',
-    price: 'Rp99K',
-    desc: '2 Scoop + Waffle Cone',
-    gradient: 'from-hd-red via-red-700 to-red-900',
-  },
-  {
-    id: 2,
-    title: 'Double Points Weekend!',
-    subtitle: 'Kumpulkan poin',
-    price: '2x',
-    desc: 'Setiap pembelian Sabtu & Minggu',
-    gradient: 'from-purple-600 via-purple-700 to-purple-900',
-  },
-  {
-    id: 3,
-    title: 'New Member',
-    subtitle: 'Diskon spesial',
-    price: '25%',
-    desc: 'Pesanan pertama kamu',
-    gradient: 'from-emerald-600 via-emerald-700 to-emerald-900',
-  },
+  { id: 1, src: '/promo/buy1get1.jpg', alt: 'Buy 1 Get 1 Free — A Treat for Two', href: '/menu' },
+  { id: 2, src: '/promo/prosperity.jpg', alt: 'Crafted for Your Prosperity — Delivery Packages', href: '/menu' },
+  { id: 3, src: '/promo/giveaway.png', alt: 'Giveaway Alert — Creamy Indulgence', href: '/voucher' },
 ]
 
 const featureCards = [
@@ -83,7 +62,7 @@ const featureCards = [
     icon: UtensilsCrossed,
     title: 'Catering',
     desc: 'Rayakan momen spesial',
-    color: 'bg-red-50 text-hd-red',
+    color: 'bg-hd-cream text-hd-burgundy',
     href: '/menu',
     badge: 'Baru',
   },
@@ -145,23 +124,26 @@ export default function HomeClient({
             style={{ transform: `translateX(-${currentBanner * 100}%)` }}
           >
             {promoBanners.map((banner) => (
-              <div
+              <Link
                 key={banner.id}
-                className={`w-full shrink-0 bg-gradient-to-br ${banner.gradient} px-6 pt-14 pb-20 relative`}
+                href={banner.href}
+                className="w-full shrink-0 relative block"
               >
-                <p className="text-white/80 text-xs font-medium">{banner.subtitle}</p>
-                <p className="text-white text-4xl font-extrabold mt-1 tracking-tight">
-                  {banner.price}
-                </p>
-                <p className="text-white font-bold text-lg mt-0.5">{banner.title}</p>
-                <p className="text-white/70 text-xs mt-1">{banner.desc}</p>
-              </div>
+                <Image
+                  src={banner.src}
+                  alt={banner.alt}
+                  width={750}
+                  height={400}
+                  className="w-full h-auto object-cover"
+                  priority={banner.id === 1}
+                />
+              </Link>
             ))}
           </div>
         </div>
 
         {/* Dot indicators */}
-        <div className="absolute bottom-14 left-0 right-0 flex justify-center gap-1.5">
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5">
           {promoBanners.map((_, i) => (
             <button
               key={i}
@@ -235,11 +217,11 @@ export default function HomeClient({
             }}
             className={`rounded-2xl p-4 text-left border-2 transition-all ${
               mode === 'pickup'
-                ? 'border-hd-red bg-red-50'
+                ? 'border-hd-burgundy bg-hd-cream'
                 : 'border-gray-200 bg-white'
             }`}
           >
-            <p className={`font-bold text-lg ${mode === 'pickup' ? 'text-hd-red' : 'text-hd-dark'}`}>
+            <p className={`font-bold text-lg ${mode === 'pickup' ? 'text-hd-burgundy' : 'text-hd-dark'}`}>
               Pick Up
             </p>
             <p className="text-gray-500 text-xs mt-1 leading-snug">
@@ -247,9 +229,9 @@ export default function HomeClient({
             </p>
             <div className="flex justify-end mt-2">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                mode === 'pickup' ? 'bg-hd-red/10' : 'bg-gray-100'
+                mode === 'pickup' ? 'bg-hd-burgundy/10' : 'bg-gray-100'
               }`}>
-                <ShoppingBag size={20} className={mode === 'pickup' ? 'text-hd-red' : 'text-gray-400'} />
+                <ShoppingBag size={20} className={mode === 'pickup' ? 'text-hd-burgundy' : 'text-gray-400'} />
               </div>
             </div>
           </button>
@@ -262,11 +244,11 @@ export default function HomeClient({
             }}
             className={`rounded-2xl p-4 text-left border-2 transition-all ${
               mode === 'delivery'
-                ? 'border-hd-red bg-red-50'
+                ? 'border-hd-burgundy bg-hd-cream'
                 : 'border-gray-200 bg-white'
             }`}
           >
-            <p className={`font-bold text-lg ${mode === 'delivery' ? 'text-hd-red' : 'text-hd-dark'}`}>
+            <p className={`font-bold text-lg ${mode === 'delivery' ? 'text-hd-burgundy' : 'text-hd-dark'}`}>
               Delivery
             </p>
             <p className="text-gray-500 text-xs mt-1 leading-snug">
@@ -274,9 +256,9 @@ export default function HomeClient({
             </p>
             <div className="flex justify-end mt-2">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                mode === 'delivery' ? 'bg-hd-red/10' : 'bg-gray-100'
+                mode === 'delivery' ? 'bg-hd-burgundy/10' : 'bg-gray-100'
               }`}>
-                <Truck size={20} className={mode === 'delivery' ? 'text-hd-red' : 'text-gray-400'} />
+                <Truck size={20} className={mode === 'delivery' ? 'text-hd-burgundy' : 'text-gray-400'} />
               </div>
             </div>
           </button>
@@ -290,17 +272,17 @@ export default function HomeClient({
           }}
           className={`w-full mt-3 rounded-2xl p-3 flex items-center gap-3 border-2 transition-all ${
             mode === 'dinein'
-              ? 'border-hd-red bg-red-50'
+              ? 'border-hd-burgundy bg-hd-cream'
               : 'border-gray-200 bg-white'
           }`}
         >
           <div className={`w-9 h-9 rounded-full flex items-center justify-center ${
-            mode === 'dinein' ? 'bg-hd-red/10' : 'bg-gray-100'
+            mode === 'dinein' ? 'bg-hd-burgundy/10' : 'bg-gray-100'
           }`}>
-            <UtensilsCrossed size={18} className={mode === 'dinein' ? 'text-hd-red' : 'text-gray-400'} />
+            <UtensilsCrossed size={18} className={mode === 'dinein' ? 'text-hd-burgundy' : 'text-gray-400'} />
           </div>
           <div className="text-left">
-            <p className={`font-semibold text-sm ${mode === 'dinein' ? 'text-hd-red' : 'text-hd-dark'}`}>
+            <p className={`font-semibold text-sm ${mode === 'dinein' ? 'text-hd-burgundy' : 'text-hd-dark'}`}>
               Dine-in
             </p>
             <p className="text-gray-500 text-xs">Scan QR meja untuk pesan langsung</p>
@@ -314,7 +296,7 @@ export default function HomeClient({
             onClick={() => setStoreOpen(true)}
             className="mt-3 w-full flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-3 text-left"
           >
-            <MapPin size={16} className="text-hd-red shrink-0" />
+            <MapPin size={16} className="text-hd-burgundy shrink-0" />
             <span className="flex-1 text-hd-dark text-sm truncate font-medium">
               {selectedStore.name}
             </span>
@@ -338,7 +320,7 @@ export default function HomeClient({
               className="bg-white rounded-2xl p-4 border border-gray-100 relative"
             >
               {card.badge && (
-                <span className="absolute top-3 right-3 bg-hd-red text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                <span className="absolute top-3 right-3 bg-hd-burgundy text-white text-[10px] font-bold px-2 py-0.5 rounded">
                   {card.badge}
                 </span>
               )}
@@ -359,7 +341,7 @@ export default function HomeClient({
       <div className="mt-5">
         <div className="px-4 flex items-center justify-between mb-3">
           <h2 className="text-hd-dark font-bold text-base">Best Sellers</h2>
-          <Link href="/menu" className="text-hd-red text-sm font-medium">
+          <Link href="/menu" className="text-hd-burgundy text-sm font-medium">
             Lihat Semua
           </Link>
         </div>
@@ -387,7 +369,7 @@ export default function HomeClient({
                 <p className="text-hd-dark text-xs font-semibold leading-snug line-clamp-2">
                   {item.name}
                 </p>
-                <p className="text-hd-red text-xs font-bold mt-1">
+                <p className="text-hd-burgundy text-xs font-bold mt-1">
                   {formatRupiah(item.price)}
                 </p>
               </div>
