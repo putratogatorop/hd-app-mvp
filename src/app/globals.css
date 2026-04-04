@@ -6,12 +6,24 @@
   --hd-red: #C8102E;
   --hd-gold: #B8922A;
   --hd-cream: #FFF8F0;
+  color-scheme: light;
 }
 
-body {
-  background-color: var(--hd-cream);
+/* Force light mode — prevent Android/iOS dark mode from overriding */
+html, body {
+  background-color: var(--hd-cream) !important;
+  color: #1A1A1A !important;
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+input, select, textarea {
+  background-color: #fff !important;
+  color: #1A1A1A !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  html { color-scheme: light; }
 }
 
 /* Mobile-first safe area for PWA */
