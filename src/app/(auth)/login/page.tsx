@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -55,8 +54,8 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <Image
-              src="/logo/logo-haagen-daz.png"
+            <img
+              src="/logo/logo-transparent.png"
               alt="Häagen-Dazs"
               width={160}
               height={80}
@@ -69,7 +68,7 @@ export default function LoginPage() {
         {/* Form */}
         <form onSubmit={handleLogin} className="space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
+            <div className="bg-hd-cream border border-hd-burgundy/20 text-hd-burgundy text-sm px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
@@ -81,7 +80,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-hd-red bg-white"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-hd-burgundy bg-white"
               placeholder="nama@email.com"
             />
           </div>
@@ -93,7 +92,7 @@ export default function LoginPage() {
               required
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-hd-red bg-white"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-hd-burgundy bg-white"
               placeholder="••••••••"
             />
           </div>
@@ -101,7 +100,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-hd-red text-white font-semibold rounded-xl hover:bg-red-700 transition-colors disabled:opacity-60"
+            className="w-full py-3 bg-hd-burgundy text-white font-semibold rounded-xl hover:bg-hd-burgundy-dark transition-colors disabled:opacity-60"
           >
             {loading ? 'Loading...' : 'Masuk'}
           </button>
