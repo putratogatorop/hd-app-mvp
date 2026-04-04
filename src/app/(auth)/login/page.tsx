@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -45,7 +45,7 @@ export default function LoginPage() {
     if (role === 'staff' || role === 'admin') {
       router.push('/pos/orders')
     } else {
-      router.push('/menu')
+      router.push('/home')
     }
   }
 
@@ -54,8 +54,13 @@ export default function LoginPage() {
       <div className="max-w-sm mx-auto w-full">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-hd-red rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-xl font-bold">HD</span>
+          <div className="flex justify-center mb-4">
+            <Image
+              src="/logo/logo-haagen-daz.png"
+              alt="Häagen-Dazs"
+              width={160}
+              height={80}
+            />
           </div>
           <h2 className="text-2xl font-bold text-hd-dark">Selamat Datang</h2>
           <p className="text-gray-500 text-sm mt-1">Login ke akun Häagen-Dazs kamu</p>
@@ -98,16 +103,9 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full py-3 bg-hd-red text-white font-semibold rounded-xl hover:bg-red-700 transition-colors disabled:opacity-60"
           >
-            {loading ? 'Loading...' : 'Login'}
+            {loading ? 'Loading...' : 'Masuk'}
           </button>
         </form>
-
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Belum punya akun?{' '}
-          <Link href="/register" className="text-hd-red font-semibold">
-            Daftar sekarang
-          </Link>
-        </p>
       </div>
     </main>
   )

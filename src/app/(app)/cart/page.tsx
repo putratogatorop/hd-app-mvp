@@ -3,39 +3,96 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import {
+  ArrowLeft,
+  Minus,
+  Plus,
+  Trash2,
+  Ticket,
+  CreditCard,
+  MapPin,
+  StickyNote,
+  ChevronRight,
+} from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
+import { useOrderContext } from '@/lib/store/order-context'
+import { formatRupiah } from '@/lib/utils/format'
 import { placeOrder } from './actions'
 
-function formatRupiah(amount: number) {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(amount)
+const PAYMENT_OPTIONS = [
+  { id: 'gopay', label: 'GoPay', emoji: '💚' },
+  { id: 'ovo', label: 'OVO', emoji: '💜' },
+  { id: 'dana', label: 'Dana', emoji: '💙' },
+  { id: 'card', label: 'Kartu Kredit/Debit', emoji: '💳' },
+]
+
+const MODE_EMOJI: Record<string, string> = {
+  pickup: '🏃',
+  delivery: '🛵',
+  dinein: '🪑',
+}
+
+const MODE_LABEL: Record<string, string> = {
+  pickup: 'Pick Up',
+  delivery: 'Delivery',
+  dinein: 'Dine In',
 }
 
 export default function CartPage() {
   const router = useRouter()
-  const { items, updateQuantity, removeItem, clearCart, total, earnedPoints } =
-    useCartStore()
+  const {
+    items,
+    updateQuantity,
+    removeItem,
+    clearCart,
+    subtotal,
+    discountAmount,
+    deliveryFee,
+    total,
+    earnedPoints,
+    appliedVoucher,
+    removeVoucher,
+    paymentMethod,
+    setPaymentMethod,
+    notes,
+    setNotes,
+  } = useCartStore()
+
+  const { mode, selectedStore, tableNumber } = useOrderContext()
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const sub = subtotal()
+  const discount = discountAmount()
+  const fee = deliveryFee(mode)
+  const grandTotal = total(mode)
+  const points = earnedPoints()
+  const itemCount = items.reduce((s, i) => s + i.quantity, 0)
 
   async function handleCheckout() {
     if (!items.length) return
     setLoading(true)
     setError(null)
     try {
-      await placeOrder(
-        items.map(i => ({
+      await placeOrder({
+        items: items.map(i => ({
           id: i.item.id,
           name: i.item.name,
           price: i.item.price,
           quantity: i.quantity,
         })),
-        total(),
-        earnedPoints()
-      )
+        totalAmount: grandTotal,
+        earnedPoints: points,
+        storeId: selectedStore?.id ?? null,
+        orderMode: mode,
+        tableNumber: tableNumber,
+        voucherId: appliedVoucher?.id ?? null,
+        discountAmount: discount,
+        deliveryFee: fee,
+        paymentMethod,
+        notes,
+      })
       clearCart()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Terjadi kesalahan')
@@ -43,15 +100,21 @@ export default function CartPage() {
     }
   }
 
+  // Empty state
   if (!items.length) {
     return (
-      <div className="page-enter min-h-screen flex flex-col">
-        <div className="bg-white px-6 pt-12 pb-4 border-b border-gray-100">
-          <h1 className="text-2xl font-bold text-hd-dark">Keranjang 🛒</h1>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="bg-white px-6 pt-12 pb-4 border-b border-gray-100 flex items-center gap-3">
+          <button onClick={() => router.back()} className="p-2 -ml-2 rounded-xl hover:bg-gray-100 transition-colors">
+            <ArrowLeft size={22} className="text-hd-dark" />
+          </button>
+          <div>
+            <h1 className="text-xl font-bold text-hd-dark">Keranjang</h1>
+          </div>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center py-16 px-4">
           <span className="text-6xl mb-4">🛒</span>
-          <p className="text-gray-500 font-medium">Keranjangmu kosong</p>
+          <p className="text-gray-600 font-semibold text-lg">Keranjang kosong</p>
           <p className="text-gray-400 text-sm mt-1 mb-6">Tambahkan ice cream favoritmu!</p>
           <Link
             href="/menu"
@@ -65,87 +128,186 @@ export default function CartPage() {
   }
 
   return (
-    <div className="page-enter">
+    <div className="min-h-screen bg-gray-50 pb-32">
       {/* Header */}
-      <div className="bg-white px-6 pt-12 pb-4 border-b border-gray-100">
-        <h1 className="text-2xl font-bold text-hd-dark">Keranjang 🛒</h1>
-        <p className="text-gray-400 text-sm">{items.length} jenis item</p>
+      <div className="bg-white px-6 pt-12 pb-4 border-b border-gray-100 flex items-center gap-3">
+        <button onClick={() => router.back()} className="p-2 -ml-2 rounded-xl hover:bg-gray-100 transition-colors">
+          <ArrowLeft size={22} className="text-hd-dark" />
+        </button>
+        <div>
+          <h1 className="text-xl font-bold text-hd-dark">Keranjang</h1>
+          <p className="text-gray-400 text-xs">{itemCount} item</p>
+        </div>
       </div>
 
-      {/* Items */}
-      <div className="px-4 py-4 space-y-3">
-        {items.map(({ item, quantity }) => (
-          <div
-            key={item.id}
-            className="bg-white rounded-2xl p-4 shadow-sm border border-gray-50 flex items-center gap-3"
-          >
-            <div className="w-12 h-12 bg-gradient-to-br from-red-50 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <span className="text-2xl">🍨</span>
-            </div>
+      <div className="px-4 pt-4 space-y-3">
+        {/* Order mode reminder */}
+        <div className="bg-white rounded-2xl px-4 py-3 flex items-center gap-3 shadow-sm border border-gray-50">
+          <MapPin size={18} className="text-hd-red flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-hd-dark">
+              {MODE_EMOJI[mode]} {MODE_LABEL[mode]}
+              {mode === 'dinein' && tableNumber ? ` — Meja ${tableNumber}` : ''}
+            </p>
+            <p className="text-xs text-gray-400 truncate">
+              {selectedStore?.name ?? 'Häagen-Dazs PIK Avenue'}
+            </p>
+          </div>
+        </div>
 
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-hd-dark text-sm truncate">{item.name}</p>
-              <p className="text-hd-red font-bold text-sm">
-                {formatRupiah(item.price * quantity)}
-              </p>
+        {/* Cart items */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-50 divide-y divide-gray-50">
+          {items.map(({ item, quantity }) => (
+            <div key={item.id} className="p-4 flex items-center gap-3">
+              <div className="w-11 h-11 bg-gradient-to-br from-red-50 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl">🍨</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-hd-dark text-sm truncate">{item.name}</p>
+                <p className="text-hd-red font-bold text-sm">{formatRupiah(item.price)}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => updateQuantity(item.id, quantity - 1)}
+                  className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors"
+                >
+                  <Minus size={14} />
+                </button>
+                <span className="w-5 text-center font-semibold text-sm text-hd-dark">{quantity}</span>
+                <button
+                  onClick={() => updateQuantity(item.id, quantity + 1)}
+                  className="w-7 h-7 rounded-full bg-hd-red text-white flex items-center justify-center hover:bg-red-700 transition-colors"
+                >
+                  <Plus size={14} />
+                </button>
+                <button
+                  onClick={() => removeItem(item.id)}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors ml-1"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             </div>
+          ))}
+        </div>
 
-            {/* Qty controls */}
-            <div className="flex items-center gap-2">
+        {/* Notes */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-50 px-4 py-3">
+          <div className="flex items-center gap-2 mb-2">
+            <StickyNote size={16} className="text-gray-400" />
+            <span className="text-sm font-semibold text-hd-dark">Catatan</span>
+          </div>
+          <input
+            type="text"
+            value={notes}
+            onChange={e => setNotes(e.target.value)}
+            placeholder="Catatan untuk pesanan..."
+            className="w-full text-sm text-gray-600 placeholder-gray-300 bg-transparent outline-none"
+          />
+        </div>
+
+        {/* Voucher */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-50 px-4 py-3">
+          {appliedVoucher ? (
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Ticket size={16} className="text-green-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-green-700 truncate">{appliedVoucher.title}</p>
+                <p className="text-xs text-green-500">Hemat {formatRupiah(discount)}</p>
+              </div>
               <button
-                onClick={() => updateQuantity(item.id, quantity - 1)}
-                className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 font-semibold"
+                onClick={removeVoucher}
+                className="text-xs text-red-400 font-semibold hover:text-red-600 transition-colors"
               >
-                −
+                Hapus
               </button>
-              <span className="w-5 text-center font-semibold text-sm">{quantity}</span>
+            </div>
+          ) : (
+            <Link href="/voucher" className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Ticket size={16} className="text-gray-400" />
+              </div>
+              <span className="flex-1 text-sm font-semibold text-hd-dark">Pakai Voucher</span>
+              <ChevronRight size={16} className="text-gray-300" />
+            </Link>
+          )}
+        </div>
+
+        {/* Payment method */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-50 px-4 py-3">
+          <div className="flex items-center gap-2 mb-3">
+            <CreditCard size={16} className="text-gray-400" />
+            <span className="text-sm font-semibold text-hd-dark">Metode Pembayaran</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {PAYMENT_OPTIONS.map(opt => (
               <button
-                onClick={() => updateQuantity(item.id, quantity + 1)}
-                className="w-7 h-7 rounded-full bg-hd-red text-white flex items-center justify-center hover:bg-red-700 font-semibold"
+                key={opt.id}
+                onClick={() => setPaymentMethod(opt.id)}
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-left ${
+                  paymentMethod === opt.id
+                    ? 'border-hd-red bg-red-50'
+                    : 'border-gray-100 hover:border-gray-200'
+                }`}
               >
-                +
+                <span className="text-lg leading-none">{opt.emoji}</span>
+                <span className={`text-xs font-semibold truncate ${paymentMethod === opt.id ? 'text-hd-red' : 'text-gray-600'}`}>
+                  {opt.label}
+                </span>
               </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Order summary */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-50 px-4 py-4">
+          <p className="text-sm font-bold text-hd-dark mb-3">Ringkasan Pesanan</p>
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm text-gray-500">
+              <span>Subtotal</span>
+              <span>{formatRupiah(sub)}</span>
+            </div>
+            {discount > 0 && (
+              <div className="flex justify-between text-sm text-green-600">
+                <span>Diskon Voucher</span>
+                <span>-{formatRupiah(discount)}</span>
+              </div>
+            )}
+            {mode === 'delivery' && (
+              <div className="flex justify-between text-sm text-gray-500">
+                <span>Ongkos Kirim</span>
+                <span>{formatRupiah(fee)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm text-amber-500 pt-1">
+              <span>⭐ Poin yang didapat</span>
+              <span>+{points} poin</span>
+            </div>
+            <div className="border-t border-gray-100 pt-3 flex justify-between font-bold">
+              <span className="text-hd-dark">Total</span>
+              <span className="text-hd-red">{formatRupiah(grandTotal)}</span>
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-2xl">
+            {error}
+          </div>
+        )}
       </div>
 
-      {/* Summary */}
-      <div className="mx-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-50 mb-4">
-        <div className="flex justify-between text-sm text-gray-500 mb-2">
-          <span>Subtotal</span>
-          <span>{formatRupiah(total())}</span>
-        </div>
-        <div className="flex justify-between text-sm text-green-600 mb-3">
-          <span>⭐ Poin yang akan didapat</span>
-          <span>+{earnedPoints()} poin</span>
-        </div>
-        <div className="border-t border-gray-100 pt-3 flex justify-between font-bold text-hd-dark">
-          <span>Total</span>
-          <span className="text-hd-red">{formatRupiah(total())}</span>
-        </div>
-      </div>
-
-      {error && (
-        <div className="mx-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl mb-4">
-          {error}
-        </div>
-      )}
-
-      {/* Checkout button */}
-      <div className="px-4 pb-4">
+      {/* CTA fixed at bottom */}
+      <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-3 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent">
         <button
           onClick={handleCheckout}
           disabled={loading}
-          className="w-full py-4 bg-hd-red text-white font-bold text-base rounded-2xl hover:bg-red-700 transition-colors disabled:opacity-60 shadow-lg shadow-red-200"
+          className="w-full py-4 bg-hd-red text-white font-bold text-base rounded-2xl hover:bg-red-700 transition-colors disabled:opacity-60 shadow-lg shadow-red-200 flex items-center justify-center gap-2"
         >
-          {loading ? 'Memproses...' : `Pesan Sekarang · ${formatRupiah(total())}`}
-        </button>
-        <button
-          onClick={() => router.push('/menu')}
-          className="w-full py-3 text-gray-500 text-sm font-medium mt-2"
-        >
-          + Tambah Item Lagi
+          {loading ? 'Memproses...' : `Pesan Sekarang — ${formatRupiah(grandTotal)}`}
         </button>
       </div>
     </div>

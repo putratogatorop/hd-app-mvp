@@ -16,11 +16,35 @@ export interface PlaceOrderItem {
   quantity: number
 }
 
-export async function placeOrder(
-  items: PlaceOrderItem[],
-  totalAmount: number,
+export interface PlaceOrderInput {
+  items: PlaceOrderItem[]
+  totalAmount: number
   earnedPoints: number
-) {
+  storeId: string | null
+  orderMode: 'pickup' | 'delivery' | 'dinein'
+  tableNumber: number | null
+  voucherId: string | null
+  discountAmount: number
+  deliveryFee: number
+  paymentMethod: string
+  notes: string
+}
+
+export async function placeOrder(input: PlaceOrderInput) {
+  const {
+    items,
+    totalAmount,
+    earnedPoints,
+    storeId,
+    orderMode,
+    tableNumber,
+    voucherId,
+    discountAmount,
+    deliveryFee,
+    paymentMethod,
+    notes,
+  } = input
+
   if (!items.length) throw new Error('Cart is empty')
 
   const supabase = await createClient()
@@ -36,6 +60,14 @@ export async function placeOrder(
     status: 'pending',
     total_amount: totalAmount,
     points_earned: earnedPoints,
+    store_id: storeId,
+    order_mode: orderMode,
+    table_number: tableNumber,
+    voucher_id: voucherId,
+    discount_amount: discountAmount,
+    delivery_fee: deliveryFee,
+    payment_method: paymentMethod,
+    notes: notes || null,
   }
   const { data: order, error: orderErr } = await db
     .from('orders')
@@ -66,7 +98,7 @@ export async function placeOrder(
   if (profile) {
     const newPoints = (profile.loyalty_points ?? 0) + earnedPoints
     const newTier =
-      newPoints >= 5000 ? 'platinum' : newPoints >= 1500 ? 'gold' : 'silver'
+      newPoints >= 15000 ? 'platinum' : newPoints >= 5000 ? 'gold' : 'silver'
 
     const profileUpdate: ProfileUpdate = {
       loyalty_points: newPoints,
@@ -83,6 +115,16 @@ export async function placeOrder(
       description: `Earned from order #${order.id.slice(-8).toUpperCase()}`,
     }
     await db.from('loyalty_transactions').insert(txInsert)
+  }
+
+  // 5. Mark voucher as used if one was applied
+  if (voucherId) {
+    await db
+      .from('user_vouchers')
+      .update({ is_used: true, used_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+      .eq('voucher_id', voucherId)
+      .eq('is_used', false)
   }
 
   redirect('/orders')

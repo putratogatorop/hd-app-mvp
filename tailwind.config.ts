@@ -11,6 +11,7 @@ const config: Config = {
       colors: {
         "hd-red": "#C8102E",
         "hd-gold": "#B8922A",
+        "hd-gold-light": "#F5E6C8",
         "hd-cream": "#FFF8F0",
         "hd-dark": "#1A1A1A",
       },
