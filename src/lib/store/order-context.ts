@@ -27,7 +27,7 @@ const defaultState: OrderContextState = {
   tableNumber: null,
 }
 
-export const useOrderContextStore = create<OrderContextStore>()(
+export const useOrderContext = create<OrderContextStore>()(
   persist(
     (set) => ({
       ...defaultState,

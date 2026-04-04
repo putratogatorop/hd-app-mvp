@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { X, Search, MapPin, Clock, ChevronRight } from 'lucide-react'
 import type { Database } from '@/lib/supabase/database.types'
-import { useOrderContextStore } from '@/lib/store/order-context'
+import { useOrderContext } from '@/lib/store/order-context'
 
 type Store = Database['public']['Tables']['stores']['Row']
 
@@ -15,7 +15,7 @@ interface StoreSelectorProps {
 
 export default function StoreSelector({ stores, open, onClose }: StoreSelectorProps) {
   const [search, setSearch] = useState('')
-  const setStore = useOrderContextStore((s) => s.setStore)
+  const setStore = useOrderContext((s) => s.setStore)
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
