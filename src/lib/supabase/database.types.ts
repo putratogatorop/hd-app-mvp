@@ -19,6 +19,7 @@ export type Database = {
           loyalty_points: number
           tier: 'silver' | 'gold' | 'platinum'
           role: 'customer' | 'staff' | 'admin'
+          referral_code: string | null
           created_at: string
           updated_at: string
         }
@@ -31,6 +32,7 @@ export type Database = {
           loyalty_points?: number
           tier?: 'silver' | 'gold' | 'platinum'
           role?: 'customer' | 'staff' | 'admin'
+          referral_code?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -41,6 +43,7 @@ export type Database = {
           loyalty_points?: number
           tier?: 'silver' | 'gold' | 'platinum'
           role?: 'customer' | 'staff' | 'admin'
+          referral_code?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -88,6 +91,13 @@ export type Database = {
           delivery_address: string | null
           notes: string | null
           points_earned: number
+          store_id: string | null
+          order_mode: 'pickup' | 'delivery' | 'dinein'
+          table_number: number | null
+          voucher_id: string | null
+          discount_amount: number
+          delivery_fee: number
+          payment_method: string
           created_at: string
           updated_at: string
         }
@@ -99,6 +109,13 @@ export type Database = {
           delivery_address?: string | null
           notes?: string | null
           points_earned?: number
+          store_id?: string | null
+          order_mode?: 'pickup' | 'delivery' | 'dinein'
+          table_number?: number | null
+          voucher_id?: string | null
+          discount_amount?: number
+          delivery_fee?: number
+          payment_method?: string
           created_at?: string
           updated_at?: string
         }
@@ -107,6 +124,13 @@ export type Database = {
           delivery_address?: string | null
           notes?: string | null
           points_earned?: number
+          store_id?: string | null
+          order_mode?: 'pickup' | 'delivery' | 'dinein'
+          table_number?: number | null
+          voucher_id?: string | null
+          discount_amount?: number
+          delivery_fee?: number
+          payment_method?: string
           updated_at?: string
         }
         Relationships: [
@@ -115,6 +139,20 @@ export type Database = {
             columns: ['user_id']
             isOneToOne: false
             referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'orders_store_id_fkey'
+            columns: ['store_id']
+            isOneToOne: false
+            referencedRelation: 'stores'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'orders_voucher_id_fkey'
+            columns: ['voucher_id']
+            isOneToOne: false
+            referencedRelation: 'vouchers'
             referencedColumns: ['id']
           }
         ]
@@ -184,6 +222,164 @@ export type Database = {
           {
             foreignKeyName: 'loyalty_transactions_user_id_fkey'
             columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          }
+        ]
+      }
+      stores: {
+        Row: {
+          id: string
+          name: string
+          address: string
+          city: string
+          opening_hours: string
+          is_open: boolean
+          distance_dummy: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          address: string
+          city: string
+          opening_hours: string
+          is_open?: boolean
+          distance_dummy?: number
+          created_at?: string
+        }
+        Update: {
+          name?: string
+          address?: string
+          city?: string
+          opening_hours?: string
+          is_open?: boolean
+          distance_dummy?: number
+        }
+        Relationships: []
+      }
+      vouchers: {
+        Row: {
+          id: string
+          code: string
+          title: string
+          description: string | null
+          discount_type: 'percentage' | 'fixed'
+          discount_value: number
+          min_order: number | null
+          max_discount: number | null
+          applicable_modes: string[]
+          voucher_source: 'manual' | 'tier' | 'referral'
+          tier_required: 'silver' | 'gold' | 'platinum' | null
+          valid_from: string
+          valid_until: string
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          code: string
+          title: string
+          description?: string | null
+          discount_type: 'percentage' | 'fixed'
+          discount_value: number
+          min_order?: number | null
+          max_discount?: number | null
+          applicable_modes?: string[]
+          voucher_source?: 'manual' | 'tier' | 'referral'
+          tier_required?: 'silver' | 'gold' | 'platinum' | null
+          valid_from: string
+          valid_until: string
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          code?: string
+          title?: string
+          description?: string | null
+          discount_type?: 'percentage' | 'fixed'
+          discount_value?: number
+          min_order?: number | null
+          max_discount?: number | null
+          applicable_modes?: string[]
+          voucher_source?: 'manual' | 'tier' | 'referral'
+          tier_required?: 'silver' | 'gold' | 'platinum' | null
+          valid_from?: string
+          valid_until?: string
+          is_active?: boolean
+        }
+        Relationships: []
+      }
+      user_vouchers: {
+        Row: {
+          id: string
+          user_id: string
+          voucher_id: string
+          is_used: boolean
+          used_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          voucher_id: string
+          is_used?: boolean
+          used_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          is_used?: boolean
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'user_vouchers_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'user_vouchers_voucher_id_fkey'
+            columns: ['voucher_id']
+            isOneToOne: false
+            referencedRelation: 'vouchers'
+            referencedColumns: ['id']
+          }
+        ]
+      }
+      referrals: {
+        Row: {
+          id: string
+          referrer_id: string
+          referred_id: string
+          referral_code: string
+          voucher_given: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          referrer_id: string
+          referred_id: string
+          referral_code: string
+          voucher_given?: boolean
+          created_at?: string
+        }
+        Update: {
+          voucher_given?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'referrals_referrer_id_fkey'
+            columns: ['referrer_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'referrals_referred_id_fkey'
+            columns: ['referred_id']
             isOneToOne: false
             referencedRelation: 'profiles'
             referencedColumns: ['id']
