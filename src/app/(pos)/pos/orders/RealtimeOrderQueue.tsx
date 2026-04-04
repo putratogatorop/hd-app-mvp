@@ -26,7 +26,7 @@ const STATUS_CONFIG: Record<
   preparing: { label: 'Diproses',     color: 'text-orange-700', bg: 'bg-orange-100', next: 'ready',      nextLabel: '🎉 Siap' },
   ready:     { label: 'Siap Ambil',   color: 'text-green-700',  bg: 'bg-green-100',  next: 'delivered',  nextLabel: '📦 Selesai' },
   delivered: { label: 'Selesai',      color: 'text-gray-600',   bg: 'bg-gray-100' },
-  cancelled: { label: 'Dibatalkan',   color: 'text-red-600',    bg: 'bg-red-100' },
+  cancelled: { label: 'Dibatalkan',   color: 'text-red-600',    bg: 'bg-hd-cream' },
 }
 
 function formatRupiah(n: number) {
@@ -170,7 +170,7 @@ export default function RealtimeOrderQueue({ initialOrders }: { initialOrders: O
             >
               {tab.label}
               {tab.key === 'active' && pendingCount > 0 && (
-                <span className="ml-1.5 bg-hd-red text-white text-xs rounded-full px-1.5 py-0.5">
+                <span className="ml-1.5 bg-hd-burgundy text-white text-xs rounded-full px-1.5 py-0.5">
                   {pendingCount}
                 </span>
               )}
@@ -251,7 +251,7 @@ export default function RealtimeOrderQueue({ initialOrders }: { initialOrders: O
                       <button
                         onClick={() => cancelOrder(order.id)}
                         disabled={isUpdating}
-                        className="px-3 py-2 bg-red-50 text-red-600 text-sm font-semibold rounded-xl hover:bg-red-100 transition-colors disabled:opacity-50"
+                        className="px-3 py-2 bg-hd-cream text-red-600 text-sm font-semibold rounded-xl hover:bg-hd-cream transition-colors disabled:opacity-50"
                       >
                         ✕
                       </button>

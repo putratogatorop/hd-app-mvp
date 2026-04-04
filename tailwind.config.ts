@@ -9,11 +9,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        "hd-red": "#C8102E",
+        "hd-burgundy": "#650A30",
+        "hd-burgundy-dark": "#40061E",
+        "hd-burgundy-light": "#801237",
         "hd-gold": "#B8922A",
         "hd-gold-light": "#F5E6C8",
-        "hd-cream": "#FFF8F0",
-        "hd-dark": "#1A1A1A",
+        "hd-cream": "#FEF2E3",
+        "hd-dark": "#2B2B2B",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],

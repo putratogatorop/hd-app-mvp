@@ -38,10 +38,10 @@ const MODE_LABEL: Record<string, string> = {
 }
 
 const REWARDS = [
-  { icon: '🎟️', name: 'Voucher Diskon 10%', cost: 500, color: 'bg-red-50' },
+  { icon: '🎟️', name: 'Voucher Diskon 10%', cost: 500, color: 'bg-hd-cream' },
   { icon: '🍨', name: 'Free 1 Scoop Ice Cream', cost: 1000, color: 'bg-amber-50' },
   { icon: '🎁', name: 'HD Gift Box Special', cost: 2500, color: 'bg-purple-50' },
-  { icon: '🎟️', name: 'Voucher Free Delivery', cost: 300, color: 'bg-red-50' },
+  { icon: '🎟️', name: 'Voucher Free Delivery', cost: 300, color: 'bg-hd-cream' },
 ]
 
 const PLANS = [
@@ -129,7 +129,7 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
 
       {/* Promo code input */}
       <div className="mx-5 mt-4 flex items-center gap-2.5 bg-gray-100 rounded-[14px] p-1 pl-4">
-        <div className="w-7 h-7 rounded-lg bg-hd-red flex items-center justify-center flex-shrink-0">
+        <div className="w-7 h-7 rounded-lg bg-hd-burgundy flex items-center justify-center flex-shrink-0">
           <Ticket size={14} className="text-white" />
         </div>
         <input
@@ -141,7 +141,7 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
         />
         <button
           onClick={handleCodeSubmit}
-          className="bg-hd-red text-white text-xs font-bold px-4 py-2.5 rounded-[10px] flex-shrink-0"
+          className="bg-hd-burgundy text-white text-xs font-bold px-4 py-2.5 rounded-[10px] flex-shrink-0"
         >
           Gunakan
         </button>
@@ -157,12 +157,12 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
             key={tab.key}
             onClick={() => setMainTab(tab.key)}
             className={`flex-1 text-center pb-3 text-[13px] font-semibold relative transition-colors ${
-              mainTab === tab.key ? 'text-hd-red' : 'text-gray-400'
+              mainTab === tab.key ? 'text-hd-burgundy' : 'text-gray-400'
             }`}
           >
             {tab.label}
             {mainTab === tab.key && (
-              <span className="absolute bottom-[-2px] left-[20%] right-[20%] h-[2.5px] bg-hd-red rounded-full" />
+              <span className="absolute bottom-[-2px] left-[20%] right-[20%] h-[2.5px] bg-hd-burgundy rounded-full" />
             )}
           </button>
         ))}
@@ -179,7 +179,7 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
                 onClick={() => setFilter(f.key)}
                 className={`flex-shrink-0 px-4 py-[7px] rounded-full text-xs font-semibold border-[1.5px] transition-all ${
                   filter === f.key
-                    ? 'bg-hd-red text-white border-hd-red'
+                    ? 'bg-hd-burgundy text-white border-hd-burgundy'
                     : 'bg-white text-gray-500 border-gray-200'
                 }`}
               >
@@ -250,7 +250,7 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
       {mainTab === 'plan' && (
         <div>
           {/* Hero */}
-          <div className="mx-5 mt-4 rounded-[20px] overflow-hidden bg-gradient-to-br from-[#2a0008] via-[#5c0014] to-hd-red p-7 relative">
+          <div className="mx-5 mt-4 rounded-[20px] overflow-hidden bg-gradient-to-br from-hd-burgundy-dark via-hd-burgundy to-hd-burgundy-light p-7 relative">
             <div className="absolute top-[-40px] right-[-20px] w-[140px] h-[140px] rounded-full border border-[rgba(184,146,42,0.2)]" />
             <p className="text-[9px] font-bold tracking-[2px] uppercase text-[#D4AF5A] mb-2">
               ✨ Häagen-Dazs Exclusive
@@ -268,12 +268,12 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
                 key={plan.tier}
                 className={`rounded-2xl p-4 flex items-center gap-3.5 relative overflow-hidden border-[1.5px] ${
                   plan.featured
-                    ? 'border-hd-red bg-red-50/50'
+                    ? 'border-hd-burgundy bg-hd-cream/50'
                     : 'border-gray-200 bg-white'
                 }`}
               >
                 {plan.featured && (
-                  <span className="absolute top-0 right-4 bg-hd-red text-white text-[8px] font-extrabold tracking-[0.5px] px-2.5 py-[3px] rounded-b-lg">
+                  <span className="absolute top-0 right-4 bg-hd-burgundy text-white text-[8px] font-extrabold tracking-[0.5px] px-2.5 py-[3px] rounded-b-lg">
                     POPULER
                   </span>
                 )}
@@ -287,7 +287,7 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
                       <span
                         key={perk}
                         className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
-                          plan.featured ? 'bg-red-100 text-hd-red' : 'bg-gray-100 text-gray-500'
+                          plan.featured ? 'bg-hd-cream text-hd-burgundy' : 'bg-gray-100 text-gray-500'
                         }`}
                       >
                         {perk}
@@ -296,7 +296,7 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <p className={`text-lg font-extrabold ${plan.featured ? 'text-hd-red' : 'text-hd-dark'}`}>
+                  <p className={`text-lg font-extrabold ${plan.featured ? 'text-hd-burgundy' : 'text-hd-dark'}`}>
                     {plan.price}
                   </p>
                   <p className="text-[10px] text-gray-400">/bulan</p>
@@ -307,7 +307,7 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
 
           {/* CTA */}
           <div className="px-5 mt-5">
-            <button className="w-full py-4 rounded-[14px] bg-gradient-to-r from-hd-red to-[#a00d24] text-white text-sm font-bold shadow-lg shadow-red-200">
+            <button className="w-full py-4 rounded-[14px] bg-gradient-to-r from-hd-burgundy to-hd-burgundy-dark text-white text-sm font-bold shadow-lg shadow-hd-burgundy/20">
               Langganan Sekarang!
             </button>
             <p className="text-center text-[11px] text-gray-400 mt-2.5">
@@ -405,12 +405,12 @@ function VoucherCard({
 
   const badgeColor = isDeliveryOnly
     ? 'bg-gradient-to-b from-green-50 to-emerald-50'
-    : 'bg-gradient-to-b from-red-50 to-rose-50'
+    : 'bg-gradient-to-b from-hd-cream to-hd-cream'
 
-  const discountColor = isDeliveryOnly ? 'text-emerald-600' : 'text-hd-red'
-  const labelColor = isDeliveryOnly ? 'text-emerald-300' : 'text-red-300'
-  const contextColor = isDeliveryOnly ? 'text-emerald-600' : 'text-hd-red'
-  const btnColor = isDeliveryOnly ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-hd-red hover:bg-red-700'
+  const discountColor = isDeliveryOnly ? 'text-emerald-600' : 'text-hd-burgundy'
+  const labelColor = isDeliveryOnly ? 'text-emerald-300' : 'text-hd-burgundy/40'
+  const contextColor = isDeliveryOnly ? 'text-emerald-600' : 'text-hd-burgundy'
+  const btnColor = isDeliveryOnly ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-hd-burgundy hover:bg-hd-burgundy-dark'
 
   const contextLabel = isDeliveryOnly ? 'Delivery GoSend' : 'Pakai di App'
 
@@ -448,7 +448,7 @@ function VoucherCard({
               <span
                 key={mode}
                 className={`text-[9px] font-semibold px-2 py-0.5 rounded ${
-                  isDeliveryOnly ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-hd-red'
+                  isDeliveryOnly ? 'bg-emerald-50 text-emerald-600' : 'bg-hd-cream text-hd-burgundy'
                 }`}
               >
                 {MODE_LABEL[mode] ?? mode}

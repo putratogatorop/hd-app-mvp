@@ -55,7 +55,7 @@ export default function ProductSheet({ item, onClose }: ProductSheetProps) {
         </button>
 
         {/* Image placeholder */}
-        <div className="h-48 bg-gradient-to-br from-red-50 to-pink-100 flex items-center justify-center">
+        <div className="h-48 bg-gradient-to-br from-hd-cream to-pink-100 flex items-center justify-center">
           <span className="text-6xl">{categoryEmoji[item.category]}</span>
         </div>
 
@@ -64,7 +64,7 @@ export default function ProductSheet({ item, onClose }: ProductSheetProps) {
           {/* Name & price */}
           <div className="flex items-start justify-between gap-2">
             <h2 className="text-xl font-bold text-gray-900 flex-1">{item.name}</h2>
-            <span className="text-lg font-bold text-hd-red whitespace-nowrap">
+            <span className="text-lg font-bold text-hd-burgundy whitespace-nowrap">
               {formatRupiah(item.price)}
             </span>
           </div>
@@ -106,7 +106,7 @@ export default function ProductSheet({ item, onClose }: ProductSheetProps) {
           {/* Add to cart button */}
           <button
             onClick={handleAdd}
-            className="w-full bg-hd-red text-white font-semibold py-3 rounded-xl hover:bg-hd-red/90 active:bg-hd-red/80 transition-colors"
+            className="w-full bg-hd-burgundy text-white font-semibold py-3 rounded-xl hover:bg-hd-burgundy/90 active:bg-hd-burgundy/80 transition-colors"
           >
             Tambah ke Keranjang — {formatRupiah(item.price * qty)}
           </button>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HD Promo Popup v2 — Premium</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #1a1a1a; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+
+  .phone-frame {
+    width: 375px; min-height: 812px; background: #FFF8F0; border-radius: 44px;
+    overflow: hidden; position: relative;
+    box-shadow: 0 0 0 3px #333, 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  /* ── Blurred home bg ── */
+  .home-bg { filter: blur(3px) brightness(0.7); padding: 60px 20px 20px; }
+  .home-bg .banner { height: 180px; background: linear-gradient(135deg, #C8102E, #7a0a1e); border-radius: 16px; }
+  .home-bg .card { height: 70px; background: #fff; border-radius: 16px; margin: -16px 16px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .home-bg .row { height: 36px; background: #f0ebe4; border-radius: 10px; margin-top: 14px; }
+
+  /* ── Popup overlay ── */
+  .popup-overlay {
+    position: absolute; inset: 0; z-index: 10;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px 18px;
+  }
+
+  .popup {
+    width: 100%; border-radius: 28px; overflow: hidden;
+    box-shadow: 0 32px 64px rgba(0,0,0,0.35), 0 0 0 1px rgba(184,146,42,0.2);
+    position: relative;
+  }
+
+  /* ── Close ── */
+  .close-btn {
+    position: absolute; top: 14px; right: 14px; z-index: 30;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.8); font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; backdrop-filter: blur(8px);
+    transition: all 0.2s;
+  }
+  .close-btn:hover { background: rgba(255,255,255,0.25); }
+
+  /* ── Hero ── */
+  .popup-hero {
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(184,146,42,0.25) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 100%, rgba(184,146,42,0.15) 0%, transparent 50%),
+      linear-gradient(170deg, #2a0008 0%, #5c0014 20%, #8B0000 45%, #C8102E 70%, #a00d24 100%);
+    padding: 36px 28px 28px;
+    position: relative; overflow: hidden;
+  }
+
+  /* Gold decorative elements */
+  .popup-hero::before {
+    content: ''; position: absolute; top: -60px; right: -30px;
+    width: 200px; height: 200px; border-radius: 50%;
+    border: 1.5px solid rgba(184,146,42,0.2);
+  }
+  .popup-hero::after {
+    content: ''; position: absolute; bottom: -80px; left: -40px;
+    width: 220px; height: 220px; border-radius: 50%;
+    border: 1.5px solid rgba(184,146,42,0.12);
+  }
+
+  .gold-line {
+    width: 40px; height: 2px; background: linear-gradient(90deg, #B8922A, #d4af5a);
+    border-radius: 2px; margin-bottom: 16px;
+  }
+
+  .hero-eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase;
+    color: #d4af5a; margin-bottom: 12px;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px; font-weight: 800; color: #fff;
+    line-height: 1.15; margin-bottom: 6px;
+  }
+  .hero-title em {
+    font-style: italic; color: #F5E6C8;
+    text-shadow: 0 0 30px rgba(184,146,42,0.3);
+  }
+
+  .hero-subtitle {
+    font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.6;
+    max-width: 260px;
+  }
+
+  /* Gold ornament dots */
+  .ornament {
+    position: absolute; right: 24px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 6px; align-items: center;
+    opacity: 0.4;
+  }
+  .ornament span {
+    width: 4px; height: 4px; border-radius: 50%; background: #d4af5a;
+  }
+  .ornament span:nth-child(2) { width: 6px; height: 6px; }
+  .ornament span:nth-child(4) { width: 5px; height: 5px; }
+
+  /* ── Plans section ── */
+  .popup-body {
+    background: #fff;
+    padding: 22px 20px 8px;
+  }
+
+  .section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    color: #B8922A; margin-bottom: 14px;
+  }
+
+  .plans { display: flex; flex-direction: column; gap: 10px; }
+
+  .plan {
+    border: 1.5px solid #eee; border-radius: 16px; padding: 16px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer; transition: all 0.25s ease;
+    position: relative; overflow: hidden;
+  }
+  .plan:hover { border-color: #ddd; }
+
+  /* Featured plan */
+  .plan.featured {
+    border-color: #C8102E;
+    background: linear-gradient(135deg, #FFF9F9 0%, #FFF3F0 100%);
+    box-shadow: 0 4px 20px rgba(200,16,46,0.08);
+  }
+  .plan.featured::before {
+    content: 'TERPOPULER';
+    position: absolute; top: 0; right: 20px;
+    background: linear-gradient(135deg, #C8102E, #a00d24);
+    color: #fff; font-size: 8px; font-weight: 800; letter-spacing: 1px;
+    padding: 3px 10px 5px; border-radius: 0 0 8px 8px;
+  }
+
+  .plan-tier {
+    width: 48px; height: 48px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; position: relative;
+  }
+  .plan-tier .emoji { font-size: 22px; position: relative; z-index: 1; }
+
+  .tier-silver { background: linear-gradient(135deg, #f8f8f8, #e8e8e8); }
+  .tier-gold { background: linear-gradient(135deg, #FEF3C7, #FDE68A); box-shadow: 0 2px 12px rgba(184,146,42,0.15); }
+  .tier-platinum { background: linear-gradient(135deg, #EDE9FE, #DDD6FE); }
+
+  .plan-details { flex: 1; min-width: 0; }
+  .plan-name { font-weight: 700; font-size: 14px; color: #1A1A1A; }
+  .plan-perks {
+    font-size: 11px; color: #888; margin-top: 3px; line-height: 1.4;
+  }
+  .plan-perks span {
+    display: inline-block; background: #f5f5f5; padding: 1px 7px; border-radius: 4px;
+    font-size: 10px; color: #666; margin-right: 4px; margin-top: 3px;
+  }
+  .plan.featured .plan-perks span { background: #FEE2E2; color: #C8102E; }
+
+  .plan-pricing { text-align: right; flex-shrink: 0; }
+  .plan-pricing .price {
+    font-size: 20px; font-weight: 800; color: #1A1A1A;
+    letter-spacing: -0.5px;
+  }
+  .plan.featured .plan-pricing .price { color: #C8102E; }
+  .plan-pricing .period { font-size: 10px; color: #aaa; font-weight: 500; }
+
+  /* ── CTA ── */
+  .popup-footer { background: #fff; padding: 10px 20px 22px; }
+
+  .cta-btn {
+    width: 100%; padding: 16px; border: none; border-radius: 16px;
+    background: linear-gradient(135deg, #C8102E 0%, #a00d24 50%, #8B0000 100%);
+    color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
+    letter-spacing: 0.3px;
+    box-shadow: 0 6px 24px rgba(200,16,46,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+    transition: all 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .cta-btn::after {
+    content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    animation: shimmer 3s ease-in-out infinite;
+  }
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 200%; }
+  }
+
+  .footer-note {
+    text-align: center; font-size: 11px; color: #bbb; margin-top: 10px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .footer-note .dot { width: 3px; height: 3px; border-radius: 50%; background: #ddd; }
+
+  .mockup-label {
+    text-align: center; margin-bottom: 20px; font-size: 13px; color: #888;
+    font-weight: 500; letter-spacing: 0.3px;
+  }
+</style>
+</head>
+<body>
+
+<div>
+  <p class="mockup-label">MyHD Plan — Promo Popup v2 (Premium)</p>
+
+  <div class="phone-frame">
+    <div class="home-bg">
+      <div class="banner"></div>
+      <div class="card"></div>
+      <div class="row"></div>
+      <div class="row"></div>
+      <div class="row"></div>
+      <div class="row"></div>
+    </div>
+
+    <div class="popup-overlay">
+      <div class="popup">
+        <button class="close-btn">✕</button>
+
+        <!-- Hero -->
+        <div class="popup-hero">
+          <div class="gold-line"></div>
+          <div class="hero-eyebrow">Häagen-Dazs Exclusive</div>
+          <h2 class="hero-title">Hematnya<br><em>Bikin Untung!</em></h2>
+          <p class="hero-subtitle">Berlangganan MyHD Plan, nikmati diskon spesial setiap hari tanpa batas.</p>
+
+          <div class="ornament">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- Plans -->
+        <div class="popup-body">
+          <div class="section-label">Pilih Paket</div>
+          <div class="plans">
+
+            <div class="plan">
+              <div class="plan-tier tier-silver"><span class="emoji">🥈</span></div>
+              <div class="plan-details">
+                <div class="plan-name">Silver Plan</div>
+                <div class="plan-perks">
+                  <span>10% off</span><span>All menu</span>
+                </div>
+              </div>
+              <div class="plan-pricing">
+                <div class="price">Rp29K</div>
+                <div class="period">/bulan</div>
+              </div>
+            </div>
+
+            <div class="plan featured">
+              <div class="plan-tier tier-gold"><span class="emoji">🥇</span></div>
+              <div class="plan-details">
+                <div class="plan-name">Gold Plan</div>
+                <div class="plan-perks">
+                  <span>20% off</span><span>Free ongkir</span><span>Priority</span>
+                </div>
+              </div>
+              <div class="plan-pricing">
+                <div class="price">Rp49K</div>
+                <div class="period">/bulan</div>
+              </div>
+            </div>
+
+            <div class="plan">
+              <div class="plan-tier tier-platinum"><span class="emoji">💎</span></div>
+              <div class="plan-details">
+                <div class="plan-name">Platinum Plan</div>
+                <div class="plan-perks">
+                  <span>25% off</span><span>Free ongkir</span><span>Gift bulanan</span>
+                </div>
+              </div>
+              <div class="plan-pricing">
+                <div class="price">Rp79K</div>
+                <div class="period">/bulan</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="popup-footer">
+          <button class="cta-btn">Langganan Sekarang!</button>
+          <div class="footer-note">
+            Pickup <span class="dot"></span> Delivery <span class="dot"></span> Dine-in
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

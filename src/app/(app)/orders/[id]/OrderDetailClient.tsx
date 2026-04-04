@@ -122,7 +122,7 @@ export default function OrderDetailClient({ order: initialOrder }: { order: Orde
 
           {isCancelled ? (
             <div className="flex items-center gap-3 py-2">
-              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-full bg-hd-cream flex items-center justify-center flex-shrink-0">
                 <XCircle size={20} className="text-red-500" />
               </div>
               <div>
@@ -139,7 +139,7 @@ export default function OrderDetailClient({ order: initialOrder }: { order: Orde
                 const isLast = idx === steps.length - 1
 
                 const iconBg = isActive
-                  ? 'bg-hd-red text-white animate-pulse'
+                  ? 'bg-hd-burgundy text-white animate-pulse'
                   : isCompleted
                   ? 'bg-green-100 text-green-600'
                   : 'bg-gray-100 text-gray-300'
@@ -162,7 +162,7 @@ export default function OrderDetailClient({ order: initialOrder }: { order: Orde
                     <div className={`pb-4 pt-2 ${isLast ? '' : ''}`}>
                       <p className={`text-sm font-semibold leading-tight ${
                         isActive
-                          ? 'text-hd-red'
+                          ? 'text-hd-burgundy'
                           : isCompleted
                           ? 'text-green-600'
                           : isFuture
@@ -265,7 +265,7 @@ export default function OrderDetailClient({ order: initialOrder }: { order: Orde
 
           <div className="border-t border-gray-100 pt-2 flex justify-between font-bold">
             <span className="text-hd-dark">Total</span>
-            <span className="text-hd-red">{formatRupiah(order.total_amount)}</span>
+            <span className="text-hd-burgundy">{formatRupiah(order.total_amount)}</span>
           </div>
 
           {order.points_earned > 0 && !isCancelled && (
@@ -281,7 +281,7 @@ export default function OrderDetailClient({ order: initialOrder }: { order: Orde
       <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-3 bg-gradient-to-t from-hd-cream via-hd-cream to-transparent space-y-3">
         <Link
           href="/menu"
-          className="w-full py-3.5 bg-hd-red text-white font-bold text-sm rounded-2xl hover:bg-red-700 transition-colors shadow-lg shadow-red-100 flex items-center justify-center"
+          className="w-full py-3.5 bg-hd-burgundy text-white font-bold text-sm rounded-2xl hover:bg-hd-burgundy-dark transition-colors shadow-lg shadow-red-100 flex items-center justify-center"
         >
           Pesan Lagi
         </Link>

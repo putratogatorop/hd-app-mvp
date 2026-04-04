@@ -86,7 +86,7 @@ Keep it short, actionable. Max 300 words.`,
       'User flow & micro-interactions',
     ],
     systemPrompt: `You are the UI/UX Designer for the Häagen-Dazs Super App MVP.
-Design system: Tailwind CSS, brand colors hd-red (#C8102E), hd-dark (#1A1A2E), hd-cream (#FFF8F0), hd-gold (#FFB800).
+Design system: Tailwind CSS, brand colors hd-burgundy (#650A30), hd-dark (#1A1A2E), hd-cream (#FEF2E3), hd-gold (#FFB800).
 Your job: Given a sprint task, produce a concise design spec covering:
 1. Screen layout description (mobile-first)
 2. Key Tailwind classes for the main elements

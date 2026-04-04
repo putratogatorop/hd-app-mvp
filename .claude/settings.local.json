@@ -18,7 +18,14 @@
       "Bash(npm run:*)",
       "Bash(npx next:*)",
       "Bash(npm install:*)",
-      "Bash(npx tsc:*)"
-    ]
-  }
-}
+      "Bash(npx tsc:*)",
+      "Bash(npx supabase:*)",
+      "Bash(curl -s http://localhost:3001/login)",
+      "Bash(grep -oP '\"message\":\"[^\"]*\"|\"source\":\"[^\"]*\"|\"stack\":\"[^\"]{0,200}')",
+      "Bash(curl -s http://localhost:3001/)",
+      "Bash(grep -oE '\\(Database|error|schema|500\\)[^<]{0,100}')",
+      "Bash(curl:*)",
+      "Bash(npx sharp-cli:*)",
+      "Bash(npm list:*)",
+      "Bash(echo \"Count: $\\(curl -s http://localhost:3001/login)",
+      "Bash(python3 -c \"import sys,json;

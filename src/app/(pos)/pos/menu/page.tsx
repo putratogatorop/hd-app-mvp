@@ -64,7 +64,7 @@ export default async function PosMenuPage() {
                   } ${!item.is_available ? 'opacity-60' : ''}`}
                 >
                   {/* Icon */}
-                  <div className="w-10 h-10 bg-gradient-to-br from-red-50 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 bg-gradient-to-br from-hd-cream to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
                     <span className="text-xl">🍨</span>
                   </div>
 
@@ -76,7 +76,7 @@ export default async function PosMenuPage() {
 
                   {/* Price */}
                   <div className="text-right mr-4 hidden sm:block">
-                    <p className="font-bold text-hd-red text-sm">{formatRupiah(item.price)}</p>
+                    <p className="font-bold text-hd-burgundy text-sm">{formatRupiah(item.price)}</p>
                     <p className="text-gray-300 text-xs">
                       +{Math.floor(item.price / 1000)} pts
                     </p>

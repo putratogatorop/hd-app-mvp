@@ -37,7 +37,7 @@ const STATUS_BADGE_CLASSES: Record<string, string> = {
   preparing: 'bg-orange-100 text-orange-700',
   ready: 'bg-green-100 text-green-700',
   delivered: 'bg-green-100 text-green-700',
-  cancelled: 'bg-red-100 text-red-700',
+  cancelled: 'bg-hd-cream text-red-700',
 }
 
 function timeAgo(dateStr: string): string {
@@ -104,14 +104,14 @@ function OrderCard({ order }: { order: Order }) {
 
         {/* Bottom row: total + reorder button */}
         <div className="flex items-center justify-between pt-1">
-          <span className="text-hd-red font-bold text-sm">
+          <span className="text-hd-burgundy font-bold text-sm">
             {formatRupiah(order.total_amount)}
           </span>
           {isDelivered && (
             <Link
               href="/menu"
               onClick={(e) => e.stopPropagation()}
-              className="text-xs bg-hd-red text-white px-3 py-1.5 rounded-full font-semibold"
+              className="text-xs bg-hd-burgundy text-white px-3 py-1.5 rounded-full font-semibold"
             >
               Pesan Lagi
             </Link>
@@ -131,7 +131,7 @@ function EmptyState({ tab }: { tab: 'active' | 'history' }) {
       </p>
       <Link
         href="/menu"
-        className="mt-4 text-sm bg-hd-red text-white px-5 py-2 rounded-full font-semibold"
+        className="mt-4 text-sm bg-hd-burgundy text-white px-5 py-2 rounded-full font-semibold"
       >
         Pesan Sekarang
       </Link>
@@ -161,7 +161,7 @@ export default function OrdersClient({ orders }: { orders: Order[] }) {
             onClick={() => setTab('active')}
             className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-colors ${
               tab === 'active'
-                ? 'bg-hd-red text-white'
+                ? 'bg-hd-burgundy text-white'
                 : 'bg-gray-100 text-gray-500'
             }`}
           >
@@ -171,7 +171,7 @@ export default function OrdersClient({ orders }: { orders: Order[] }) {
             onClick={() => setTab('history')}
             className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-colors ${
               tab === 'history'
-                ? 'bg-hd-red text-white'
+                ? 'bg-hd-burgundy text-white'
                 : 'bg-gray-100 text-gray-500'
             }`}
           >

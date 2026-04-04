@@ -118,7 +118,7 @@ export default function CartPage() {
           <p className="text-gray-400 text-sm mt-1 mb-6">Tambahkan ice cream favoritmu!</p>
           <Link
             href="/menu"
-            className="bg-hd-red text-white font-semibold px-6 py-3 rounded-xl hover:bg-red-700 transition-colors"
+            className="bg-hd-burgundy text-white font-semibold px-6 py-3 rounded-xl hover:bg-hd-burgundy-dark transition-colors"
           >
             Lihat Menu
           </Link>
@@ -143,7 +143,7 @@ export default function CartPage() {
       <div className="px-4 pt-4 space-y-3">
         {/* Order mode reminder */}
         <div className="bg-white rounded-2xl px-4 py-3 flex items-center gap-3 shadow-sm border border-gray-50">
-          <MapPin size={18} className="text-hd-red flex-shrink-0" />
+          <MapPin size={18} className="text-hd-burgundy flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-hd-dark">
               {MODE_EMOJI[mode]} {MODE_LABEL[mode]}
@@ -159,12 +159,12 @@ export default function CartPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-50 divide-y divide-gray-50">
           {items.map(({ item, quantity }) => (
             <div key={item.id} className="p-4 flex items-center gap-3">
-              <div className="w-11 h-11 bg-gradient-to-br from-red-50 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <div className="w-11 h-11 bg-gradient-to-br from-hd-cream to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
                 <span className="text-2xl">🍨</span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-hd-dark text-sm truncate">{item.name}</p>
-                <p className="text-hd-red font-bold text-sm">{formatRupiah(item.price)}</p>
+                <p className="text-hd-burgundy font-bold text-sm">{formatRupiah(item.price)}</p>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -176,13 +176,13 @@ export default function CartPage() {
                 <span className="w-5 text-center font-semibold text-sm text-hd-dark">{quantity}</span>
                 <button
                   onClick={() => updateQuantity(item.id, quantity + 1)}
-                  className="w-7 h-7 rounded-full bg-hd-red text-white flex items-center justify-center hover:bg-red-700 transition-colors"
+                  className="w-7 h-7 rounded-full bg-hd-burgundy text-white flex items-center justify-center hover:bg-hd-burgundy-dark transition-colors"
                 >
                   <Plus size={14} />
                 </button>
                 <button
                   onClick={() => removeItem(item.id)}
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors ml-1"
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-gray-300 hover:text-red-400 hover:bg-hd-cream transition-colors ml-1"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -248,12 +248,12 @@ export default function CartPage() {
                 onClick={() => setPaymentMethod(opt.id)}
                 className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-left ${
                   paymentMethod === opt.id
-                    ? 'border-hd-red bg-red-50'
+                    ? 'border-hd-burgundy bg-hd-cream'
                     : 'border-gray-100 hover:border-gray-200'
                 }`}
               >
                 <span className="text-lg leading-none">{opt.emoji}</span>
-                <span className={`text-xs font-semibold truncate ${paymentMethod === opt.id ? 'text-hd-red' : 'text-gray-600'}`}>
+                <span className={`text-xs font-semibold truncate ${paymentMethod === opt.id ? 'text-hd-burgundy' : 'text-gray-600'}`}>
                   {opt.label}
                 </span>
               </button>
@@ -287,14 +287,14 @@ export default function CartPage() {
             </div>
             <div className="border-t border-gray-100 pt-3 flex justify-between font-bold">
               <span className="text-hd-dark">Total</span>
-              <span className="text-hd-red">{formatRupiah(grandTotal)}</span>
+              <span className="text-hd-burgundy">{formatRupiah(grandTotal)}</span>
             </div>
           </div>
         </div>
 
         {/* Error */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-2xl">
+          <div className="bg-hd-cream border border-red-200 text-red-700 text-sm px-4 py-3 rounded-2xl">
             {error}
           </div>
         )}
@@ -305,7 +305,7 @@ export default function CartPage() {
         <button
           onClick={handleCheckout}
           disabled={loading}
-          className="w-full py-4 bg-hd-red text-white font-bold text-base rounded-2xl hover:bg-red-700 transition-colors disabled:opacity-60 shadow-lg shadow-red-200 flex items-center justify-center gap-2"
+          className="w-full py-4 bg-hd-burgundy text-white font-bold text-base rounded-2xl hover:bg-hd-burgundy-dark transition-colors disabled:opacity-60 shadow-lg shadow-hd-burgundy/20 flex items-center justify-center gap-2"
         >
           {loading ? 'Memproses...' : `Pesan Sekarang — ${formatRupiah(grandTotal)}`}
         </button>

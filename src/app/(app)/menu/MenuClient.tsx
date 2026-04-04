@@ -63,13 +63,13 @@ export default function MenuClient({ items }: MenuClientProps) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Cari menu..."
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-hd-red/30 focus:border-hd-red"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-hd-burgundy/30 focus:border-hd-burgundy"
           />
         </div>
 
         {/* Store + order mode pill */}
-        <div className="mt-2.5 inline-flex items-center gap-1.5 bg-red-50 border border-red-100 rounded-full px-3 py-1">
-          <span className="text-xs font-medium text-hd-red">{modeLabel}</span>
+        <div className="mt-2.5 inline-flex items-center gap-1.5 bg-hd-cream border border-red-100 rounded-full px-3 py-1">
+          <span className="text-xs font-medium text-hd-burgundy">{modeLabel}</span>
           <span className="text-gray-300 text-xs">—</span>
           <span className="text-xs text-gray-600 truncate max-w-[180px]">{storeName}</span>
         </div>
@@ -82,8 +82,8 @@ export default function MenuClient({ items }: MenuClientProps) {
               onClick={() => setActiveCategory(cat.value)}
               className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors border ${
                 activeCategory === cat.value
-                  ? 'bg-hd-red text-white border-hd-red'
-                  : 'bg-white text-gray-600 border-gray-300 hover:border-hd-red hover:text-hd-red'
+                  ? 'bg-hd-burgundy text-white border-hd-burgundy'
+                  : 'bg-white text-gray-600 border-gray-300 hover:border-hd-burgundy hover:text-hd-burgundy'
               }`}
             >
               {cat.label}

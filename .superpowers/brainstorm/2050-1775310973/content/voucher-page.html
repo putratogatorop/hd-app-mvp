@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HD Voucher Page Mockup</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: #1a1a1a; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 20px; gap: 24px; flex-wrap: wrap; }
+
+  .mockup-label {
+    width: 100%; text-align: center; font-size: 13px; color: #888; font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .phone-frame {
+    width: 375px; min-height: 812px; background: #FFF8F0; border-radius: 44px;
+    overflow: hidden; position: relative;
+    box-shadow: 0 0 0 3px #333, 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .screen { padding-bottom: 90px; }
+
+  /* ── Header ── */
+  .header {
+    background: #fff; padding: 52px 20px 16px; text-align: center;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .header h1 { font-size: 17px; font-weight: 700; color: #1A1A1A; }
+
+  /* ── Promo code input ── */
+  .promo-input {
+    margin: 16px 20px 0; display: flex; align-items: center; gap: 10px;
+    background: #f5f5f5; border-radius: 14px; padding: 4px 4px 4px 16px;
+  }
+  .promo-input .icon {
+    width: 28px; height: 28px; border-radius: 8px; background: #C8102E;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .promo-input .icon svg { width: 14px; height: 14px; }
+  .promo-input input {
+    flex: 1; background: none; border: none; outline: none;
+    font-size: 13px; color: #999; font-family: inherit;
+  }
+  .promo-input .submit-btn {
+    background: #C8102E; color: #fff; border: none; border-radius: 10px;
+    padding: 10px 16px; font-size: 12px; font-weight: 700; cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* ── Main tabs ── */
+  .main-tabs {
+    display: flex; padding: 16px 20px 0; gap: 0;
+    border-bottom: 2px solid #f0f0f0;
+  }
+  .main-tab {
+    flex: 1; text-align: center; padding: 10px 0; font-size: 13px; font-weight: 600;
+    color: #aaa; cursor: pointer; position: relative; transition: color 0.2s;
+  }
+  .main-tab.active { color: #C8102E; }
+  .main-tab.active::after {
+    content: ''; position: absolute; bottom: -2px; left: 20%; right: 20%;
+    height: 2.5px; background: #C8102E; border-radius: 2px;
+  }
+
+  /* ── Pill filters ── */
+  .pill-filters {
+    display: flex; gap: 8px; padding: 16px 20px 0;
+    overflow-x: auto;
+  }
+  .pill-filters::-webkit-scrollbar { display: none; }
+  .pill {
+    flex-shrink: 0; padding: 7px 16px; border-radius: 20px; font-size: 12px;
+    font-weight: 600; cursor: pointer; transition: all 0.2s; border: 1.5px solid #e0e0e0;
+    color: #888; background: #fff;
+  }
+  .pill.active { background: #C8102E; color: #fff; border-color: #C8102E; }
+
+  /* ── Section header ── */
+  .section-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 20px 12px;
+  }
+  .section-header h2 { font-size: 16px; font-weight: 800; color: #1A1A1A; }
+  .section-header .count { font-size: 13px; color: #999; font-weight: 500; }
+
+  /* ── Voucher card ── */
+  .voucher-card {
+    margin: 0 20px 12px; background: #fff; border-radius: 16px;
+    overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    border: 1px solid #f0f0f0; display: flex;
+  }
+
+  .voucher-badge {
+    width: 72px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 12px 8px;
+    position: relative; flex-shrink: 0;
+  }
+  .voucher-badge::after {
+    content: ''; position: absolute; right: 0; top: 12px; bottom: 12px;
+    width: 1px; border-right: 1.5px dashed #e8e8e8;
+  }
+  .voucher-badge.red { background: linear-gradient(135deg, #FFF5F5, #FFF0F0); }
+  .voucher-badge.green { background: linear-gradient(135deg, #F0FFF4, #ECFDF5); }
+  .voucher-badge.gold { background: linear-gradient(135deg, #FFFBEB, #FEF3C7); }
+
+  .voucher-badge .discount {
+    font-size: 22px; font-weight: 800; line-height: 1;
+  }
+  .voucher-badge.red .discount { color: #C8102E; }
+  .voucher-badge.green .discount { color: #059669; }
+  .voucher-badge.gold .discount { color: #B8922A; }
+
+  .voucher-badge .type-label {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; margin-top: 2px;
+  }
+  .voucher-badge.red .type-label { color: #E88E9C; }
+  .voucher-badge.green .type-label { color: #6EE7B7; }
+  .voucher-badge.gold .type-label { color: #D4AF5A; }
+
+  .voucher-info {
+    flex: 1; padding: 14px 14px 14px 16px; display: flex; flex-direction: column;
+    justify-content: center;
+  }
+  .voucher-title {
+    font-size: 13px; font-weight: 700; color: #1A1A1A; line-height: 1.3;
+  }
+  .voucher-desc {
+    font-size: 11px; color: #999; margin-top: 3px; line-height: 1.4;
+  }
+  .voucher-meta {
+    display: flex; gap: 16px; margin-top: 8px;
+  }
+  .voucher-meta .meta-item { }
+  .voucher-meta .meta-label { font-size: 9px; color: #bbb; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+  .voucher-meta .meta-value { font-size: 11px; color: #666; font-weight: 600; margin-top: 1px; }
+
+  .voucher-action {
+    display: flex; align-items: center; padding-right: 14px; flex-shrink: 0;
+  }
+  .use-btn {
+    background: #C8102E; color: #fff; border: none; border-radius: 10px;
+    padding: 8px 14px; font-size: 11px; font-weight: 700; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .use-btn:hover { background: #a00d24; }
+  .use-btn.green { background: #059669; }
+  .use-btn.gold { background: #B8922A; }
+
+  /* Context label */
+  .context-label {
+    font-size: 10px; font-weight: 700; color: #C8102E; margin-bottom: 4px;
+  }
+  .context-label.green { color: #059669; }
+
+  /* Mode pills in card */
+  .mode-pills { display: flex; gap: 4px; margin-top: 6px; }
+  .mode-pill {
+    font-size: 9px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+    background: #FEF2F2; color: #C8102E;
+  }
+  .mode-pill.green { background: #ECFDF5; color: #059669; }
+
+  /* ── Info banner ── */
+  .info-banner {
+    margin: 0 20px 12px; background: #F0F9FF; border-radius: 12px;
+    padding: 12px 14px; display: flex; align-items: center; gap: 10px;
+  }
+  .info-banner .info-icon {
+    width: 28px; height: 28px; border-radius: 50%; background: #DBEAFE;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    font-size: 13px;
+  }
+  .info-banner p { font-size: 11px; color: #64748B; line-height: 1.4; }
+
+  /* ── Bottom nav ── */
+  .bottom-nav {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: #fff; border-top: 1px solid #f0f0f0;
+    display: flex; padding: 8px 0 28px; z-index: 20;
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    font-size: 10px; font-weight: 600; color: #bbb; cursor: pointer;
+  }
+  .nav-item.active { color: #C8102E; }
+  .nav-icon { font-size: 20px; }
+
+  /* ── Tab 2: MyHD Plan ── */
+  .plan-hero {
+    margin: 16px 20px 0; border-radius: 20px; overflow: hidden;
+    background: linear-gradient(135deg, #2a0008 0%, #5c0014 30%, #C8102E 100%);
+    padding: 28px 24px; position: relative;
+  }
+  .plan-hero::before {
+    content: ''; position: absolute; top: -40px; right: -20px;
+    width: 140px; height: 140px; border-radius: 50%;
+    border: 1px solid rgba(184,146,42,0.2);
+  }
+  .plan-hero .eyebrow {
+    font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    color: #D4AF5A; margin-bottom: 8px;
+  }
+  .plan-hero h2 { color: #fff; font-size: 22px; font-weight: 800; line-height: 1.2; }
+  .plan-hero h2 em { font-style: italic; color: #F5E6C8; }
+  .plan-hero p { color: rgba(255,255,255,0.6); font-size: 12px; margin-top: 6px; }
+
+  .plan-cards { padding: 16px 20px 0; display: flex; flex-direction: column; gap: 10px; }
+
+  .plan-card {
+    border: 1.5px solid #eee; border-radius: 16px; padding: 16px;
+    display: flex; align-items: center; gap: 14px; background: #fff;
+    position: relative; overflow: hidden;
+  }
+  .plan-card.featured { border-color: #C8102E; background: #FFFAFA; }
+  .plan-card.featured::before {
+    content: 'POPULER'; position: absolute; top: 0; right: 16px;
+    background: #C8102E; color: #fff; font-size: 8px; font-weight: 800;
+    padding: 3px 10px 4px; border-radius: 0 0 8px 8px; letter-spacing: 0.5px;
+  }
+
+  .plan-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .plan-icon.silver { background: #f0f0f0; }
+  .plan-icon.gold { background: #FEF3C7; }
+  .plan-icon.plat { background: #EDE9FE; }
+
+  .plan-info { flex: 1; }
+  .plan-name { font-size: 14px; font-weight: 700; color: #1A1A1A; }
+  .plan-perks { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+  .plan-perk { font-size: 10px; font-weight: 600; background: #f5f5f5; color: #666; padding: 2px 8px; border-radius: 4px; }
+  .plan-card.featured .plan-perk { background: #FEE2E2; color: #C8102E; }
+
+  .plan-price { text-align: right; flex-shrink: 0; }
+  .plan-price .amount { font-size: 18px; font-weight: 800; color: #1A1A1A; }
+  .plan-card.featured .plan-price .amount { color: #C8102E; }
+  .plan-price .period { font-size: 10px; color: #aaa; }
+
+  .subscribe-btn {
+    margin: 20px 20px 0; width: calc(100% - 40px); padding: 15px; border: none; border-radius: 14px;
+    background: linear-gradient(135deg, #C8102E, #a00d24); color: #fff;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(200,16,46,0.2);
+  }
+
+  /* ── Tab 3: HD Rewards ── */
+  .rewards-card {
+    margin: 16px 20px 0; border-radius: 20px; overflow: hidden;
+    background: linear-gradient(135deg, #B8922A, #8B6914);
+    padding: 24px; color: #fff; position: relative;
+  }
+  .rewards-card::before {
+    content: ''; position: absolute; top: -30px; right: -20px;
+    width: 120px; height: 120px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .rewards-tier-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.6); }
+  .rewards-tier-name { font-size: 24px; font-weight: 800; margin-top: 2px; }
+  .rewards-points-box {
+    background: rgba(255,255,255,0.15); border-radius: 12px; padding: 12px; margin-top: 14px;
+  }
+  .rewards-points-label { font-size: 10px; color: rgba(255,255,255,0.6); }
+  .rewards-points-value { font-size: 28px; font-weight: 800; }
+  .rewards-progress { margin-top: 12px; }
+  .rewards-progress-labels { display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+  .rewards-progress-bar { height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; overflow: hidden; }
+  .rewards-progress-fill { height: 100%; background: #fff; border-radius: 3px; width: 25%; }
+  .rewards-progress-hint { text-align: center; font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 6px; }
+
+  .rewards-section-title {
+    padding: 20px 20px 12px; font-size: 14px; font-weight: 800; color: #1A1A1A;
+  }
+
+  .reward-item {
+    margin: 0 20px 10px; background: #fff; border-radius: 14px; padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px; border: 1px solid #f0f0f0;
+  }
+  .reward-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .reward-icon.pts { background: #FEF3C7; }
+  .reward-icon.voucher { background: #FEE2E2; }
+  .reward-icon.gift { background: #EDE9FE; }
+  .reward-details { flex: 1; }
+  .reward-name { font-size: 13px; font-weight: 700; color: #1A1A1A; }
+  .reward-cost { font-size: 11px; color: #999; margin-top: 2px; }
+  .redeem-btn {
+    background: #f5f5f5; color: #666; border: none; border-radius: 8px;
+    padding: 7px 12px; font-size: 11px; font-weight: 700; cursor: pointer;
+  }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div>
+  <p class="mockup-label">Tab 1: Voucher (with pill filters)</p>
+  <div class="phone-frame">
+    <div class="screen">
+      <div class="header"><h1>Voucher</h1></div>
+
+      <!-- Promo code input -->
+      <div class="promo-input">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><circle cx="18" cy="12" r="2"/></svg>
+        </div>
+        <input type="text" placeholder="Punya kode promo? Masukkan disini" readonly>
+        <button class="submit-btn">Gunakan</button>
+      </div>
+
+      <!-- Main tabs -->
+      <div class="main-tabs">
+        <div class="main-tab active">Voucher</div>
+        <div class="main-tab">MyHD Plan</div>
+        <div class="main-tab">HD Rewards</div>
+      </div>
+
+      <!-- Pill filters -->
+      <div class="pill-filters">
+        <div class="pill active">Semua</div>
+        <div class="pill">Diskon</div>
+        <div class="pill">Cashback</div>
+        <div class="pill">Delivery</div>
+      </div>
+
+      <!-- Section: Voucher Belanja -->
+      <div class="section-header">
+        <h2>Voucher Belanja</h2>
+        <span class="count">5 voucher</span>
+      </div>
+
+      <!-- Voucher 1 -->
+      <div class="voucher-card">
+        <div class="voucher-badge red">
+          <div class="discount">25%</div>
+          <div class="type-label">Diskon</div>
+        </div>
+        <div class="voucher-info">
+          <div class="context-label">Pakai di App</div>
+          <div class="voucher-title">Welcome 25% Off</div>
+          <div class="voucher-desc">Min. belanja Rp50.000, maks diskon Rp25.000</div>
+          <div class="voucher-meta">
+            <div class="meta-item">
+              <div class="meta-label">Berlaku Hingga</div>
+              <div class="meta-value">04 Jul 2026</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Min Transaksi</div>
+              <div class="meta-value">Rp 50.000</div>
+            </div>
+          </div>
+        </div>
+        <div class="voucher-action">
+          <button class="use-btn">Pakai</button>
+        </div>
+      </div>
+
+      <!-- Voucher 2 -->
+      <div class="voucher-card">
+        <div class="voucher-badge green">
+          <div class="discount">10K</div>
+          <div class="type-label">Potongan</div>
+        </div>
+        <div class="voucher-info">
+          <div class="context-label green">Delivery GoSend</div>
+          <div class="voucher-title">Free Delivery Fee</div>
+          <div class="voucher-desc">Gratis ongkir Rp10.000, min. order Rp30.000</div>
+          <div class="voucher-meta">
+            <div class="meta-item">
+              <div class="meta-label">Berlaku Hingga</div>
+              <div class="meta-value">04 Jun 2026</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Min Transaksi</div>
+              <div class="meta-value">Rp 30.000</div>
+            </div>
+          </div>
+        </div>
+        <div class="voucher-action">
+          <button class="use-btn green">Pakai</button>
+        </div>
+      </div>
+
+      <!-- Voucher 3 -->
+      <div class="voucher-card">
+        <div class="voucher-badge red">
+          <div class="discount">20%</div>
+          <div class="type-label">Diskon</div>
+        </div>
+        <div class="voucher-info">
+          <div class="context-label">Pakai di App & Kasir</div>
+          <div class="voucher-title">Referral Reward 20% Off</div>
+          <div class="voucher-desc">Min. belanja Rp40.000, maks diskon Rp20.000</div>
+          <div class="voucher-meta">
+            <div class="meta-item">
+              <div class="meta-label">Berlaku Hingga</div>
+              <div class="meta-value">04 Mei 2026</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Min Transaksi</div>
+              <div class="meta-value">Rp 40.000</div>
+            </div>
+          </div>
+          <div class="mode-pills">
+            <span class="mode-pill">Pick Up</span>
+            <span class="mode-pill">Delivery</span>
+            <span class="mode-pill">Dine-in</span>
+          </div>
+        </div>
+        <div class="voucher-action">
+          <button class="use-btn">Pakai</button>
+        </div>
+      </div>
+
+      <!-- Info banner -->
+      <div class="info-banner">
+        <div class="info-icon">ℹ️</div>
+        <p>Voucher delivery hanya bisa kamu gunakan pada halaman checkout</p>
+      </div>
+
+      <!-- Section: Voucher Delivery -->
+      <div class="section-header">
+        <h2>Voucher Delivery</h2>
+        <span class="count">2 voucher</span>
+      </div>
+
+      <!-- Voucher 4 -->
+      <div class="voucher-card">
+        <div class="voucher-badge green">
+          <div class="discount">10K</div>
+          <div class="type-label">Potongan</div>
+        </div>
+        <div class="voucher-info">
+          <div class="context-label green">Delivery Only</div>
+          <div class="voucher-title">New User – Diskon Ongkir IDR 10K</div>
+          <div class="voucher-desc">Min. belanja IDR 35K</div>
+          <div class="voucher-meta">
+            <div class="meta-item">
+              <div class="meta-label">Berlaku Hingga</div>
+              <div class="meta-value">04 Mei 2026</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Min Transaksi</div>
+              <div class="meta-value">Rp 35.000</div>
+            </div>
+          </div>
+        </div>
+        <div class="voucher-action">
+          <button class="use-btn green">Pakai</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom nav -->
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">🏠</span>Home</div>
+      <div class="nav-item active"><span class="nav-icon">🎟️</span>Voucher</div>
+      <div class="nav-item"><span class="nav-icon">📋</span>Pesanan</div>
+      <div class="nav-item"><span class="nav-icon">👤</span>Akun</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Tab 2: MyHD Plan ── -->
+<div>
+  <p class="mockup-label">Tab 2: MyHD Plan</p>
+  <div class="phone-frame">
+    <div class="screen">
+      <div class="header"><h1>Voucher</h1></div>
+
+      <div class="promo-input">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><circle cx="18" cy="12" r="2"/></svg>
+        </div>
+        <input type="text" placeholder="Punya kode promo? Masukkan disini" readonly>
+        <button class="submit-btn">Gunakan</button>
+      </div>
+
+      <div class="main-tabs">
+        <div class="main-tab">Voucher</div>
+        <div class="main-tab active">MyHD Plan</div>
+        <div class="main-tab">HD Rewards</div>
+      </div>
+
+      <!-- Plan Hero -->
+      <div class="plan-hero">
+        <div class="eyebrow">✨ Häagen-Dazs Exclusive</div>
+        <h2>Hematnya<br><em>Bikin Untung!</em></h2>
+        <p>Diskon spesial setiap hari tanpa batas</p>
+      </div>
+
+      <!-- Plan Cards -->
+      <div class="plan-cards">
+        <div class="plan-card">
+          <div class="plan-icon silver">🥈</div>
+          <div class="plan-info">
+            <div class="plan-name">Silver Plan</div>
+            <div class="plan-perks">
+              <span class="plan-perk">10% off</span>
+              <span class="plan-perk">All menu</span>
+            </div>
+          </div>
+          <div class="plan-price">
+            <div class="amount">Rp29K</div>
+            <div class="period">/bulan</div>
+          </div>
+        </div>
+
+        <div class="plan-card featured">
+          <div class="plan-icon gold">🥇</div>
+          <div class="plan-info">
+            <div class="plan-name">Gold Plan</div>
+            <div class="plan-perks">
+              <span class="plan-perk">20% off</span>
+              <span class="plan-perk">Free ongkir</span>
+            </div>
+          </div>
+          <div class="plan-price">
+            <div class="amount">Rp49K</div>
+            <div class="period">/bulan</div>
+          </div>
+        </div>
+
+        <div class="plan-card">
+          <div class="plan-icon plat">💎</div>
+          <div class="plan-info">
+            <div class="plan-name">Platinum Plan</div>
+            <div class="plan-perks">
+              <span class="plan-perk">25% off</span>
+              <span class="plan-perk">Free ongkir</span>
+              <span class="plan-perk">Gift</span>
+            </div>
+          </div>
+          <div class="plan-price">
+            <div class="amount">Rp79K</div>
+            <div class="period">/bulan</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="subscribe-btn">Langganan Sekarang!</button>
+      <p style="text-align:center;font-size:11px;color:#aaa;margin-top:10px;">Berlaku untuk pickup, delivery & dine-in</p>
+
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">🏠</span>Home</div>
+      <div class="nav-item active"><span class="nav-icon">🎟️</span>Voucher</div>
+      <div class="nav-item"><span class="nav-icon">📋</span>Pesanan</div>
+      <div class="nav-item"><span class="nav-icon">👤</span>Akun</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Tab 3: HD Rewards ── -->
+<div>
+  <p class="mockup-label">Tab 3: HD Rewards</p>
+  <div class="phone-frame">
+    <div class="screen">
+      <div class="header"><h1>Voucher</h1></div>
+
+      <div class="promo-input">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><circle cx="18" cy="12" r="2"/></svg>
+        </div>
+        <input type="text" placeholder="Punya kode promo? Masukkan disini" readonly>
+        <button class="submit-btn">Gunakan</button>
+      </div>
+
+      <div class="main-tabs">
+        <div class="main-tab">Voucher</div>
+        <div class="main-tab">MyHD Plan</div>
+        <div class="main-tab active">HD Rewards</div>
+      </div>
+
+      <!-- Rewards tier card -->
+      <div class="rewards-card">
+        <div class="rewards-tier-label">TIER SAAT INI</div>
+        <div class="rewards-tier-name">🥈 Silver Member</div>
+        <div class="rewards-points-box">
+          <div class="rewards-points-label">Total Poin</div>
+          <div class="rewards-points-value">1,250</div>
+        </div>
+        <div class="rewards-progress">
+          <div class="rewards-progress-labels">
+            <span>1,250 poin</span>
+            <span>Gold: 5,000</span>
+          </div>
+          <div class="rewards-progress-bar">
+            <div class="rewards-progress-fill"></div>
+          </div>
+          <div class="rewards-progress-hint">3,750 poin lagi ke Gold</div>
+        </div>
+      </div>
+
+      <!-- Tukar Poin -->
+      <div class="rewards-section-title">Tukar Poin</div>
+
+      <div class="reward-item">
+        <div class="reward-icon voucher">🎟️</div>
+        <div class="reward-details">
+          <div class="reward-name">Voucher Diskon 10%</div>
+          <div class="reward-cost">500 poin</div>
+        </div>
+        <button class="redeem-btn">Tukar</button>
+      </div>
+
+      <div class="reward-item">
+        <div class="reward-icon pts">🍨</div>
+        <div class="reward-details">
+          <div class="reward-name">Free 1 Scoop Ice Cream</div>
+          <div class="reward-cost">1,000 poin</div>
+        </div>
+        <button class="redeem-btn">Tukar</button>
+      </div>
+
+      <div class="reward-item">
+        <div class="reward-icon gift">🎁</div>
+        <div class="reward-details">
+          <div class="reward-name">HD Gift Box Special</div>
+          <div class="reward-cost">2,500 poin</div>
+        </div>
+        <button class="redeem-btn">Tukar</button>
+      </div>
+
+      <div class="reward-item">
+        <div class="reward-icon voucher">🎟️</div>
+        <div class="reward-details">
+          <div class="reward-name">Voucher Free Delivery</div>
+          <div class="reward-cost">300 poin</div>
+        </div>
+        <button class="redeem-btn">Tukar</button>
+      </div>
+
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">🏠</span>Home</div>
+      <div class="nav-item active"><span class="nav-icon">🎟️</span>Voucher</div>
+      <div class="nav-item"><span class="nav-icon">📋</span>Pesanan</div>
+      <div class="nav-item"><span class="nav-icon">👤</span>Akun</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
