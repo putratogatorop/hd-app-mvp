@@ -429,4 +429,6 @@ export default function HomeClient({
 
       {/* ── Floating cart button ── */}
       <FloatingCartButton />
-    </div
+    </div>
+  )
+}
