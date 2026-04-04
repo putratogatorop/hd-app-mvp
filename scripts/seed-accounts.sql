@@ -76,6 +76,7 @@ VALUES
     ARRAY['delivery'],
     'manual',
     NULL,
+    NOW(),
     NOW() + INTERVAL '60 days',
     TRUE
   ),
