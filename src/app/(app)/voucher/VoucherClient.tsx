@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Ticket,
-  Star,
   Info,
 } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
@@ -14,7 +13,7 @@ import type { Database } from '@/lib/supabase/database.types'
 type Voucher = Database['public']['Tables']['vouchers']['Row']
 type ProfileData = Pick<
   Database['public']['Tables']['profiles']['Row'],
-  'tier' | 'referral_code' | 'loyalty_points'
+  'tier' | 'loyalty_points'
 >
 
 interface Props {
@@ -49,6 +48,19 @@ const PLANS = [
   { tier: 'silver', icon: '🥈', name: 'Silver Plan', perks: ['10% off', 'All menu'], price: 'Rp29K', iconBg: 'bg-gray-100', featured: false },
   { tier: 'gold', icon: '🥇', name: 'Gold Plan', perks: ['20% off', 'Free ongkir'], price: 'Rp49K', iconBg: 'bg-amber-100', featured: true },
   { tier: 'platinum', icon: '💎', name: 'Platinum Plan', perks: ['25% off', 'Free ongkir', 'Gift'], price: 'Rp79K', iconBg: 'bg-violet-100', featured: false },
+]
+
+const MAIN_TABS: { key: MainTab; label: string }[] = [
+  { key: 'voucher', label: 'Voucher' },
+  { key: 'plan', label: 'MyHD Plan' },
+  { key: 'rewards', label: 'HD Rewards' },
+]
+
+const FILTERS: { key: VoucherFilter; label: string }[] = [
+  { key: 'semua', label: 'Semua' },
+  { key: 'diskon', label: 'Diskon' },
+  { key: 'cashback', label: 'Cashback' },
+  { key: 'delivery', label: 'Delivery' },
 ]
 
 export default function VoucherClient({ profile, vouchers, userVouchers }: Props) {
@@ -108,19 +120,6 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
     router.push('/menu')
   }
 
-  const mainTabs: { key: MainTab; label: string }[] = [
-    { key: 'voucher', label: 'Voucher' },
-    { key: 'plan', label: 'MyHD Plan' },
-    { key: 'rewards', label: 'HD Rewards' },
-  ]
-
-  const filters: { key: VoucherFilter; label: string }[] = [
-    { key: 'semua', label: 'Semua' },
-    { key: 'diskon', label: 'Diskon' },
-    { key: 'cashback', label: 'Cashback' },
-    { key: 'delivery', label: 'Delivery' },
-  ]
-
   return (
     <div className="min-h-screen bg-hd-cream pb-24">
       {/* Header */}
@@ -153,7 +152,7 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
 
       {/* Main tabs */}
       <div className="flex border-b-2 border-gray-100 mt-4 px-5">
-        {mainTabs.map(tab => (
+        {MAIN_TABS.map(tab => (
           <button
             key={tab.key}
             onClick={() => setMainTab(tab.key)}
@@ -174,7 +173,7 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
         <div>
           {/* Pill filters */}
           <div className="flex gap-2 px-5 pt-4 overflow-x-auto scrollbar-none">
-            {filters.map(f => (
+            {FILTERS.map(f => (
               <button
                 key={f.key}
                 onClick={() => setFilter(f.key)}
@@ -209,19 +208,17 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
             </>
           )}
 
-          {/* Info banner */}
-          <div className="mx-5 mt-4 mb-1 bg-blue-50 rounded-xl p-3 flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <Info size={14} className="text-blue-500" />
-            </div>
-            <p className="text-[11px] text-slate-500 leading-relaxed">
-              Voucher delivery hanya bisa kamu gunakan pada halaman checkout
-            </p>
-          </div>
-
-          {/* Voucher Delivery section */}
+          {/* Info banner + Voucher Delivery section */}
           {deliveryOnlyVouchers.length > 0 && (
             <>
+              <div className="mx-5 mt-4 mb-1 bg-blue-50 rounded-xl p-3 flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <Info size={14} className="text-blue-500" />
+                </div>
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  Voucher delivery hanya bisa kamu gunakan pada halaman checkout
+                </p>
+              </div>
               <div className="flex justify-between items-center px-5 pt-4 pb-3">
                 <h2 className="text-base font-extrabold text-hd-dark">Voucher Delivery</h2>
                 <span className="text-[13px] text-gray-400">{deliveryOnlyVouchers.length} voucher</span>
@@ -369,7 +366,10 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
                   <p className="text-[13px] font-bold text-hd-dark">{reward.name}</p>
                   <p className="text-[11px] text-gray-400 mt-0.5">{reward.cost.toLocaleString('id-ID')} poin</p>
                 </div>
-                <button className="bg-gray-100 text-gray-500 text-[11px] font-bold px-3 py-[7px] rounded-lg">
+                <button
+                  onClick={() => alert('Segera hadir!')}
+                  className="bg-gray-100 text-gray-500 text-[11px] font-bold px-3 py-[7px] rounded-lg"
+                >
                   Tukar
                 </button>
               </div>
