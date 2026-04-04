@@ -16,9 +16,9 @@ export default async function VoucherPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('tier, referral_code, loyalty_points')
+    .select('tier, loyalty_points')
     .eq('id', user.id)
-    .single() as unknown as { data: Pick<ProfileRow, 'tier' | 'referral_code' | 'loyalty_points'> | null }
+    .single() as unknown as { data: Pick<ProfileRow, 'tier' | 'loyalty_points'> | null }
 
   const { data: vouchers } = await supabase
     .from('vouchers')
