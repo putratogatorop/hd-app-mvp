@@ -33,10 +33,10 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const STATUS_ACCENT: Record<string, string> = {
-  pending: 'text-amber-700',
-  confirmed: 'text-blue-700',
+  pending: 'text-hd-gold',
+  confirmed: 'text-hd-burgundy-light',
   preparing: 'text-hd-burgundy',
-  ready: 'text-emerald-700',
+  ready: 'text-hd-dark',
   delivered: 'text-hd-ink/50',
   cancelled: 'text-hd-ink/40 line-through',
 }

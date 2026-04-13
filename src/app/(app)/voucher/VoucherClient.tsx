@@ -24,8 +24,8 @@ type MainTab = 'voucher' | 'plan' | 'rewards'
 type VoucherFilter = 'all' | 'discount' | 'cashback' | 'delivery'
 
 const TIER_CONFIG: Record<string, { label: string; nextTier: string | null; nextPoints: number | null }> = {
-  silver: { label: 'Silver', nextTier: 'Gold', nextPoints: 5000 },
-  gold: { label: 'Gold', nextTier: 'Platinum', nextPoints: 15000 },
+  silver: { label: 'Silver', nextTier: 'Gold', nextPoints: 500 },
+  gold: { label: 'Gold', nextTier: 'Platinum', nextPoints: 2000 },
   platinum: { label: 'Platinum', nextTier: null, nextPoints: null },
 }
 
@@ -69,6 +69,7 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
   const [filter, setFilter] = useState<VoucherFilter>('all')
   const [codeInput, setCodeInput] = useState('')
   const [codeError, setCodeError] = useState<string | null>(null)
+  const [redeemMsg, setRedeemMsg] = useState<string | null>(null)
 
   const tierKey = (profile?.tier ?? 'silver') as keyof typeof TIER_CONFIG
   const tier = TIER_CONFIG[tierKey]
@@ -389,6 +390,13 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
             </div>
           </div>
 
+          {/* Redeem toast */}
+          {redeemMsg && (
+            <div className="mx-0 mt-6 border border-hd-burgundy/30 bg-hd-burgundy/5 text-hd-burgundy text-[0.8rem] px-4 py-3 font-display italic">
+              {redeemMsg}
+            </div>
+          )}
+
           {/* Redeem */}
           <section className="pt-8">
             <Eyebrow number="A">Redeem</Eyebrow>
@@ -410,7 +418,10 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
                     </p>
                   </div>
                   <button
-                    onClick={() => alert('Coming soon')}
+                    onClick={() => {
+                      setRedeemMsg(`${reward.name} — coming soon.`)
+                      setTimeout(() => setRedeemMsg(null), 3000)
+                    }}
                     className="eyebrow text-hd-burgundy hover:text-hd-burgundy-dark transition-colors"
                   >
                     Redeem

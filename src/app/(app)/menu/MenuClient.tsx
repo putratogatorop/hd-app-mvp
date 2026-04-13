@@ -37,7 +37,7 @@ export default function MenuClient({ items }: MenuClientProps) {
 
   const { mode, selectedStore } = useOrderContext()
   const modeLabel = MODE_LABEL[mode] ?? 'Pick Up'
-  const storeName = selectedStore?.name ?? 'HD PIK Avenue'
+  const storeName = selectedStore?.name ?? 'Select a store'
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim()

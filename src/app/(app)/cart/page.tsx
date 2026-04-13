@@ -172,7 +172,7 @@ export default function CartPage() {
           <div className="flex-1 min-w-0">
             <span className="eyebrow text-hd-ink/50">{MODE_LABEL[mode]}{mode === 'dinein' && tableNumber ? ` · Table ${tableNumber}` : ''}</span>
             <p className="font-display text-[1rem] text-hd-ink mt-0.5 truncate">
-              {selectedStore?.name ?? 'Häagen-Dazs PIK Avenue'}
+              {selectedStore?.name ?? 'Select a store'}
             </p>
           </div>
         </div>
@@ -378,7 +378,7 @@ export default function CartPage() {
       )}
 
       {/* Fixed CTA */}
-      <div className="fixed bottom-0 left-0 right-0 px-5 pb-6 pt-4 bg-gradient-to-t from-hd-cream via-hd-cream/95 to-transparent z-30">
+      <div className="fixed bottom-0 left-0 right-0 px-5 pt-4 pb-safe bg-gradient-to-t from-hd-cream via-hd-cream/95 to-transparent z-30" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
         <button
           onClick={handleCheckout}
           disabled={loading}

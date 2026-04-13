@@ -14,7 +14,8 @@ export default function FloatingCartButton() {
   return (
     <Link
       href="/cart"
-      className="fixed bottom-28 right-5 z-40 h-12 bg-hd-burgundy text-hd-cream flex items-center gap-3 px-4 border border-hd-burgundy hover:bg-hd-burgundy-dark transition-colors shadow-editorial group"
+      className="fixed bottom-24 z-40 h-12 bg-hd-burgundy text-hd-cream flex items-center gap-3 px-4 border border-hd-burgundy hover:bg-hd-burgundy-dark transition-colors shadow-editorial group"
+      style={{ right: 'max(1.25rem, calc(50% - 32rem + 1.25rem))' }}
     >
       <span className="eyebrow">Basket</span>
       <span className="h-4 w-px bg-hd-cream/40" aria-hidden />

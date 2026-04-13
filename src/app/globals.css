@@ -27,8 +27,7 @@ body {
 }
 
 input, select, textarea {
-  background-color: #fff !important;
-  color: var(--hd-ink) !important;
+  color: var(--hd-ink);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -137,11 +136,14 @@ input, select, textarea {
 }
 
 /* ── Eyebrow label ── */
-.eyebrow {
-  font-family: var(--font-sans);
-  font-size: 0.6875rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  font-weight: 500;
-  color: var(--hd-burgundy);
+/* Placed in @layer components so Tailwind utility colour classes can override */
+@layer components {
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--hd-burgundy);
+  }
 }
