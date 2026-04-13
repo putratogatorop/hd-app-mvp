@@ -100,8 +100,8 @@ export default function CartPage() {
     return (
       <div className="min-h-screen bg-hd-cream flex flex-col">
         <div className="px-5 pt-10 pb-5 border-b border-hd-ink/15 flex items-center gap-3">
-          <button onClick={() => router.back()} className="w-9 h-9 flex items-center justify-center border border-hd-ink/30 hover:bg-hd-ink hover:text-hd-cream transition-colors">
-            <ArrowLeft size={16} />
+          <button onClick={() => router.back()} aria-label="Go back" className="w-11 h-11 flex items-center justify-center border border-hd-ink/30 hover:bg-hd-ink hover:text-hd-cream transition-colors">
+            <ArrowLeft size={18} />
           </button>
           <div>
             <Eyebrow>Basket</Eyebrow>
@@ -127,8 +127,8 @@ export default function CartPage() {
       {/* ── Masthead ── */}
       <header className="px-5 pt-10 pb-5 border-b border-hd-ink/15 sticky top-0 bg-hd-cream/95 backdrop-blur-md z-20">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="w-9 h-9 flex items-center justify-center border border-hd-ink/30 hover:bg-hd-ink hover:text-hd-cream transition-colors">
-            <ArrowLeft size={16} />
+          <button onClick={() => router.back()} aria-label="Go back" className="w-11 h-11 flex items-center justify-center border border-hd-ink/30 hover:bg-hd-ink hover:text-hd-cream transition-colors">
+            <ArrowLeft size={18} />
           </button>
           <div className="flex-1">
             <Eyebrow number={String(itemCount).padStart(2, '0')}>Basket</Eyebrow>
@@ -170,28 +170,28 @@ export default function CartPage() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 <button
                   onClick={() => updateQuantity(item.id, quantity - 1)}
-                  className="w-7 h-7 flex items-center justify-center border border-hd-ink/30 hover:bg-hd-ink hover:text-hd-cream transition-colors"
-                  aria-label="Decrease"
+                  className="w-11 h-11 flex items-center justify-center border border-hd-ink/30 hover:bg-hd-ink hover:text-hd-cream transition-colors"
+                  aria-label="Decrease quantity"
                 >
-                  <Minus size={12} />
+                  <Minus size={14} />
                 </button>
-                <span className="numeral w-6 text-center text-hd-ink">{String(quantity).padStart(2, '0')}</span>
+                <span className="numeral w-7 text-center text-hd-ink">{String(quantity).padStart(2, '0')}</span>
                 <button
                   onClick={() => updateQuantity(item.id, quantity + 1)}
-                  className="w-7 h-7 flex items-center justify-center border border-hd-ink/30 hover:bg-hd-ink hover:text-hd-cream transition-colors"
-                  aria-label="Increase"
+                  className="w-11 h-11 flex items-center justify-center border border-hd-ink/30 hover:bg-hd-ink hover:text-hd-cream transition-colors"
+                  aria-label="Increase quantity"
                 >
-                  <Plus size={12} />
+                  <Plus size={14} />
                 </button>
                 <button
                   onClick={() => removeItem(item.id)}
-                  className="w-7 h-7 flex items-center justify-center text-hd-ink/30 hover:text-hd-burgundy transition-colors ml-1"
-                  aria-label="Remove"
+                  className="w-11 h-11 flex items-center justify-center text-hd-ink/40 hover:text-hd-burgundy transition-colors"
+                  aria-label="Remove item"
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={16} />
                 </button>
               </div>
             </li>

@@ -57,7 +57,14 @@ export default function LoginPage() {
         />
         <div className="relative px-6 pt-16 pb-12 flex flex-col gap-10 min-h-[55vh]">
           <div className="flex items-center justify-between border-b border-hd-cream/25 pb-3">
-            <span className="eyebrow text-hd-cream/80">Häagen-Dazs · Est. 1961</span>
+            <Image
+              src="/logo/logo-transparent.png"
+              alt="Häagen-Dazs"
+              width={120}
+              height={32}
+              priority
+              className="h-8 w-auto object-contain"
+            />
             <span className="numeral text-[0.6rem] text-hd-cream/70 tracking-widest">ACCESS</span>
           </div>
 
@@ -113,15 +120,31 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-13 py-4 bg-hd-burgundy text-hd-cream border border-hd-burgundy eyebrow tracking-wider hover:bg-hd-burgundy-dark transition-colors disabled:opacity-60 flex items-center justify-center gap-3"
+              className="w-full min-h-[52px] py-4 bg-hd-burgundy text-hd-cream border border-hd-burgundy eyebrow tracking-wider hover:bg-hd-burgundy-dark transition-colors disabled:opacity-60 flex items-center justify-center gap-3"
             >
               <span>{loading ? 'Signing in…' : 'Enter'}</span>
               <span className="numeral text-[0.6rem] opacity-70">→</span>
             </button>
           </form>
 
-          <p className="mt-8 text-center text-[0.7rem] text-hd-ink/40 tracking-widest uppercase">
-            © Häagen-Dazs Indonesia
+          <div className="mt-6 flex items-center justify-between text-[0.78rem]">
+            <button
+              type="button"
+              onClick={() => setError('Password reset is coming soon. Please contact support.')}
+              className="text-hd-ink/60 hover:text-hd-burgundy transition-colors underline-offset-4 hover:underline"
+            >
+              Forgot password?
+            </button>
+            <span className="text-hd-ink/50">
+              New here?{' '}
+              <a href="mailto:support@haagendazs.co.id" className="text-hd-burgundy hover:text-hd-burgundy-dark underline-offset-4 hover:underline">
+                Request access
+              </a>
+            </span>
+          </div>
+
+          <p className="mt-10 text-center text-[0.7rem] text-hd-ink/40 tracking-widest uppercase">
+            © Häagen-Dazs Indonesia · Est. 1960
           </p>
         </div>
       </section>

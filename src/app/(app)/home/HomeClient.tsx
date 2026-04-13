@@ -98,9 +98,16 @@ export default function HomeClient({
         <div className="relative px-5 pt-12 pb-10">
           {/* Top masthead line */}
           <div className="flex items-center justify-between border-b border-hd-cream/25 pb-3">
-            <span className="eyebrow text-hd-cream/80">Häagen-Dazs · Est. 1961</span>
+            <Image
+              src="/logo/logo-transparent.png"
+              alt="Häagen-Dazs"
+              width={120}
+              height={32}
+              priority
+              className="h-8 w-auto object-contain"
+            />
             <span className="numeral text-[0.6rem] text-hd-cream/70 tracking-widest">
-              VOL. XXIV · {dateline}
+              {dateline}
             </span>
           </div>
 
