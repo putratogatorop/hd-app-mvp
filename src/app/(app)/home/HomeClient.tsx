@@ -50,10 +50,10 @@ const orderModes: {
 ]
 
 const sections = [
-  { num: '01', title: 'MyHD Plan', tagline: 'A standing subscription', href: '/voucher' },
-  { num: '02', title: 'Catering', tagline: 'For the occasion', href: '/menu', mark: 'Nouveau' },
-  { num: '03', title: 'Share the Sip', tagline: 'Invitation, with reward', href: '/voucher' },
-  { num: '04', title: 'The Gift', tagline: 'Sent, sealed, savoured', href: '/menu' },
+  { num: '01', title: 'Send a Gift', tagline: 'Sealed, with a note', href: '/menu?gift=1', mark: 'Nouveau' },
+  { num: '02', title: 'Catering', tagline: 'For the occasion', href: '/menu' },
+  { num: '03', title: 'MyHD Plan', tagline: 'A standing subscription', href: '/voucher' },
+  { num: '04', title: 'Share the Sip', tagline: 'Invitation, with reward', href: '/voucher' },
 ]
 
 export default function HomeClient({
