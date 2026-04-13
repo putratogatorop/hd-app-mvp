@@ -12,11 +12,21 @@ export interface CartItem {
 
 type OrderMode = 'pickup' | 'delivery' | 'dinein'
 
+export interface GiftDetails {
+  recipientName: string
+  recipientPhone: string
+  recipientAddress: string
+  message: string
+  scheduledFor: string // ISO date or '' for ASAP
+}
+
 interface CartStore {
   items: CartItem[]
   appliedVoucher: Voucher | null
   paymentMethod: string
   notes: string
+  isGift: boolean
+  gift: GiftDetails
 
   addItem: (item: MenuItem) => void
   removeItem: (itemId: string) => void
@@ -26,6 +36,8 @@ interface CartStore {
   removeVoucher: () => void
   setPaymentMethod: (method: string) => void
   setNotes: (notes: string) => void
+  setIsGift: (isGift: boolean) => void
+  setGift: (patch: Partial<GiftDetails>) => void
 
   subtotal: () => number
   discountAmount: () => number
@@ -42,6 +54,17 @@ export const useCartStore = create<CartStore>()(
       appliedVoucher: null,
       paymentMethod: 'gopay',
       notes: '',
+      isGift: false,
+      gift: {
+        recipientName: '',
+        recipientPhone: '',
+        recipientAddress: '',
+        message: '',
+        scheduledFor: '',
+      },
+
+      setIsGift: (isGift) => set({ isGift }),
+      setGift: (patch) => set((state) => ({ gift: { ...state.gift, ...patch } })),
 
       addItem: (item) => {
         const existing = get().items.find(i => i.item.id === item.id)
@@ -71,7 +94,20 @@ export const useCartStore = create<CartStore>()(
         }))
       },
 
-      clearCart: () => set({ items: [], appliedVoucher: null, notes: '' }),
+      clearCart: () =>
+        set({
+          items: [],
+          appliedVoucher: null,
+          notes: '',
+          isGift: false,
+          gift: {
+            recipientName: '',
+            recipientPhone: '',
+            recipientAddress: '',
+            message: '',
+            scheduledFor: '',
+          },
+        }),
 
       applyVoucher: (voucher) => set({ appliedVoucher: voucher }),
 

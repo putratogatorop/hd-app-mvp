@@ -28,6 +28,13 @@ export interface PlaceOrderInput {
   deliveryFee: number
   paymentMethod: string
   notes: string
+  gift?: {
+    recipientName: string
+    recipientPhone: string
+    recipientAddress: string
+    message: string
+    scheduledFor: string // ISO or ''
+  } | null
 }
 
 export async function placeOrder(input: PlaceOrderInput) {
@@ -43,9 +50,16 @@ export async function placeOrder(input: PlaceOrderInput) {
     deliveryFee,
     paymentMethod,
     notes,
+    gift,
   } = input
 
   if (!items.length) throw new Error('Cart is empty')
+
+  if (gift) {
+    if (!gift.recipientName.trim() || !gift.recipientPhone.trim()) {
+      throw new Error('Recipient name and phone are required for gift orders')
+    }
+  }
 
   const supabase = await createClient()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,9 +83,20 @@ export async function placeOrder(input: PlaceOrderInput) {
     payment_method: paymentMethod,
     notes: notes || null,
   }
+  const orderInsertWithGift = gift
+    ? {
+        ...orderInsert,
+        is_gift: true,
+        recipient_name: gift.recipientName.trim(),
+        recipient_phone: gift.recipientPhone.trim(),
+        recipient_address: gift.recipientAddress.trim() || null,
+        gift_message: gift.message.trim() || null,
+        scheduled_for: gift.scheduledFor || null,
+      }
+    : orderInsert
   const { data: order, error: orderErr } = await db
     .from('orders')
-    .insert(orderInsert)
+    .insert(orderInsertWithGift)
     .select('id')
     .single()
 
