@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -13,12 +13,17 @@ import {
   MapPin,
   StickyNote,
   ArrowUpRight,
+  Sparkles,
 } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
 import { useOrderContext } from '@/lib/store/order-context'
 import { formatRupiah } from '@/lib/utils/format'
 import { placeOrder } from './actions'
 import { Eyebrow } from '@/components/ui'
+import { createClient } from '@/lib/supabase/client'
+import type { Database } from '@/lib/supabase/database.types'
+
+type MenuItem = Database['public']['Tables']['menu_items']['Row']
 
 const PAYMENT_OPTIONS = [
   { id: 'gopay', label: 'GoPay' },
@@ -37,6 +42,7 @@ export default function CartPage() {
   const router = useRouter()
   const {
     items,
+    addItem,
     updateQuantity,
     removeItem,
     clearCart,
@@ -52,6 +58,26 @@ export default function CartPage() {
     notes,
     setNotes,
   } = useCartStore()
+
+  const [toppings, setToppings] = useState<MenuItem[]>([])
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase
+      .from('menu_items')
+      .select('*')
+      .eq('category', 'topping')
+      .eq('is_available', true)
+      .order('price', { ascending: true })
+      .then(({ data }) => {
+        if (data) setToppings(data)
+      })
+  }, [])
+
+  const upsellItems = useMemo(() => {
+    const inCart = new Set(items.map((i) => i.item.id))
+    return toppings.filter((t) => !inCart.has(t.id)).slice(0, 6)
+  }, [toppings, items])
 
   const { mode, selectedStore, tableNumber } = useOrderContext()
 
@@ -199,10 +225,46 @@ export default function CartPage() {
         </ul>
       </section>
 
+      {/* ── Upsell: Complete your treat ── */}
+      {upsellItems.length > 0 && (
+        <section className="px-5 pt-8">
+          <div className="flex items-end justify-between border-b border-hd-ink/15 pb-3">
+            <Eyebrow number="02">Complete your treat</Eyebrow>
+            <Sparkles size={14} className="text-hd-gold" />
+          </div>
+          <p className="mt-3 font-display italic text-[0.85rem] text-hd-ink/55">
+            A small addition, perfectly paired.
+          </p>
+          <div className="mt-4 flex gap-3 overflow-x-auto no-scrollbar -mx-5 px-5 pb-1">
+            {upsellItems.map((topping) => (
+              <button
+                key={topping.id}
+                onClick={() => addItem(topping)}
+                className="group shrink-0 w-40 text-left bg-hd-paper border border-hd-ink/15 hover:border-hd-burgundy transition-colors p-4 flex flex-col gap-3"
+              >
+                <div className="flex-1 min-h-[48px]">
+                  <p className="font-display text-[0.95rem] leading-tight text-hd-ink tracking-editorial line-clamp-2">
+                    {topping.name}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-hd-ink/10">
+                  <span className="numeral text-[0.8rem] text-hd-ink">
+                    + {formatRupiah(topping.price)}
+                  </span>
+                  <span className="eyebrow text-hd-burgundy group-hover:translate-x-0.5 transition-transform inline-flex items-center gap-1">
+                    Add <Plus size={12} />
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ── Notes ── */}
       <section className="px-5 pt-8">
         <div className="flex items-end justify-between border-b border-hd-ink/15 pb-3">
-          <Eyebrow number="02">A note</Eyebrow>
+          <Eyebrow number="03">A note</Eyebrow>
           <StickyNote size={14} className="text-hd-ink/40" />
         </div>
         <input
@@ -217,7 +279,7 @@ export default function CartPage() {
       {/* ── Voucher ── */}
       <section className="px-5 pt-8">
         <div className="flex items-end justify-between border-b border-hd-ink/15 pb-3">
-          <Eyebrow number="03">Voucher</Eyebrow>
+          <Eyebrow number="04">Voucher</Eyebrow>
           <Ticket size={14} className="text-hd-ink/40" />
         </div>
         {appliedVoucher ? (
@@ -251,7 +313,7 @@ export default function CartPage() {
       {/* ── Payment ── */}
       <section className="px-5 pt-8">
         <div className="flex items-end justify-between border-b border-hd-ink/15 pb-3">
-          <Eyebrow number="04">Payment</Eyebrow>
+          <Eyebrow number="05">Payment</Eyebrow>
           <CreditCard size={14} className="text-hd-ink/40" />
         </div>
         <div className="grid grid-cols-2 gap-px bg-hd-ink/10 border border-hd-ink/10 mt-4">
@@ -280,7 +342,7 @@ export default function CartPage() {
 
       {/* ── Summary ── */}
       <section className="px-5 pt-10">
-        <Eyebrow number="05">Summary</Eyebrow>
+        <Eyebrow number="06">Summary</Eyebrow>
         <dl className="mt-4 space-y-3 border-b border-hd-ink/15 pb-4">
           <div className="flex justify-between text-[0.85rem]">
             <dt className="text-hd-ink/60">Subtotal</dt>
