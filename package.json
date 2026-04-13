@@ -7,9 +7,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "echo 'No tests configured yet'"
+    "test": "echo 'No tests configured yet'",
+    "cap:sync": "npx cap sync android",
+    "cap:open": "npx cap open android",
+    "apk:debug": "cd android && ./gradlew assembleDebug && cd .. && echo '\\nAPK → android/app/build/outputs/apk/debug/app-debug.apk'",
+    "apk:release": "cd android && ./gradlew assembleRelease && cd .. && echo '\\nRelease APK → android/app/build/outputs/apk/release/app-release-unsigned.apk'"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/cli": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
     "@supabase/ssr": "^0.5.1",
     "@supabase/supabase-js": "^2.45.0",
     "clsx": "^2.1.1",
