@@ -2,7 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import type { Database } from '@/lib/supabase/database.types'
+import { sendGiftNotification } from '@/lib/notifications/whatsapp'
 
 type OrderInsert = Database['public']['Tables']['orders']['Insert']
 type OrderItemInsert = Database['public']['Tables']['order_items']['Insert']
@@ -97,7 +99,7 @@ export async function placeOrder(input: PlaceOrderInput) {
   const { data: order, error: orderErr } = await db
     .from('orders')
     .insert(orderInsertWithGift)
-    .select('id')
+    .select('id, gift_token')
     .single()
 
   if (orderErr || !order) throw new Error('Gagal membuat pesanan')
@@ -116,9 +118,9 @@ export async function placeOrder(input: PlaceOrderInput) {
   // 3. Credit loyalty points to profile
   const { data: profile } = await supabase
     .from('profiles')
-    .select('loyalty_points, tier')
+    .select('loyalty_points, tier, full_name')
     .eq('id', user.id)
-    .single() as unknown as { data: { loyalty_points: number; tier: string } | null }
+    .single() as unknown as { data: { loyalty_points: number; tier: string; full_name: string | null } | null }
 
   if (profile) {
     const newPoints = (profile.loyalty_points ?? 0) + earnedPoints
@@ -150,6 +152,23 @@ export async function placeOrder(input: PlaceOrderInput) {
       .eq('user_id', user.id)
       .eq('voucher_id', voucherId)
       .eq('is_used', false)
+  }
+
+  // 6. Notify recipient via WhatsApp (no-op until provider env vars configured)
+  if (gift && order.gift_token) {
+    const h = await headers()
+    const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'localhost:3000'
+    const proto = h.get('x-forwarded-proto') ?? 'https'
+    const senderName = (profile as { full_name?: string } | null)?.full_name ?? undefined
+    // Fire-and-forget; don't block checkout if provider is down or unconfigured
+    void sendGiftNotification({
+      recipientPhone: gift.recipientPhone.trim(),
+      recipientName: gift.recipientName.trim(),
+      senderName,
+      giftMessage: gift.message?.trim() || undefined,
+      giftToken: order.gift_token as string,
+      appBaseUrl: `${proto}://${host}`,
+    })
   }
 
   redirect('/orders')

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, Gift } from 'lucide-react'
 import { Eyebrow } from '@/components/ui'
 
 type OrderItem = {
@@ -16,6 +16,9 @@ type Order = {
   total_amount: number
   order_mode: string | null
   created_at: string
+  is_gift?: boolean | null
+  recipient_name?: string | null
+  gift_token?: string | null
   store: { name: string } | null
   order_items: OrderItem[]
 }
@@ -74,6 +77,13 @@ function OrderRow({ order, index }: { order: Order; index: number }) {
             {STATUS_LABELS[order.status] ?? order.status}
           </span>
         </div>
+
+        {order.is_gift && (
+          <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 bg-hd-burgundy text-hd-cream eyebrow text-[0.65rem]">
+            <Gift size={11} />
+            Gift {order.recipient_name ? `to ${order.recipient_name}` : ''}
+          </div>
+        )}
 
         <div className="mt-3 flex items-end justify-between gap-4">
           <div className="min-w-0 flex-1">
