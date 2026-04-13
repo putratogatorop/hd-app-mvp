@@ -1,8 +1,25 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Fraunces, Instrument_Sans, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-display',
+  axes: ['opsz', 'SOFT', 'WONK'],
+  display: 'swap',
+})
+
+const instrumentSans = Instrument_Sans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+})
+
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'Häagen-Dazs | Loyalty & Order',
@@ -28,10 +45,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="id" className="light" style={{ colorScheme: 'light' }}>
-      <body className={inter.className}>
-        {children}
-      </body>
+    <html
+      lang="id"
+      className={`light ${fraunces.variable} ${instrumentSans.variable} ${mono.variable}`}
+      style={{ colorScheme: 'light' }}
+    >
+      <body className="font-sans antialiased">{children}</body>
     </html>
   )
 }

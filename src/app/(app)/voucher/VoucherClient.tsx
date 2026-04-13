@@ -2,13 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  Ticket,
-  Info,
-} from 'lucide-react'
+import { Ticket, Info, ArrowUpRight } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
 import { formatRupiah } from '@/lib/utils/format'
 import type { Database } from '@/lib/supabase/database.types'
+import { Eyebrow } from '@/components/ui'
 
 type Voucher = Database['public']['Tables']['vouchers']['Row']
 type ProfileData = Pick<
@@ -23,12 +21,12 @@ interface Props {
 }
 
 type MainTab = 'voucher' | 'plan' | 'rewards'
-type VoucherFilter = 'semua' | 'diskon' | 'cashback' | 'delivery'
+type VoucherFilter = 'all' | 'discount' | 'cashback' | 'delivery'
 
-const TIER_CONFIG: Record<string, { label: string; emoji: string; nextTier: string | null; nextPoints: number | null }> = {
-  silver: { label: 'Silver', emoji: '🥈', nextTier: 'Gold', nextPoints: 5000 },
-  gold: { label: 'Gold', emoji: '🥇', nextTier: 'Platinum', nextPoints: 15000 },
-  platinum: { label: 'Platinum', emoji: '💎', nextTier: null, nextPoints: null },
+const TIER_CONFIG: Record<string, { label: string; nextTier: string | null; nextPoints: number | null }> = {
+  silver: { label: 'Silver', nextTier: 'Gold', nextPoints: 5000 },
+  gold: { label: 'Gold', nextTier: 'Platinum', nextPoints: 15000 },
+  platinum: { label: 'Platinum', nextTier: null, nextPoints: null },
 }
 
 const MODE_LABEL: Record<string, string> = {
@@ -38,27 +36,27 @@ const MODE_LABEL: Record<string, string> = {
 }
 
 const REWARDS = [
-  { icon: '🎟️', name: 'Voucher Diskon 10%', cost: 500, color: 'bg-hd-cream' },
-  { icon: '🍨', name: 'Free 1 Scoop Ice Cream', cost: 1000, color: 'bg-amber-50' },
-  { icon: '🎁', name: 'HD Gift Box Special', cost: 2500, color: 'bg-purple-50' },
-  { icon: '🎟️', name: 'Voucher Free Delivery', cost: 300, color: 'bg-hd-cream' },
+  { name: 'Voucher — 10% off', cost: 500 },
+  { name: 'A complimentary scoop', cost: 1000 },
+  { name: 'HD Gift Box · Special', cost: 2500 },
+  { name: 'Voucher — Free delivery', cost: 300 },
 ]
 
 const PLANS = [
-  { tier: 'silver', icon: '🥈', name: 'Silver Plan', perks: ['10% off', 'All menu'], price: 'Rp29K', iconBg: 'bg-gray-100', featured: false },
-  { tier: 'gold', icon: '🥇', name: 'Gold Plan', perks: ['20% off', 'Free ongkir'], price: 'Rp49K', iconBg: 'bg-amber-100', featured: true },
-  { tier: 'platinum', icon: '💎', name: 'Platinum Plan', perks: ['25% off', 'Free ongkir', 'Gift'], price: 'Rp79K', iconBg: 'bg-violet-100', featured: false },
+  { tier: 'silver', name: 'Silver Plan', roman: 'I', perks: ['10% off · all menu'], price: 'Rp 29K', featured: false },
+  { tier: 'gold', name: 'Gold Plan', roman: 'II', perks: ['20% off', 'Free delivery'], price: 'Rp 49K', featured: true },
+  { tier: 'platinum', name: 'Platinum Plan', roman: 'III', perks: ['25% off', 'Free delivery', 'Seasonal gift'], price: 'Rp 79K', featured: false },
 ]
 
 const MAIN_TABS: { key: MainTab; label: string }[] = [
-  { key: 'voucher', label: 'Voucher' },
+  { key: 'voucher', label: 'Vouchers' },
   { key: 'plan', label: 'MyHD Plan' },
-  { key: 'rewards', label: 'HD Rewards' },
+  { key: 'rewards', label: 'Rewards' },
 ]
 
 const FILTERS: { key: VoucherFilter; label: string }[] = [
-  { key: 'semua', label: 'Semua' },
-  { key: 'diskon', label: 'Diskon' },
+  { key: 'all', label: 'All' },
+  { key: 'discount', label: 'Discount' },
   { key: 'cashback', label: 'Cashback' },
   { key: 'delivery', label: 'Delivery' },
 ]
@@ -68,7 +66,7 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
   const { applyVoucher } = useCartStore()
 
   const [mainTab, setMainTab] = useState<MainTab>('voucher')
-  const [filter, setFilter] = useState<VoucherFilter>('semua')
+  const [filter, setFilter] = useState<VoucherFilter>('all')
   const [codeInput, setCodeInput] = useState('')
   const [codeError, setCodeError] = useState<string | null>(null)
 
@@ -76,27 +74,27 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
   const tier = TIER_CONFIG[tierKey]
   const points = profile?.loyalty_points ?? 0
 
-  const userVoucherMap = new Map(userVouchers.map(uv => [uv.voucher_id, uv.is_used]))
+  const userVoucherMap = new Map(userVouchers.map((uv) => [uv.voucher_id, uv.is_used]))
 
   function filterVouchers(list: Voucher[]): Voucher[] {
     switch (filter) {
-      case 'diskon':
-        return list.filter(v => v.discount_type === 'percentage')
+      case 'discount':
+        return list.filter((v) => v.discount_type === 'percentage')
       case 'cashback':
-        return list.filter(v => v.discount_type === 'fixed')
+        return list.filter((v) => v.discount_type === 'fixed')
       case 'delivery':
-        return list.filter(v => v.applicable_modes.includes('delivery'))
+        return list.filter((v) => v.applicable_modes.includes('delivery'))
       default:
         return list
     }
   }
 
   const allFiltered = filterVouchers(vouchers)
-  const belanjaVouchers = allFiltered.filter(
-    v => v.applicable_modes.some(m => m === 'pickup' || m === 'dinein')
+  const shopVouchers = allFiltered.filter((v) =>
+    v.applicable_modes.some((m) => m === 'pickup' || m === 'dinein'),
   )
   const deliveryOnlyVouchers = allFiltered.filter(
-    v => v.applicable_modes.length === 1 && v.applicable_modes[0] === 'delivery'
+    (v) => v.applicable_modes.length === 1 && v.applicable_modes[0] === 'delivery',
   )
 
   function handleUseVoucher(voucher: Voucher) {
@@ -108,12 +106,12 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
     setCodeError(null)
     const trimmed = codeInput.trim().toUpperCase()
     if (!trimmed) {
-      setCodeError('Masukkan kode voucher terlebih dahulu.')
+      setCodeError('Please enter a code first.')
       return
     }
-    const found = vouchers.find(v => v.code.toUpperCase() === trimmed)
+    const found = vouchers.find((v) => v.code.toUpperCase() === trimmed)
     if (!found) {
-      setCodeError('Kode voucher tidak ditemukan atau tidak aktif.')
+      setCodeError('Code not found or inactive.')
       return
     }
     applyVoucher(found)
@@ -122,354 +120,391 @@ export default function VoucherClient({ profile, vouchers, userVouchers }: Props
 
   return (
     <div className="min-h-screen bg-hd-cream pb-24">
-      {/* Header */}
-      <div className="bg-white pt-12 pb-4 text-center border-b border-gray-100">
-        <h1 className="text-[17px] font-bold text-hd-dark">Voucher</h1>
-      </div>
+      {/* ── Masthead ── */}
+      <header className="px-5 pt-12 pb-5 border-b border-hd-ink/15">
+        <Eyebrow number="04">Rewards</Eyebrow>
+        <h1 className="mt-3 font-display text-display-lg text-hd-ink tracking-editorial">
+          The <span className="italic">Dividend</span>
+        </h1>
+      </header>
 
-      {/* Promo code input */}
-      <div className="mx-5 mt-4 flex items-center gap-2.5 bg-gray-100 rounded-[14px] p-1 pl-4">
-        <div className="w-7 h-7 rounded-lg bg-hd-burgundy flex items-center justify-center flex-shrink-0">
-          <Ticket size={14} className="text-white" />
-        </div>
-        <input
-          type="text"
-          value={codeInput}
-          onChange={e => { setCodeInput(e.target.value); setCodeError(null) }}
-          placeholder="Punya kode promo? Masukkan disini"
-          className="flex-1 bg-transparent text-sm text-hd-dark placeholder:text-gray-400 outline-none"
-        />
-        <button
-          onClick={handleCodeSubmit}
-          className="bg-hd-burgundy text-white text-xs font-bold px-4 py-2.5 rounded-[10px] flex-shrink-0"
-        >
-          Gunakan
-        </button>
-      </div>
-      {codeError && (
-        <p className="mx-5 mt-2 text-red-500 text-xs">{codeError}</p>
-      )}
-
-      {/* Main tabs */}
-      <div className="flex border-b-2 border-gray-100 mt-4 px-5">
-        {MAIN_TABS.map(tab => (
+      {/* ── Promo code input ── */}
+      <section className="px-5 pt-6">
+        <div className="flex items-stretch border border-hd-ink/20">
+          <div className="px-4 flex items-center border-r border-hd-ink/20">
+            <Ticket size={14} className="text-hd-burgundy" />
+          </div>
+          <input
+            type="text"
+            value={codeInput}
+            onChange={(e) => {
+              setCodeInput(e.target.value)
+              setCodeError(null)
+            }}
+            placeholder="Have a code? Enter here"
+            className="flex-1 h-12 bg-transparent text-[0.85rem] placeholder:text-hd-ink/40 focus:outline-none px-4 italic font-display"
+          />
           <button
-            key={tab.key}
-            onClick={() => setMainTab(tab.key)}
-            className={`flex-1 text-center pb-3 text-[13px] font-semibold relative transition-colors ${
-              mainTab === tab.key ? 'text-hd-burgundy' : 'text-gray-400'
-            }`}
+            onClick={handleCodeSubmit}
+            className="bg-hd-burgundy text-hd-cream eyebrow px-5 hover:bg-hd-burgundy-dark transition-colors"
           >
-            {tab.label}
-            {mainTab === tab.key && (
-              <span className="absolute bottom-[-2px] left-[20%] right-[20%] h-[2.5px] bg-hd-burgundy rounded-full" />
-            )}
+            Apply
           </button>
-        ))}
-      </div>
+        </div>
+        {codeError && (
+          <p className="mt-2 text-hd-burgundy text-[0.75rem] italic">{codeError}</p>
+        )}
+      </section>
 
-      {/* TAB: Voucher */}
-      {mainTab === 'voucher' && (
-        <div>
-          {/* Pill filters */}
-          <div className="flex gap-2 px-5 pt-4 overflow-x-auto scrollbar-none">
-            {FILTERS.map(f => (
-              <button
-                key={f.key}
-                onClick={() => setFilter(f.key)}
-                className={`flex-shrink-0 px-4 py-[7px] rounded-full text-xs font-semibold border-[1.5px] transition-all ${
-                  filter === f.key
-                    ? 'bg-hd-burgundy text-white border-hd-burgundy'
-                    : 'bg-white text-gray-500 border-gray-200'
+      {/* ── Main tabs ── */}
+      <nav className="flex gap-6 px-5 mt-6 border-b border-hd-ink/15">
+        {MAIN_TABS.map((tab, i) => {
+          const active = mainTab === tab.key
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setMainTab(tab.key)}
+              className="relative pb-3 flex items-baseline gap-2"
+            >
+              <span className={`numeral text-[0.65rem] ${active ? 'text-hd-burgundy' : 'text-hd-ink/40'}`}>
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span
+                className={`font-display text-[1rem] tracking-editorial ${
+                  active ? 'text-hd-burgundy italic' : 'text-hd-ink/60'
                 }`}
               >
-                {f.label}
-              </button>
-            ))}
+                {tab.label}
+              </span>
+              {active && <span className="absolute left-0 right-0 bottom-0 h-[2px] bg-hd-burgundy" />}
+            </button>
+          )
+        })}
+      </nav>
+
+      {/* ── TAB: Voucher ── */}
+      {mainTab === 'voucher' && (
+        <div>
+          {/* Filters */}
+          <div className="flex gap-5 px-5 pt-5 overflow-x-auto no-scrollbar">
+            {FILTERS.map((f) => {
+              const active = filter === f.key
+              return (
+                <button
+                  key={f.key}
+                  onClick={() => setFilter(f.key)}
+                  className={`flex-shrink-0 pb-2 text-[0.8rem] tracking-wide transition-colors relative ${
+                    active ? 'text-hd-burgundy' : 'text-hd-ink/50 hover:text-hd-ink'
+                  }`}
+                >
+                  {f.label}
+                  {active && <span className="absolute left-0 right-0 bottom-0 h-[1.5px] bg-hd-burgundy" />}
+                </button>
+              )
+            })}
           </div>
 
-          {/* Voucher Belanja section */}
-          {belanjaVouchers.length > 0 && (
-            <>
-              <div className="flex justify-between items-center px-5 pt-5 pb-3">
-                <h2 className="text-base font-extrabold text-hd-dark">Voucher Belanja</h2>
-                <span className="text-[13px] text-gray-400">{belanjaVouchers.length} voucher</span>
+          {/* Shop vouchers */}
+          {shopVouchers.length > 0 && (
+            <section className="px-5 pt-8">
+              <div className="flex items-end justify-between border-b border-hd-ink/15 pb-3">
+                <Eyebrow>For the counter</Eyebrow>
+                <span className="numeral text-[0.7rem] text-hd-ink/50">
+                  {String(shopVouchers.length).padStart(2, '0')}
+                </span>
               </div>
-              <div className="space-y-3 px-5">
-                {belanjaVouchers.map(v => (
-                  <VoucherCard
+              <ul className="divide-y divide-hd-ink/10">
+                {shopVouchers.map((v, i) => (
+                  <VoucherRow
                     key={v.id}
+                    index={i}
                     voucher={v}
                     isUsed={userVoucherMap.get(v.id) === true}
                     onUse={() => handleUseVoucher(v)}
                   />
                 ))}
-              </div>
-            </>
+              </ul>
+            </section>
           )}
 
-          {/* Info banner + Voucher Delivery section */}
+          {/* Delivery vouchers */}
           {deliveryOnlyVouchers.length > 0 && (
-            <>
-              <div className="mx-5 mt-4 mb-1 bg-blue-50 rounded-xl p-3 flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <Info size={14} className="text-blue-500" />
-                </div>
-                <p className="text-[11px] text-slate-500 leading-relaxed">
-                  Voucher delivery hanya bisa kamu gunakan pada halaman checkout
+            <section className="px-5 pt-8">
+              <div className="flex items-start gap-2.5 bg-hd-paper border border-hd-ink/10 p-3 mb-5">
+                <Info size={12} className="text-hd-ink/50 mt-0.5 flex-shrink-0" />
+                <p className="text-[0.72rem] text-hd-ink/60 italic font-display leading-relaxed">
+                  Delivery vouchers can only be applied at checkout.
                 </p>
               </div>
-              <div className="flex justify-between items-center px-5 pt-4 pb-3">
-                <h2 className="text-base font-extrabold text-hd-dark">Voucher Delivery</h2>
-                <span className="text-[13px] text-gray-400">{deliveryOnlyVouchers.length} voucher</span>
+              <div className="flex items-end justify-between border-b border-hd-ink/15 pb-3">
+                <Eyebrow>For delivery</Eyebrow>
+                <span className="numeral text-[0.7rem] text-hd-ink/50">
+                  {String(deliveryOnlyVouchers.length).padStart(2, '0')}
+                </span>
               </div>
-              <div className="space-y-3 px-5">
-                {deliveryOnlyVouchers.map(v => (
-                  <VoucherCard
+              <ul className="divide-y divide-hd-ink/10">
+                {deliveryOnlyVouchers.map((v, i) => (
+                  <VoucherRow
                     key={v.id}
+                    index={i}
                     voucher={v}
                     isUsed={userVoucherMap.get(v.id) === true}
                     onUse={() => handleUseVoucher(v)}
                   />
                 ))}
-              </div>
-            </>
+              </ul>
+            </section>
           )}
 
-          {/* Empty state */}
           {allFiltered.length === 0 && (
-            <div className="text-center py-16 text-gray-400">
-              <Ticket size={36} className="mx-auto mb-2 opacity-30" />
-              <p className="text-sm">Belum ada voucher tersedia</p>
+            <div className="text-center py-16 border border-hd-ink/10 border-dashed mx-5 mt-6">
+              <p className="font-display italic text-[1rem] text-hd-ink/55">
+                No vouchers just yet.
+              </p>
             </div>
           )}
         </div>
       )}
 
-      {/* TAB: MyHD Plan */}
+      {/* ── TAB: MyHD Plan ── */}
       {mainTab === 'plan' && (
-        <div>
+        <div className="px-5 pt-8">
           {/* Hero */}
-          <div className="mx-5 mt-4 rounded-[20px] overflow-hidden bg-gradient-to-br from-hd-burgundy-dark via-hd-burgundy to-hd-burgundy-light p-7 relative">
-            <div className="absolute top-[-40px] right-[-20px] w-[140px] h-[140px] rounded-full border border-[rgba(184,146,42,0.2)]" />
-            <p className="text-[9px] font-bold tracking-[2px] uppercase text-[#D4AF5A] mb-2">
-              ✨ Häagen-Dazs Exclusive
-            </p>
-            <h2 className="text-[22px] font-extrabold text-white leading-tight">
-              Hematnya<br /><em className="italic text-[#F5E6C8]">Bikin Untung!</em>
-            </h2>
-            <p className="text-xs text-white/60 mt-1.5">Diskon spesial setiap hari tanpa batas</p>
+          <div className="relative overflow-hidden border border-hd-ink bg-hd-burgundy-dark text-hd-cream">
+            <div className="texture-grain absolute inset-0 opacity-25" aria-hidden />
+            <div
+              className="absolute inset-0 opacity-60"
+              aria-hidden
+              style={{
+                background:
+                  'radial-gradient(ellipse 70% 60% at 90% 0%, rgba(184,146,42,0.3), transparent 60%)',
+              }}
+            />
+            <div className="relative p-6">
+              <span className="eyebrow text-hd-gold-light">Häagen-Dazs · Exclusive</span>
+              <h2 className="mt-4 font-display text-[2rem] leading-[0.95] tracking-editorial">
+                A standing<br />
+                <span className="italic">indulgence.</span>
+              </h2>
+              <p className="mt-4 text-[0.85rem] text-hd-cream/70 max-w-xs">
+                Members receive daily discounts, without ceremony.
+              </p>
+            </div>
           </div>
 
-          {/* Plan cards */}
-          <div className="px-5 mt-4 space-y-2.5">
-            {PLANS.map(plan => (
+          {/* Plans */}
+          <div className="mt-6 space-y-4">
+            {PLANS.map((plan) => (
               <div
                 key={plan.tier}
-                className={`rounded-2xl p-4 flex items-center gap-3.5 relative overflow-hidden border-[1.5px] ${
+                className={`relative border p-5 ${
                   plan.featured
-                    ? 'border-hd-burgundy bg-hd-cream/50'
-                    : 'border-gray-200 bg-white'
+                    ? 'border-hd-burgundy bg-hd-paper'
+                    : 'border-hd-ink/15 bg-hd-paper hover:border-hd-ink/40 transition-colors'
                 }`}
               >
                 {plan.featured && (
-                  <span className="absolute top-0 right-4 bg-hd-burgundy text-white text-[8px] font-extrabold tracking-[0.5px] px-2.5 py-[3px] rounded-b-lg">
-                    POPULER
+                  <span className="absolute -top-2.5 left-5 eyebrow text-hd-burgundy bg-hd-cream px-2">
+                    Most chosen
                   </span>
                 )}
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0 ${plan.iconBg}`}>
-                  {plan.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-hd-dark">{plan.name}</p>
-                  <div className="flex gap-1 flex-wrap mt-1">
-                    {plan.perks.map(perk => (
-                      <span
-                        key={perk}
-                        className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
-                          plan.featured ? 'bg-hd-cream text-hd-burgundy' : 'bg-gray-100 text-gray-500'
-                        }`}
-                      >
-                        {perk}
-                      </span>
-                    ))}
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <span className="numeral text-[0.65rem] text-hd-ink/45 tracking-widest">
+                      {plan.roman}
+                    </span>
+                    <p className="font-display text-[1.3rem] text-hd-ink tracking-editorial mt-1">
+                      {plan.name}
+                    </p>
+                    <ul className="mt-3 space-y-1">
+                      {plan.perks.map((perk) => (
+                        <li key={perk} className="text-[0.8rem] text-hd-ink/65 italic font-display">
+                          — {perk}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className={`text-lg font-extrabold ${plan.featured ? 'text-hd-burgundy' : 'text-hd-dark'}`}>
-                    {plan.price}
-                  </p>
-                  <p className="text-[10px] text-gray-400">/bulan</p>
+                  <div className="text-right shrink-0">
+                    <p className="numeral text-[1.4rem] text-hd-ink">{plan.price}</p>
+                    <p className="eyebrow text-hd-ink/40 mt-1">per month</p>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* CTA */}
-          <div className="px-5 mt-5">
-            <button className="w-full py-4 rounded-[14px] bg-gradient-to-r from-hd-burgundy to-hd-burgundy-dark text-white text-sm font-bold shadow-lg shadow-hd-burgundy/20">
-              Langganan Sekarang!
-            </button>
-            <p className="text-center text-[11px] text-gray-400 mt-2.5">
-              Berlaku untuk pickup, delivery & dine-in
-            </p>
-          </div>
+          <button className="mt-6 w-full h-14 bg-hd-burgundy text-hd-cream border border-hd-burgundy eyebrow hover:bg-hd-burgundy-dark transition-colors">
+            Subscribe now →
+          </button>
+          <p className="mt-3 text-center text-[0.7rem] text-hd-ink/40 italic font-display">
+            valid across pickup, delivery & dine-in
+          </p>
         </div>
       )}
 
-      {/* TAB: HD Rewards */}
+      {/* ── TAB: Rewards ── */}
       {mainTab === 'rewards' && (
-        <div>
+        <div className="px-5 pt-8">
           {/* Tier card */}
-          <div className="mx-5 mt-4 rounded-[20px] overflow-hidden bg-gradient-to-br from-[#B8922A] to-[#8B6914] p-6 text-white relative">
-            <div className="absolute top-[-30px] right-[-20px] w-[120px] h-[120px] rounded-full border border-white/15" />
-            <p className="text-[9px] font-bold tracking-[2px] uppercase text-white/60">Tier Saat Ini</p>
-            <p className="text-2xl font-extrabold mt-0.5">{tier.emoji} {tier.label} Member</p>
-            <div className="bg-white/15 rounded-xl p-3 mt-3.5">
-              <p className="text-[10px] text-white/60">Total Poin</p>
-              <p className="text-[28px] font-extrabold">{points.toLocaleString('id-ID')}</p>
-            </div>
-            {tier.nextPoints && (
-              <div className="mt-3">
-                <div className="flex justify-between text-[10px] text-white/50 mb-1.5">
-                  <span>{points.toLocaleString('id-ID')} poin</span>
-                  <span>{tier.nextTier}: {tier.nextPoints.toLocaleString('id-ID')}</span>
-                </div>
-                <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-white rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min((points / tier.nextPoints) * 100, 100)}%` }}
-                  />
-                </div>
-                <p className="text-center text-[10px] text-white/50 mt-1.5">
-                  {(tier.nextPoints - points).toLocaleString('id-ID')} poin lagi ke {tier.nextTier}
+          <div className="relative overflow-hidden border border-hd-ink bg-hd-burgundy-dark text-hd-cream">
+            <div className="texture-grain absolute inset-0 opacity-25" aria-hidden />
+            <div
+              className="absolute inset-0 opacity-60"
+              aria-hidden
+              style={{
+                background:
+                  'radial-gradient(ellipse 60% 60% at 100% 0%, rgba(184,146,42,0.3), transparent 60%)',
+              }}
+            />
+            <div className="relative p-6">
+              <span className="eyebrow text-hd-gold-light">Current tier</span>
+              <p className="mt-2 font-display text-[1.8rem] italic tracking-editorial">
+                {tier.label} Member
+              </p>
+              <hr className="my-5 border-hd-cream/20" />
+              <div>
+                <span className="eyebrow text-hd-cream/60">Points</span>
+                <p className="numeral text-[2.5rem] leading-none mt-1 text-hd-cream">
+                  {points.toLocaleString('en-US')}
                 </p>
               </div>
-            )}
-            {!tier.nextPoints && (
-              <p className="text-white/80 text-xs text-center mt-3">Kamu sudah di tier tertinggi! 🎉</p>
-            )}
+              {tier.nextPoints && (
+                <div className="mt-5">
+                  <div className="h-[2px] w-full bg-hd-cream/15 relative overflow-hidden">
+                    <div
+                      className="absolute inset-y-0 left-0 bg-hd-gold-light transition-[width] duration-[900ms]"
+                      style={{ width: `${Math.min((points / tier.nextPoints) * 100, 100)}%` }}
+                    />
+                  </div>
+                  <p className="mt-2 numeral text-[0.7rem] text-hd-cream/60 tracking-widest">
+                    {(tier.nextPoints - points).toLocaleString('en-US')} more → {tier.nextTier}
+                  </p>
+                </div>
+              )}
+              {!tier.nextPoints && (
+                <p className="mt-4 font-display italic text-[0.9rem] text-hd-cream/75">
+                  You are at the summit.
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Tukar Poin */}
-          <h3 className="px-5 pt-5 pb-3 text-sm font-extrabold text-hd-dark">Tukar Poin</h3>
-          <div className="px-5 space-y-2.5">
-            {REWARDS.map(reward => (
-              <div
-                key={reward.name}
-                className="bg-white rounded-[14px] p-3.5 flex items-center gap-3 border border-gray-100"
-              >
-                <div className={`w-10 h-10 rounded-[10px] flex items-center justify-center text-lg flex-shrink-0 ${reward.color}`}>
-                  {reward.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold text-hd-dark">{reward.name}</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">{reward.cost.toLocaleString('id-ID')} poin</p>
-                </div>
-                <button
-                  onClick={() => alert('Segera hadir!')}
-                  className="bg-gray-100 text-gray-500 text-[11px] font-bold px-3 py-[7px] rounded-lg"
+          {/* Redeem */}
+          <section className="pt-8">
+            <Eyebrow number="A">Redeem</Eyebrow>
+            <ul className="mt-4 divide-y divide-hd-ink/10 border-y border-hd-ink/10">
+              {REWARDS.map((reward, i) => (
+                <li
+                  key={reward.name}
+                  className="py-4 flex items-center gap-4 group hover:bg-hd-paper transition-colors"
                 >
-                  Tukar
-                </button>
-              </div>
-            ))}
-          </div>
+                  <span className="numeral text-[0.65rem] text-hd-ink/40 tracking-widest w-8">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-display text-[1rem] text-hd-ink tracking-editorial truncate">
+                      {reward.name}
+                    </p>
+                    <p className="numeral text-[0.75rem] text-hd-ink/55 mt-0.5">
+                      {reward.cost.toLocaleString('en-US')} pts
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => alert('Coming soon')}
+                    className="eyebrow text-hd-burgundy hover:text-hd-burgundy-dark transition-colors"
+                  >
+                    Redeem
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
       )}
     </div>
   )
 }
 
-function VoucherCard({
+// ────────────────────────────────────────────────────────────
+function VoucherRow({
+  index,
   voucher,
   isUsed,
   onUse,
 }: {
+  index: number
   voucher: Voucher
   isUsed: boolean
   onUse: () => void
 }) {
   const isPercentage = voucher.discount_type === 'percentage'
-  const isDeliveryOnly = voucher.applicable_modes.length === 1 && voucher.applicable_modes[0] === 'delivery'
-
   const discountLabel = isPercentage
     ? `${voucher.discount_value}%`
     : `${Math.round(voucher.discount_value / 1000)}K`
 
-  const validUntil = new Date(voucher.valid_until).toLocaleDateString('id-ID', {
+  const validUntil = new Date(voucher.valid_until).toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
   })
 
-  const badgeColor = isDeliveryOnly
-    ? 'bg-gradient-to-b from-green-50 to-emerald-50'
-    : 'bg-gradient-to-b from-hd-cream to-hd-cream'
-
-  const discountColor = isDeliveryOnly ? 'text-emerald-600' : 'text-hd-burgundy'
-  const labelColor = isDeliveryOnly ? 'text-emerald-300' : 'text-hd-burgundy/40'
-  const contextColor = isDeliveryOnly ? 'text-emerald-600' : 'text-hd-burgundy'
-  const btnColor = isDeliveryOnly ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-hd-burgundy hover:bg-hd-burgundy-dark'
-
-  const contextLabel = isDeliveryOnly ? 'Delivery GoSend' : 'Pakai di App'
-
   return (
-    <div className={`bg-white rounded-2xl overflow-hidden border border-gray-100 flex ${isUsed ? 'opacity-50' : ''}`}>
-      {/* Left badge */}
-      <div className={`w-[72px] flex flex-col items-center justify-center p-3 relative flex-shrink-0 ${badgeColor}`}>
-        <div className="absolute right-0 top-3 bottom-3 border-r-[1.5px] border-dashed border-gray-200" />
-        <span className={`text-[22px] font-extrabold leading-none ${discountColor}`}>{discountLabel}</span>
-        <span className={`text-[9px] font-bold uppercase tracking-[0.5px] mt-0.5 ${labelColor}`}>
-          {isPercentage ? 'Diskon' : 'Potongan'}
-        </span>
+    <li className={`py-5 flex items-start gap-4 ${isUsed ? 'opacity-40' : ''}`}>
+      <span className="numeral text-[0.65rem] text-hd-ink/40 tracking-widest w-8 mt-1">
+        {String(index + 1).padStart(2, '0')}
+      </span>
+
+      {/* Big discount numeral */}
+      <div className="shrink-0 min-w-[4rem]">
+        <p className="numeral text-[1.6rem] leading-none text-hd-burgundy font-medium">
+          {discountLabel}
+        </p>
+        <p className="eyebrow text-hd-ink/45 mt-1">
+          {isPercentage ? 'Off' : 'Cut'}
+        </p>
       </div>
 
-      {/* Center info */}
-      <div className="flex-1 py-3 px-4 min-w-0">
-        <p className={`text-[10px] font-bold ${contextColor}`}>{contextLabel}</p>
-        <p className="text-[13px] font-bold text-hd-dark leading-snug mt-0.5">{voucher.title}</p>
-        <p className="text-[11px] text-gray-400 mt-1 leading-relaxed line-clamp-1">{voucher.description}</p>
-        <div className="flex gap-4 mt-2">
-          <div>
-            <p className="text-[9px] text-gray-300 font-semibold uppercase tracking-[0.3px]">Berlaku Hingga</p>
-            <p className="text-[11px] text-gray-500 font-semibold">{validUntil}</p>
-          </div>
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <p className="font-display text-[1rem] text-hd-ink tracking-editorial leading-snug">
+          {voucher.title}
+        </p>
+        {voucher.description && (
+          <p className="text-[0.75rem] text-hd-ink/60 mt-1 italic font-display line-clamp-2">
+            {voucher.description}
+          </p>
+        )}
+        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+          <span className="numeral text-[0.7rem] text-hd-ink/50">
+            Valid until {validUntil}
+          </span>
           {voucher.min_order != null && voucher.min_order > 0 && (
-            <div>
-              <p className="text-[9px] text-gray-300 font-semibold uppercase tracking-[0.3px]">Min Transaksi</p>
-              <p className="text-[11px] text-gray-500 font-semibold">{formatRupiah(voucher.min_order)}</p>
-            </div>
+            <span className="numeral text-[0.7rem] text-hd-ink/50">
+              Min. {formatRupiah(voucher.min_order)}
+            </span>
           )}
         </div>
-        {voucher.applicable_modes.length > 1 && (
-          <div className="flex gap-1 mt-2">
-            {voucher.applicable_modes.map(mode => (
-              <span
-                key={mode}
-                className={`text-[9px] font-semibold px-2 py-0.5 rounded ${
-                  isDeliveryOnly ? 'bg-emerald-50 text-emerald-600' : 'bg-hd-cream text-hd-burgundy'
-                }`}
-              >
-                {MODE_LABEL[mode] ?? mode}
-              </span>
-            ))}
-          </div>
-        )}
+        <div className="flex gap-2 mt-2">
+          {voucher.applicable_modes.map((mode) => (
+            <span
+              key={mode}
+              className="eyebrow text-hd-ink/45 text-[0.6rem] normal-case tracking-wider"
+            >
+              · {MODE_LABEL[mode] ?? mode}
+            </span>
+          ))}
+        </div>
       </div>
 
-      {/* Right action */}
-      <div className="flex items-center pr-3.5 flex-shrink-0">
-        <button
-          onClick={onUse}
-          disabled={isUsed}
-          className={`text-[11px] font-bold px-3.5 py-2 rounded-[10px] text-white transition-colors ${
-            isUsed ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : btnColor
-          }`}
-        >
-          {isUsed ? 'Terpakai' : 'Pakai'}
-        </button>
-      </div>
-    </div>
+      {/* Action */}
+      <button
+        onClick={onUse}
+        disabled={isUsed}
+        className="shrink-0 eyebrow text-hd-burgundy border-b border-hd-burgundy pb-0.5 flex items-center gap-1.5 disabled:text-hd-ink/30 disabled:border-hd-ink/20 hover:text-hd-burgundy-dark transition-colors"
+      >
+        {isUsed ? 'Used' : 'Apply'}
+        {!isUsed && <ArrowUpRight className="w-3 h-3" />}
+      </button>
+    </li>
   )
 }

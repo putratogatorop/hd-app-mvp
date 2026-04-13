@@ -11,9 +11,11 @@ import {
   PartyPopper,
   XCircle,
   MessageCircle,
+  ArrowUpRight,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { formatRupiah } from '@/lib/utils/format'
+import { Eyebrow } from '@/components/ui'
 
 type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
 
@@ -47,25 +49,19 @@ const MODE_LABEL: Record<string, string> = {
   dinein: 'Dine In',
 }
 
-const MODE_BADGE_COLOR: Record<string, string> = {
-  pickup: 'bg-blue-100 text-blue-700',
-  delivery: 'bg-orange-100 text-orange-700',
-  dinein: 'bg-purple-100 text-purple-700',
-}
-
 function getReadyLabel(mode: string) {
-  if (mode === 'pickup') return 'Siap Diambil'
-  if (mode === 'delivery') return 'Sedang Diantar'
-  return 'Siap di Meja Anda'
+  if (mode === 'pickup') return 'Ready for collection'
+  if (mode === 'delivery') return 'On its way'
+  return 'At your table'
 }
 
 function getSteps(mode: string) {
   return [
-    { status: 'pending', label: 'Pesanan Diterima', Icon: Receipt },
-    { status: 'confirmed', label: 'Dikonfirmasi', Icon: CheckCircle2 },
-    { status: 'preparing', label: 'Sedang Disiapkan', Icon: UtensilsCrossed },
+    { status: 'pending', label: 'Order received', Icon: Receipt },
+    { status: 'confirmed', label: 'Confirmed', Icon: CheckCircle2 },
+    { status: 'preparing', label: 'In preparation', Icon: UtensilsCrossed },
     { status: 'ready', label: getReadyLabel(mode), Icon: Package },
-    { status: 'delivered', label: 'Selesai', Icon: PartyPopper },
+    { status: 'delivered', label: 'Complete', Icon: PartyPopper },
   ]
 }
 
@@ -85,209 +81,219 @@ export default function OrderDetailClient({ order: initialOrder }: { order: Orde
           filter: `id=eq.${initialOrder.id}`,
         },
         (payload) => {
-          setOrder(prev => ({ ...prev, ...(payload.new as Partial<Order>) }))
-        }
+          setOrder((prev) => ({ ...prev, ...(payload.new as Partial<Order>) }))
+        },
       )
       .subscribe()
-
     return () => { supabase.removeChannel(channel) }
   }, [supabase, initialOrder.id])
 
   const currentIdx = STATUS_ORDER.indexOf(order.status)
   const isCancelled = order.status === 'cancelled'
   const steps = getSteps(order.order_mode)
-
   const subtotal = order.total_amount - order.delivery_fee + order.discount_amount
+  const shortId = order.id.slice(-8).toUpperCase()
+  const createdAt = new Date(order.created_at).toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 
   return (
     <div className="min-h-screen bg-hd-cream pb-32">
-      {/* Header */}
-      <div className="bg-white px-4 pt-12 pb-4 border-b border-gray-100 flex items-center gap-3 sticky top-0 z-10">
+      {/* Masthead */}
+      <header className="px-5 pt-10 pb-5 border-b border-hd-ink/15 sticky top-0 z-10 bg-hd-cream/95 backdrop-blur-md flex items-center gap-3">
         <Link
           href="/orders"
-          className="p-2 -ml-2 rounded-xl hover:bg-gray-100 transition-colors flex-shrink-0"
+          className="w-9 h-9 flex items-center justify-center border border-hd-ink/30 hover:bg-hd-ink hover:text-hd-cream transition-colors flex-shrink-0"
         >
-          <ArrowLeft size={22} className="text-hd-dark" />
+          <ArrowLeft size={16} />
         </Link>
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-bold text-hd-dark">Detail Pesanan</h1>
-          <p className="text-xs font-mono text-gray-400">#{order.id.slice(-8).toUpperCase()}</p>
+          <Eyebrow>Order · {MODE_LABEL[order.order_mode]}</Eyebrow>
+          <h1 className="mt-1 font-display text-[1.5rem] text-hd-ink tracking-editorial leading-tight truncate">
+            N° <span className="numeral text-[1.35rem]">{shortId}</span>
+          </h1>
         </div>
-      </div>
+      </header>
 
-      <div className="px-4 py-4 space-y-4">
-        {/* Status tracker */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-50 px-5 py-5">
-          <h2 className="text-sm font-bold text-hd-dark mb-4">Status Pesanan</h2>
-
-          {isCancelled ? (
-            <div className="flex items-center gap-3 py-2">
-              <div className="w-10 h-10 rounded-full bg-hd-cream flex items-center justify-center flex-shrink-0">
-                <XCircle size={20} className="text-red-500" />
-              </div>
-              <div>
-                <p className="font-semibold text-red-600">Pesanan Dibatalkan</p>
-                <p className="text-xs text-gray-400">Pesanan ini telah dibatalkan</p>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-0">
-              {steps.map((step, idx) => {
-                const isCompleted = idx < currentIdx
-                const isActive = idx === currentIdx
-                const isFuture = idx > currentIdx
-                const isLast = idx === steps.length - 1
-
-                const iconBg = isActive
-                  ? 'bg-hd-burgundy text-white animate-pulse'
-                  : isCompleted
-                  ? 'bg-green-100 text-green-600'
-                  : 'bg-gray-100 text-gray-300'
-
-                const connectorColor = isCompleted ? 'bg-green-400' : 'bg-gray-200'
-
-                return (
-                  <div key={step.status} className="flex gap-4">
-                    {/* Icon + connector */}
-                    <div className="flex flex-col items-center">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${iconBg}`}>
-                        <step.Icon size={18} />
-                      </div>
-                      {!isLast && (
-                        <div className={`w-0.5 flex-1 min-h-[24px] my-1 ${connectorColor} transition-colors`} />
-                      )}
-                    </div>
-
-                    {/* Label */}
-                    <div className={`pb-4 pt-2 ${isLast ? '' : ''}`}>
-                      <p className={`text-sm font-semibold leading-tight ${
-                        isActive
-                          ? 'text-hd-burgundy'
-                          : isCompleted
-                          ? 'text-green-600'
-                          : isFuture
-                          ? 'text-gray-300'
-                          : 'text-hd-dark'
-                      }`}>
-                        {step.label}
-                      </p>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
+      {/* ── Status tracker ── */}
+      <section className="px-5 pt-8">
+        <div className="flex items-end justify-between border-b border-hd-ink/15 pb-3">
+          <Eyebrow number="01">Progress</Eyebrow>
+          <span className="numeral text-[0.65rem] text-hd-ink/50 tracking-widest">{createdAt}</span>
         </div>
 
-        {/* Order details */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-50 px-5 py-4 space-y-3">
-          <h2 className="text-sm font-bold text-hd-dark">Info Pesanan</h2>
-
-          {/* Mode badge */}
-          <div className="flex items-center gap-2">
-            <span className={`px-3 py-1 rounded-full text-xs font-bold ${MODE_BADGE_COLOR[order.order_mode]}`}>
-              {MODE_LABEL[order.order_mode]}
-            </span>
-            {order.order_mode === 'dinein' && order.table_number != null && (
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
-                Meja {order.table_number}
-              </span>
-            )}
-          </div>
-
-          {/* Store */}
-          {order.store && (
+        {isCancelled ? (
+          <div className="mt-5 flex items-center gap-3 p-4 border border-hd-burgundy/30">
+            <XCircle size={22} className="text-hd-burgundy" />
             <div>
-              <p className="text-xs text-gray-400 mb-0.5">Outlet</p>
-              <p className="text-sm font-semibold text-hd-dark">{order.store.name}</p>
-              <p className="text-xs text-gray-500">{order.store.address}</p>
+              <p className="font-display italic text-[1rem] text-hd-burgundy">Order cancelled</p>
+              <p className="text-[0.75rem] text-hd-ink/60 mt-0.5">This order did not proceed.</p>
+            </div>
+          </div>
+        ) : (
+          <ol className="mt-6">
+            {steps.map((step, idx) => {
+              const isCompleted = idx < currentIdx
+              const isActive = idx === currentIdx
+              const isLast = idx === steps.length - 1
+
+              return (
+                <li key={step.status} className="flex gap-4 relative">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`w-9 h-9 border flex items-center justify-center flex-shrink-0 transition-colors ${
+                        isActive
+                          ? 'bg-hd-burgundy text-hd-cream border-hd-burgundy animate-pulse'
+                          : isCompleted
+                          ? 'bg-hd-ink text-hd-cream border-hd-ink'
+                          : 'bg-hd-paper text-hd-ink/30 border-hd-ink/15'
+                      }`}
+                    >
+                      <step.Icon size={15} />
+                    </div>
+                    {!isLast && (
+                      <div
+                        className={`w-px flex-1 min-h-[32px] my-1 transition-colors ${
+                          isCompleted ? 'bg-hd-ink' : 'bg-hd-ink/15'
+                        }`}
+                      />
+                    )}
+                  </div>
+                  <div className="pb-6 pt-2 flex-1">
+                    <span className="numeral text-[0.65rem] text-hd-ink/40 tracking-widest block">
+                      {String(idx + 1).padStart(2, '0')}
+                    </span>
+                    <p
+                      className={`font-display text-[1rem] tracking-editorial mt-0.5 ${
+                        isActive
+                          ? 'text-hd-burgundy italic'
+                          : isCompleted
+                          ? 'text-hd-ink'
+                          : 'text-hd-ink/40'
+                      }`}
+                    >
+                      {step.label}
+                    </p>
+                  </div>
+                </li>
+              )
+            })}
+          </ol>
+        )}
+      </section>
+
+      {/* ── Order info ── */}
+      <section className="px-5 pt-4">
+        <div className="flex items-end justify-between border-b border-hd-ink/15 pb-3">
+          <Eyebrow number="02">Details</Eyebrow>
+        </div>
+
+        <dl className="mt-4 space-y-4">
+          <div className="flex justify-between items-baseline">
+            <dt className="eyebrow text-hd-ink/50">Mode</dt>
+            <dd className="font-display text-[0.95rem] text-hd-ink">
+              {MODE_LABEL[order.order_mode]}
+              {order.order_mode === 'dinein' && order.table_number != null && (
+                <span className="italic text-hd-ink/60"> · Table {order.table_number}</span>
+              )}
+            </dd>
+          </div>
+          {order.store && (
+            <div className="flex justify-between items-baseline gap-4">
+              <dt className="eyebrow text-hd-ink/50">Store</dt>
+              <dd className="font-display text-[0.95rem] text-hd-ink text-right truncate max-w-[60%]">
+                {order.store.name}
+              </dd>
             </div>
           )}
-
-          {/* Notes */}
           {order.notes && (
             <div>
-              <p className="text-xs text-gray-400 mb-0.5">Catatan</p>
-              <p className="text-sm text-gray-600">{order.notes}</p>
+              <dt className="eyebrow text-hd-ink/50 mb-1 block">Note</dt>
+              <dd className="font-display italic text-[0.9rem] text-hd-ink/70">
+                &ldquo;{order.notes}&rdquo;
+              </dd>
             </div>
           )}
-        </div>
+        </dl>
+      </section>
 
-        {/* Item list */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-50 px-5 py-4">
-          <h2 className="text-sm font-bold text-hd-dark mb-3">Item Pesanan</h2>
-          <div className="space-y-2">
-            {order.order_items.map((item, i) => (
-              <div key={i} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-gray-400 w-5 text-center">
-                    {item.quantity}x
-                  </span>
-                  <span className="text-sm text-hd-dark">
-                    {item.menu_item?.name ?? 'Item'}
-                  </span>
-                </div>
-                <span className="text-sm font-semibold text-hd-dark">
-                  {formatRupiah(item.unit_price * item.quantity)}
-                </span>
-              </div>
-            ))}
+      {/* ── Items ── */}
+      <section className="px-5 pt-10">
+        <Eyebrow number="03">Items</Eyebrow>
+        <ul className="mt-3 divide-y divide-hd-ink/10 border-y border-hd-ink/10">
+          {order.order_items.map((item, i) => (
+            <li key={i} className="py-4 flex items-baseline gap-4">
+              <span className="numeral text-[0.75rem] text-hd-ink/50 w-8">
+                × {item.quantity}
+              </span>
+              <span className="font-display text-[0.95rem] text-hd-ink flex-1 tracking-editorial">
+                {item.menu_item?.name ?? 'Item'}
+              </span>
+              <span className="numeral text-[0.85rem] text-hd-ink">
+                {formatRupiah(item.unit_price * item.quantity)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* ── Payment summary ── */}
+      <section className="px-5 pt-10">
+        <Eyebrow number="04">Payment</Eyebrow>
+        <dl className="mt-4 space-y-3 border-b border-hd-ink/15 pb-4">
+          <div className="flex justify-between text-[0.85rem]">
+            <dt className="text-hd-ink/60">Subtotal</dt>
+            <dd className="numeral text-hd-ink">{formatRupiah(subtotal)}</dd>
           </div>
-        </div>
-
-        {/* Payment summary */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-50 px-5 py-4 space-y-2">
-          <h2 className="text-sm font-bold text-hd-dark mb-1">Ringkasan Pembayaran</h2>
-
-          <div className="flex justify-between text-sm text-gray-500">
-            <span>Subtotal</span>
-            <span>{formatRupiah(subtotal)}</span>
-          </div>
-
           {order.discount_amount > 0 && (
-            <div className="flex justify-between text-sm text-green-600">
-              <span>Diskon</span>
-              <span>-{formatRupiah(order.discount_amount)}</span>
+            <div className="flex justify-between text-[0.85rem] text-hd-burgundy">
+              <dt>Discount</dt>
+              <dd className="numeral">− {formatRupiah(order.discount_amount)}</dd>
             </div>
           )}
-
           {order.order_mode === 'delivery' && order.delivery_fee > 0 && (
-            <div className="flex justify-between text-sm text-gray-500">
-              <span>Ongkos Kirim</span>
-              <span>{formatRupiah(order.delivery_fee)}</span>
+            <div className="flex justify-between text-[0.85rem]">
+              <dt className="text-hd-ink/60">Delivery</dt>
+              <dd className="numeral text-hd-ink">{formatRupiah(order.delivery_fee)}</dd>
             </div>
           )}
-
-          <div className="flex justify-between text-sm text-gray-500">
-            <span>Metode Bayar</span>
-            <span className="capitalize">{order.payment_method}</span>
+          <div className="flex justify-between text-[0.85rem]">
+            <dt className="text-hd-ink/60">Method</dt>
+            <dd className="text-hd-ink capitalize font-display italic">{order.payment_method}</dd>
           </div>
-
-          <div className="border-t border-gray-100 pt-2 flex justify-between font-bold">
-            <span className="text-hd-dark">Total</span>
-            <span className="text-hd-burgundy">{formatRupiah(order.total_amount)}</span>
-          </div>
-
-          {order.points_earned > 0 && !isCancelled && (
-            <div className="bg-amber-50 rounded-xl px-3 py-2 flex items-center justify-between mt-1">
-              <span className="text-xs text-amber-700">Poin yang didapat</span>
-              <span className="text-xs font-bold text-amber-600">+{order.points_earned} poin ⭐</span>
-            </div>
-          )}
+        </dl>
+        <div className="flex items-baseline justify-between pt-5">
+          <span className="eyebrow text-hd-ink/60">Total</span>
+          <span className="numeral text-[1.8rem] text-hd-ink">
+            {formatRupiah(order.total_amount)}
+          </span>
         </div>
-      </div>
+        {order.points_earned > 0 && !isCancelled && (
+          <p className="mt-4 pt-4 border-t border-hd-ink/10 flex justify-between items-baseline">
+            <span className="eyebrow text-hd-gold">Points earned</span>
+            <span className="numeral text-[0.95rem] text-hd-gold">
+              + {order.points_earned}
+            </span>
+          </p>
+        )}
+      </section>
 
-      {/* Bottom actions */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-3 bg-gradient-to-t from-hd-cream via-hd-cream to-transparent space-y-3">
+      {/* ── Bottom actions ── */}
+      <div className="fixed bottom-0 left-0 right-0 px-5 pb-6 pt-3 bg-gradient-to-t from-hd-cream via-hd-cream/95 to-transparent space-y-3 z-20">
         <Link
           href="/menu"
-          className="w-full py-3.5 bg-hd-burgundy text-white font-bold text-sm rounded-2xl hover:bg-hd-burgundy-dark transition-colors shadow-lg shadow-red-100 flex items-center justify-center"
+          className="w-full h-13 py-4 bg-hd-burgundy text-hd-cream border border-hd-burgundy eyebrow hover:bg-hd-burgundy-dark transition-colors flex items-center justify-center gap-2 group"
         >
-          Pesan Lagi
+          <span>Order again</span>
+          <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </Link>
-        <div className="flex items-center justify-center gap-1.5 text-sm text-gray-500">
-          <MessageCircle size={15} className="text-gray-400" />
-          <span>Butuh Bantuan?</span>
+        <div className="flex items-center justify-center gap-2 text-[0.75rem] text-hd-ink/55 italic font-display">
+          <MessageCircle size={12} />
+          <span>Need assistance?</span>
         </div>
       </div>
     </div>

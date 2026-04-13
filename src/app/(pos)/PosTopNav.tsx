@@ -4,52 +4,69 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const navLinks = [
-  { href: '/pos/orders', label: '📋 Orders', short: 'Orders' },
-  { href: '/pos/menu', label: '🍨 Menu', short: 'Menu' },
-  { href: '/pos/dashboard', label: '📊 Dashboard', short: 'Dashboard' },
+  { href: '/pos/orders', label: 'Queue', num: '01' },
+  { href: '/pos/menu', label: 'Menu', num: '02' },
+  { href: '/pos/dashboard', label: 'Dashboard', num: '03' },
 ]
 
 export default function PosTopNav({ staffName }: { staffName: string }) {
   const pathname = usePathname()
+  const initials = staffName
+    .split(' ')
+    .map((s) => s[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-hd-dark text-white z-50 shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-hd-burgundy rounded-full flex items-center justify-center">
-            <span className="text-white text-xs font-bold">HD</span>
-          </div>
-          <span className="font-bold text-white hidden sm:block">POS System</span>
+    <header className="fixed top-0 left-0 right-0 bg-hd-burgundy-dark text-hd-cream z-50 border-b border-hd-cream/15">
+      <div className="texture-grain absolute inset-0 opacity-20" aria-hidden />
+      <div className="relative max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+        <div className="flex items-baseline gap-3">
+          <span className="eyebrow text-hd-gold-light">Häagen-Dazs</span>
+          <span className="font-display italic text-[1rem] text-hd-cream/80">
+            Staff
+          </span>
         </div>
 
-        {/* Nav */}
-        <nav className="flex items-center gap-1">
-          {navLinks.map(link => {
+        <nav className="flex items-center gap-6">
+          {navLinks.map((link) => {
             const isActive = pathname.startsWith(link.href)
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-hd-burgundy text-white'
-                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
-                }`}
+                className="relative flex items-baseline gap-2 py-1"
               >
-                <span className="hidden sm:inline">{link.label}</span>
-                <span className="sm:hidden">{link.short}</span>
+                <span
+                  className={`numeral text-[0.6rem] ${
+                    isActive ? 'text-hd-gold-light' : 'text-hd-cream/40'
+                  }`}
+                >
+                  {link.num}
+                </span>
+                <span
+                  className={`font-display text-[0.95rem] tracking-editorial transition-colors ${
+                    isActive ? 'text-hd-cream italic' : 'text-hd-cream/60 hover:text-hd-cream'
+                  }`}
+                >
+                  {link.label}
+                </span>
+                {isActive && (
+                  <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-hd-gold" />
+                )}
               </Link>
             )
           })}
         </nav>
 
-        {/* Staff info */}
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center">
-            <span className="text-xs">👤</span>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 border border-hd-cream/30 flex items-center justify-center">
+            <span className="font-display italic text-[0.75rem] text-hd-cream">
+              {initials}
+            </span>
           </div>
-          <span className="text-sm text-gray-300 hidden sm:block truncate max-w-[120px]">
+          <span className="text-[0.8rem] text-hd-cream/70 hidden sm:block truncate max-w-[140px]">
             {staffName}
           </span>
         </div>

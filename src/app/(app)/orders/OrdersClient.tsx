@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Package, Clock, ShoppingBag } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
+import { Eyebrow } from '@/components/ui'
 
 type OrderItem = {
   quantity: number
@@ -23,29 +24,29 @@ const ACTIVE_STATUSES = ['pending', 'confirmed', 'preparing', 'ready']
 const HISTORY_STATUSES = ['delivered', 'cancelled']
 
 const STATUS_LABELS: Record<string, string> = {
-  pending: 'Menunggu',
-  confirmed: 'Dikonfirmasi',
-  preparing: 'Diproses',
-  ready: 'Siap Ambil',
-  delivered: 'Selesai',
-  cancelled: 'Dibatalkan',
+  pending: 'Pending',
+  confirmed: 'Confirmed',
+  preparing: 'In preparation',
+  ready: 'Ready',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
 }
 
-const STATUS_BADGE_CLASSES: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-700',
-  confirmed: 'bg-blue-100 text-blue-700',
-  preparing: 'bg-orange-100 text-orange-700',
-  ready: 'bg-green-100 text-green-700',
-  delivered: 'bg-green-100 text-green-700',
-  cancelled: 'bg-hd-cream text-red-700',
+const STATUS_ACCENT: Record<string, string> = {
+  pending: 'text-amber-700',
+  confirmed: 'text-blue-700',
+  preparing: 'text-hd-burgundy',
+  ready: 'text-emerald-700',
+  delivered: 'text-hd-ink/50',
+  cancelled: 'text-hd-ink/40 line-through',
 }
 
 function timeAgo(dateStr: string): string {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
-  if (diff < 60) return 'Baru saja'
-  if (diff < 3600) return `${Math.floor(diff / 60)} menit lalu`
-  if (diff < 86400) return `${Math.floor(diff / 3600)} jam lalu`
-  return `${Math.floor(diff / 86400)} hari lalu`
+  if (diff < 60) return 'moments ago'
+  if (diff < 3600) return `${Math.floor(diff / 60)} min ago`
+  if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`
+  return `${Math.floor(diff / 86400)} d ago`
 }
 
 function formatRupiah(n: number) {
@@ -56,66 +57,45 @@ function formatRupiah(n: number) {
   }).format(n)
 }
 
-function ItemSummary({ items }: { items: OrderItem[] }) {
-  if (!items || items.length === 0) return <span className="text-gray-400 text-xs">—</span>
-  const first = items[0]
-  const name = first.menu_item?.name ?? 'Item'
-  const rest = items.length - 1
-  return (
-    <span className="text-gray-500 text-xs">
-      {name} x{first.quantity}{rest > 0 ? `, +${rest} lainnya` : ''}
-    </span>
-  )
-}
-
-function OrderCard({ order }: { order: Order }) {
-  const isDelivered = order.status === 'delivered'
-  const badgeClass = STATUS_BADGE_CLASSES[order.status] ?? 'bg-gray-100 text-gray-600'
+function OrderRow({ order, index }: { order: Order; index: number }) {
+  const accent = STATUS_ACCENT[order.status] ?? 'text-hd-ink/60'
+  const first = order.order_items?.[0]
+  const firstName = first?.menu_item?.name ?? '—'
+  const rest = Math.max(0, (order.order_items?.length ?? 0) - 1)
 
   return (
-    <Link href={`/orders/${order.id}`} className="block">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-3">
-        {/* Top row: ID + badge */}
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-xs text-gray-500 tracking-wider">
-            #{order.id.slice(-8).toUpperCase()}
+    <Link href={`/orders/${order.id}`} className="block group">
+      <div className="py-5 border-b border-hd-ink/10 hover:bg-hd-paper transition-colors duration-300">
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="numeral text-[0.65rem] text-hd-ink/40 tracking-widest">
+            N° {String(index + 1).padStart(3, '0')} · #{order.id.slice(-6).toUpperCase()}
           </span>
-          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${badgeClass}`}>
+          <span className={`eyebrow ${accent}`}>
             {STATUS_LABELS[order.status] ?? order.status}
           </span>
         </div>
 
-        {/* Time + store */}
-        <div className="flex items-center gap-3 text-xs text-gray-400">
-          <span className="flex items-center gap-1">
-            <Clock size={12} />
-            {timeAgo(order.created_at)}
-          </span>
-          {order.store?.name && (
-            <span className="flex items-center gap-1">
-              <ShoppingBag size={12} />
-              {order.store.name}
+        <div className="mt-3 flex items-end justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <p className="font-display text-[1.15rem] text-hd-ink tracking-editorial truncate">
+              {firstName}
+              {rest > 0 && (
+                <span className="font-display italic text-hd-ink/50 text-[0.95rem]">
+                  &nbsp;+ {rest} more
+                </span>
+              )}
+            </p>
+            <p className="eyebrow text-hd-ink/50 mt-2">
+              {timeAgo(order.created_at)}
+              {order.store?.name && <> · {order.store.name}</>}
+            </p>
+          </div>
+          <div className="flex items-end gap-3 shrink-0">
+            <span className="numeral text-[0.95rem] text-hd-ink">
+              {formatRupiah(order.total_amount)}
             </span>
-          )}
-        </div>
-
-        {/* Item summary */}
-        <ItemSummary items={order.order_items} />
-
-        {/* Bottom row: total + reorder button */}
-        <div className="flex items-center justify-between pt-1">
-          <span className="text-hd-burgundy font-bold text-sm">
-            {formatRupiah(order.total_amount)}
-          </span>
-          {isDelivered && (
-            <Link
-              href="/menu"
-              onClick={(e) => e.stopPropagation()}
-              className="text-xs bg-hd-burgundy text-white px-3 py-1.5 rounded-full font-semibold"
-            >
-              Pesan Lagi
-            </Link>
-          )}
+            <ArrowUpRight className="w-4 h-4 text-hd-ink/40 mb-1 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </div>
         </div>
       </div>
     </Link>
@@ -124,16 +104,12 @@ function OrderCard({ order }: { order: Order }) {
 
 function EmptyState({ tab }: { tab: 'active' | 'history' }) {
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
-      <Package size={48} className="text-gray-200 mb-4" />
-      <p className="text-gray-500 font-semibold">
-        {tab === 'active' ? 'Tidak ada pesanan aktif' : 'Belum ada riwayat'}
+    <div className="flex flex-col items-center justify-center py-20 text-center gap-4 border border-hd-ink/10 border-dashed mt-6">
+      <p className="font-display italic text-[1.1rem] text-hd-ink/60">
+        {tab === 'active' ? 'No orders in progress.' : 'No past orders yet.'}
       </p>
-      <Link
-        href="/menu"
-        className="mt-4 text-sm bg-hd-burgundy text-white px-5 py-2 rounded-full font-semibold"
-      >
-        Pesan Sekarang
+      <Link href="/menu" className="eyebrow text-hd-burgundy inline-flex items-center gap-1.5">
+        Browse the menu <ArrowUpRight className="w-3 h-3" />
       </Link>
     </div>
   )
@@ -142,50 +118,59 @@ function EmptyState({ tab }: { tab: 'active' | 'history' }) {
 export default function OrdersClient({ orders }: { orders: Order[] }) {
   const [tab, setTab] = useState<'active' | 'history'>('active')
 
-  const activeOrders = orders.filter(o => ACTIVE_STATUSES.includes(o.status))
-  const historyOrders = orders.filter(o => HISTORY_STATUSES.includes(o.status))
-
+  const activeOrders = orders.filter((o) => ACTIVE_STATUSES.includes(o.status))
+  const historyOrders = orders.filter((o) => HISTORY_STATUSES.includes(o.status))
   const displayed = tab === 'active' ? activeOrders : historyOrders
 
   return (
-    <div className="page-enter">
-      {/* Header */}
-      <div className="bg-white px-6 pt-12 pb-4 border-b border-gray-100">
-        <h1 className="text-2xl font-bold text-hd-dark">Pesanan</h1>
-      </div>
+    <div className="page-enter min-h-screen bg-hd-cream pb-24">
+      {/* Masthead */}
+      <header className="px-5 pt-12 pb-5 border-b border-hd-ink/15 bg-hd-cream/95 backdrop-blur-md sticky top-0 z-20">
+        <Eyebrow number="03">Your dossier</Eyebrow>
+        <h1 className="mt-3 font-display text-display-lg text-hd-ink tracking-editorial">
+          Orders
+        </h1>
 
-      {/* Tabs */}
-      <div className="bg-white px-4 pb-3 border-b border-gray-100">
-        <div className="flex gap-2 pt-3">
-          <button
-            onClick={() => setTab('active')}
-            className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-colors ${
-              tab === 'active'
-                ? 'bg-hd-burgundy text-white'
-                : 'bg-gray-100 text-gray-500'
-            }`}
-          >
-            Aktif ({activeOrders.length})
-          </button>
-          <button
-            onClick={() => setTab('history')}
-            className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-colors ${
-              tab === 'history'
-                ? 'bg-hd-burgundy text-white'
-                : 'bg-gray-100 text-gray-500'
-            }`}
-          >
-            Riwayat ({historyOrders.length})
-          </button>
+        <div className="flex gap-6 mt-6">
+          {[
+            { key: 'active' as const, label: 'In progress', count: activeOrders.length },
+            { key: 'history' as const, label: 'Archive', count: historyOrders.length },
+          ].map((t) => {
+            const active = tab === t.key
+            return (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className="relative pb-2 flex items-baseline gap-2"
+              >
+                <span
+                  className={`font-display text-[1rem] transition-colors ${
+                    active ? 'text-hd-burgundy italic' : 'text-hd-ink/60'
+                  }`}
+                >
+                  {t.label}
+                </span>
+                <span
+                  className={`numeral text-[0.7rem] ${active ? 'text-hd-burgundy' : 'text-hd-ink/40'}`}
+                >
+                  {String(t.count).padStart(2, '0')}
+                </span>
+                {active && <span className="absolute left-0 right-0 bottom-0 h-[2px] bg-hd-burgundy" />}
+              </button>
+            )
+          })}
         </div>
-      </div>
+      </header>
 
-      {/* Order list */}
-      <div className="px-4 py-4 space-y-3">
+      <div className="px-5">
         {displayed.length === 0 ? (
           <EmptyState tab={tab} />
         ) : (
-          displayed.map(order => <OrderCard key={order.id} order={order} />)
+          <div>
+            {displayed.map((order, i) => (
+              <OrderRow key={order.id} order={order} index={i} />
+            ))}
+          </div>
         )}
       </div>
     </div>

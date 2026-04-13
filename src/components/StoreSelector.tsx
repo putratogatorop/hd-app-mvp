@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { X, Search, MapPin, Clock, ChevronRight } from 'lucide-react'
+import { X, Search, MapPin, ArrowUpRight } from 'lucide-react'
 import type { Database } from '@/lib/supabase/database.types'
 import { useOrderContext } from '@/lib/store/order-context'
+import { Eyebrow } from '@/components/ui'
 
 type Store = Database['public']['Tables']['stores']['Row']
 
@@ -24,10 +25,9 @@ export default function StoreSelector({ stores, open, onClose }: StoreSelectorPr
           (s) =>
             s.name.toLowerCase().includes(q) ||
             s.address.toLowerCase().includes(q) ||
-            s.city.toLowerCase().includes(q)
+            s.city.toLowerCase().includes(q),
         )
       : stores
-
     const open = matched.filter((s) => s.is_open)
     const closed = matched.filter((s) => !s.is_open)
     return [...open, ...closed]
@@ -43,96 +43,92 @@ export default function StoreSelector({ stores, open, onClose }: StoreSelectorPr
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
-      {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-hd-ink/60 animate-[revealFade_0.3s_ease-out]"
         onClick={onClose}
-        aria-hidden="true"
+        aria-hidden
       />
 
-      {/* Bottom sheet */}
-      <div className="relative bg-white rounded-t-2xl max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-hd-dark">Pilih Toko</h2>
+      <div className="relative bg-hd-paper max-h-[85vh] flex flex-col animate-[revealUp_0.5s_cubic-bezier(0.2,0.8,0.2,1)_both]">
+        <div className="px-6 pt-6 pb-5 flex items-center justify-between border-b border-hd-ink/15">
+          <div>
+            <Eyebrow>Location</Eyebrow>
+            <h2 className="mt-1.5 font-display text-[1.6rem] text-hd-ink tracking-editorial">
+              Choose a <span className="italic">store</span>
+            </h2>
+          </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-            aria-label="Tutup"
+            className="w-9 h-9 flex items-center justify-center border border-hd-ink/30 text-hd-ink hover:bg-hd-ink hover:text-hd-cream transition-colors"
+            aria-label="Close"
           >
-            <X size={20} />
+            <X size={16} />
           </button>
         </div>
 
-        {/* Search */}
-        <div className="px-4 py-3 border-b border-gray-100">
-          <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-3 py-2.5">
-            <Search size={16} className="text-gray-400 shrink-0" />
+        <div className="px-6 py-4 border-b border-hd-ink/10">
+          <div className="relative border-b border-hd-ink/20 focus-within:border-hd-ink transition-colors">
+            <Search size={14} className="absolute left-0 top-1/2 -translate-y-1/2 text-hd-ink/40" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cari lokasi toko..."
-              className="flex-1 bg-transparent text-sm text-hd-dark placeholder:text-gray-400 outline-none"
+              placeholder="Search by name, area, or city…"
+              className="w-full pl-6 pr-2 py-3 bg-transparent text-[0.9rem] placeholder:text-hd-ink/40 focus:outline-none"
             />
           </div>
         </div>
 
-        {/* Store list */}
-        <ul className="overflow-y-auto flex-1 px-4 py-2 divide-y divide-gray-50">
+        <ul className="overflow-y-auto flex-1 divide-y divide-hd-ink/10">
           {filtered.length === 0 && (
-            <li className="py-8 text-center text-sm text-gray-400">
-              Toko tidak ditemukan
+            <li className="py-12 text-center">
+              <p className="font-display italic text-[1rem] text-hd-ink/55">
+                No stores match that search.
+              </p>
             </li>
           )}
-          {filtered.map((store) => (
+          {filtered.map((store, i) => (
             <li key={store.id}>
               <button
                 onClick={() => handleSelectStore(store)}
                 disabled={!store.is_open}
-                className={`w-full text-left py-3.5 flex items-center gap-3 transition-colors ${
-                  store.is_open
-                    ? 'hover:bg-gray-50 cursor-pointer'
-                    : 'opacity-50 cursor-not-allowed'
+                className={`w-full text-left px-6 py-5 flex items-start gap-4 group transition-colors ${
+                  store.is_open ? 'hover:bg-hd-cream-deep cursor-pointer' : 'opacity-40 cursor-not-allowed'
                 }`}
               >
-                {/* Store info */}
+                <span className="numeral text-[0.65rem] text-hd-ink/40 tracking-widest w-6 mt-1">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-hd-dark text-sm truncate">
+                  <div className="flex items-baseline gap-3 justify-between">
+                    <p className="font-display text-[1.05rem] text-hd-ink tracking-editorial truncate">
                       {store.name}
-                    </span>
+                    </p>
                     <span
-                      className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                        store.is_open
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-600'
+                      className={`eyebrow shrink-0 ${
+                        store.is_open ? 'text-emerald-700' : 'text-hd-ink/40'
                       }`}
                     >
-                      {store.is_open ? 'Buka' : 'Tutup'}
+                      {store.is_open ? 'Open' : 'Closed'}
                     </span>
                   </div>
 
-                  <div className="flex items-start gap-1 text-gray-500 text-xs mb-0.5">
-                    <MapPin size={11} className="mt-0.5 shrink-0 text-gray-400" />
+                  <p className="flex items-start gap-1.5 text-[0.78rem] text-hd-ink/60 mt-1.5 italic font-display">
+                    <MapPin size={10} className="mt-1 shrink-0" />
                     <span className="truncate">
                       {store.address}, {store.city}
                     </span>
-                  </div>
+                  </p>
 
-                  <div className="flex items-center gap-3 text-gray-500 text-xs">
-                    <span className="flex items-center gap-1">
-                      <Clock size={11} className="shrink-0 text-gray-400" />
-                      {store.opening_hours}
-                    </span>
-                    <span className="text-gray-400">
-                      {store.distance_dummy} km
-                    </span>
+                  <div className="flex items-center gap-4 mt-2 numeral text-[0.7rem] text-hd-ink/50">
+                    <span>{store.opening_hours}</span>
+                    <span>{store.distance_dummy} km</span>
                   </div>
                 </div>
 
                 {store.is_open && (
-                  <ChevronRight size={16} className="shrink-0 text-gray-300" />
+                  <ArrowUpRight className="w-4 h-4 text-hd-ink/40 mt-1 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 )}
               </button>
             </li>

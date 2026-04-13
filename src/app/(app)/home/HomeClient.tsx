@@ -1,19 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
-  ChevronRight,
-  Star,
+  ArrowUpRight,
   MapPin,
-  Ticket,
-  Users,
-  Phone,
-  Gift,
-  Crown,
-  Truck,
   ShoppingBag,
+  Truck,
   UtensilsCrossed,
 } from 'lucide-react'
 import type { Database } from '@/lib/supabase/database.types'
@@ -28,7 +22,6 @@ import PromoPopup from '@/components/PromoPopup'
 type ProfileRow = Database['public']['Tables']['profiles']['Row']
 type MenuItem = Database['public']['Tables']['menu_items']['Row']
 type Store = Database['public']['Tables']['stores']['Row']
-
 type Profile = Pick<ProfileRow, 'full_name' | 'loyalty_points' | 'tier' | 'referral_code'>
 
 interface HomeClientProps {
@@ -38,48 +31,29 @@ interface HomeClientProps {
   voucherCount: number
 }
 
-const tierConfig: Record<string, { color: string; label: string; target: number }> = {
-  silver: { color: 'text-gray-500', label: 'Silver', target: 500 },
-  gold: { color: 'text-hd-gold', label: 'Gold', target: 2000 },
-  platinum: { color: 'text-blue-600', label: 'Platinum', target: 5000 },
+const tierConfig: Record<string, { label: string; target: number; next: string }> = {
+  silver: { label: 'Silver', target: 500, next: 'Gold' },
+  gold: { label: 'Gold', target: 2000, next: 'Platinum' },
+  platinum: { label: 'Platinum', target: 5000, next: 'Platinum' },
 }
 
-const promoBanners = [
-  { id: 1, src: '/promo/buy1get1.jpg', alt: 'Buy 1 Get 1 Free — A Treat for Two', href: '/menu' },
-  { id: 2, src: '/promo/prosperity.jpg', alt: 'Crafted for Your Prosperity — Delivery Packages', href: '/menu' },
-  { id: 3, src: '/promo/giveaway.png', alt: 'Giveaway Alert — Creamy Indulgence', href: '/voucher' },
+const orderModes: {
+  key: 'pickup' | 'delivery' | 'dinein'
+  numeral: string
+  title: string
+  tagline: string
+  Icon: typeof ShoppingBag
+}[] = [
+  { key: 'pickup', numeral: 'I', title: 'Pick Up', tagline: 'Collected at the counter', Icon: ShoppingBag },
+  { key: 'delivery', numeral: 'II', title: 'Delivery', tagline: 'Brought to the door', Icon: Truck },
+  { key: 'dinein', numeral: 'III', title: 'Dine In', tagline: 'At table, unhurried', Icon: UtensilsCrossed },
 ]
 
-const featureCards = [
-  {
-    icon: Crown,
-    title: 'MyHD Plan',
-    desc: 'Berlangganan, lebih hemat!',
-    color: 'bg-amber-50 text-amber-600',
-    href: '/voucher',
-  },
-  {
-    icon: UtensilsCrossed,
-    title: 'Catering',
-    desc: 'Rayakan momen spesial',
-    color: 'bg-hd-cream text-hd-burgundy',
-    href: '/menu',
-    badge: 'Baru',
-  },
-  {
-    icon: Users,
-    title: 'Share the Sip',
-    desc: 'Bagikan kode referral, dapatkan hadiah',
-    color: 'bg-green-50 text-green-600',
-    href: '/voucher',
-  },
-  {
-    icon: Gift,
-    title: 'HD Gift',
-    desc: 'Kirim ice cream ke orang terdekat',
-    color: 'bg-purple-50 text-purple-600',
-    href: '/menu',
-  },
+const sections = [
+  { num: '01', title: 'MyHD Plan', tagline: 'A standing subscription', href: '/voucher' },
+  { num: '02', title: 'Catering', tagline: 'For the occasion', href: '/menu', mark: 'Nouveau' },
+  { num: '03', title: 'Share the Sip', tagline: 'Invitation, with reward', href: '/voucher' },
+  { num: '04', title: 'The Gift', tagline: 'Sent, sealed, savoured', href: '/menu' },
 ]
 
 export default function HomeClient({
@@ -90,344 +64,321 @@ export default function HomeClient({
 }: HomeClientProps) {
   const [storeOpen, setStoreOpen] = useState(false)
   const [qrOpen, setQrOpen] = useState(false)
-  const [currentBanner, setCurrentBanner] = useState(0)
 
   const { mode, setMode, selectedStore } = useOrderContext()
   const addItem = useCartStore((s) => s.addItem)
 
-  const tierKey = profile?.tier ?? 'silver'
-  const tier = tierConfig[tierKey] ?? tierConfig.silver
+  const tier = tierConfig[profile?.tier ?? 'silver'] ?? tierConfig.silver
   const points = profile?.loyalty_points ?? 0
-  const progress = Math.min(points / tier.target, 1)
+  const toNext = Math.max(0, tier.target - points)
+  const firstName = profile?.full_name?.split(' ')[0] ?? 'Guest'
 
-  // Auto-scroll banners
-  const nextBanner = useCallback(() => {
-    setCurrentBanner((prev) => (prev + 1) % promoBanners.length)
-  }, [])
-
-  useEffect(() => {
-    const interval = setInterval(nextBanner, 4000)
-    return () => clearInterval(interval)
-  }, [nextBanner])
-
-  const firstName = profile?.full_name?.split(' ')[0] ?? 'Pelanggan'
+  const today = new Date()
+  const dateline = today
+    .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+    .toUpperCase()
 
   return (
     <div className="min-h-screen bg-hd-cream pb-28">
       <PromoPopup />
 
-      {/* ── Promo Banner Carousel ── */}
-      <div className="relative">
-        <div className="overflow-hidden">
-          <div
-            className="flex transition-transform duration-500 ease-out"
-            style={{ transform: `translateX(-${currentBanner * 100}%)` }}
-          >
-            {promoBanners.map((banner) => (
-              <Link
-                key={banner.id}
-                href={banner.href}
-                className="w-full shrink-0 relative block"
-              >
-                <Image
-                  src={banner.src}
-                  alt={banner.alt}
-                  width={750}
-                  height={400}
-                  className="w-full h-auto object-cover"
-                  priority={banner.id === 1}
-                />
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Dot indicators */}
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5">
-          {promoBanners.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentBanner(i)}
-              className={`rounded-full transition-all ${
-                i === currentBanner
-                  ? 'w-6 h-2 bg-white'
-                  : 'w-2 h-2 bg-white/40'
-              }`}
-            />
-          ))}
-        </div>
-
-        {/* Notification bell */}
-        <button className="absolute top-12 right-5 w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-          <span className="text-white text-lg">🔔</span>
-        </button>
-      </div>
-
-      {/* ── Loyalty Points Card (overlapping banner) ── */}
-      <div className="px-4 -mt-10 relative z-10">
-        <div className="bg-white rounded-2xl shadow-md p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-hd-cream rounded-full flex items-center justify-center">
-                <Star size={18} className="text-hd-gold fill-hd-gold" />
-              </div>
-              <div>
-                <p className="text-hd-dark font-bold text-lg">{points.toLocaleString('id-ID')} Poin</p>
-              </div>
-            </div>
-            {/* Reward progress dots */}
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <div
-                  key={i}
-                  className={`w-3.5 h-3.5 rounded-full border-2 transition-colors ${
-                    i < Math.ceil(progress * 5)
-                      ? 'bg-hd-gold border-hd-gold'
-                      : 'bg-transparent border-gray-200'
-                  }`}
-                />
-              ))}
-              <div className="w-5 h-5 rounded-full bg-hd-gold flex items-center justify-center ml-0.5">
-                <Star size={10} className="text-white fill-white" />
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-3 pt-3 border-t border-gray-100">
-            <Link href="/voucher" className="flex items-center justify-between">
-              <p className="text-gray-500 text-sm">Tukarkan poinmu dengan hadiah menarik</p>
-              <ChevronRight size={16} className="text-gray-400" />
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Greeting + Order Mode ── */}
-      <div className="px-4 mt-6">
-        <h2 className="text-hd-dark text-xl font-bold">
-          Hi {firstName}, Pesan Sekarang?
-        </h2>
-
-        <div className="grid grid-cols-2 gap-3 mt-4">
-          {/* Pick Up Card */}
-          <button
-            onClick={() => {
-              setMode('pickup')
-              setStoreOpen(true)
-            }}
-            className={`rounded-2xl p-4 text-left border-2 transition-all ${
-              mode === 'pickup'
-                ? 'border-hd-burgundy bg-hd-cream'
-                : 'border-gray-200 bg-white'
-            }`}
-          >
-            <p className={`font-bold text-lg ${mode === 'pickup' ? 'text-hd-burgundy' : 'text-hd-dark'}`}>
-              Pick Up
-            </p>
-            <p className="text-gray-500 text-xs mt-1 leading-snug">
-              Ambil di store tanpa antri
-            </p>
-            <div className="flex justify-end mt-2">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                mode === 'pickup' ? 'bg-hd-burgundy/10' : 'bg-gray-100'
-              }`}>
-                <ShoppingBag size={20} className={mode === 'pickup' ? 'text-hd-burgundy' : 'text-gray-400'} />
-              </div>
-            </div>
-          </button>
-
-          {/* Delivery Card */}
-          <button
-            onClick={() => {
-              setMode('delivery')
-              setStoreOpen(true)
-            }}
-            className={`rounded-2xl p-4 text-left border-2 transition-all ${
-              mode === 'delivery'
-                ? 'border-hd-burgundy bg-hd-cream'
-                : 'border-gray-200 bg-white'
-            }`}
-          >
-            <p className={`font-bold text-lg ${mode === 'delivery' ? 'text-hd-burgundy' : 'text-hd-dark'}`}>
-              Delivery
-            </p>
-            <p className="text-gray-500 text-xs mt-1 leading-snug">
-              Garansi tepat waktu, dijamin!
-            </p>
-            <div className="flex justify-end mt-2">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                mode === 'delivery' ? 'bg-hd-burgundy/10' : 'bg-gray-100'
-              }`}>
-                <Truck size={20} className={mode === 'delivery' ? 'text-hd-burgundy' : 'text-gray-400'} />
-              </div>
-            </div>
-          </button>
-        </div>
-
-        {/* Dine-in option (smaller) */}
-        <button
-          onClick={() => {
-            setMode('dinein')
-            setQrOpen(true)
+      {/* ─────────── MASTHEAD / HERO ─────────── */}
+      <section className="relative overflow-hidden bg-hd-burgundy-dark text-hd-cream">
+        <div className="texture-grain absolute inset-0 opacity-30" aria-hidden />
+        {/* Subtle radial light */}
+        <div
+          className="absolute inset-0 opacity-60"
+          aria-hidden
+          style={{
+            background:
+              'radial-gradient(ellipse 80% 60% at 80% 0%, rgba(184,146,42,0.25), transparent 60%), radial-gradient(ellipse 60% 40% at 10% 100%, rgba(128,18,55,0.5), transparent 70%)',
           }}
-          className={`w-full mt-3 rounded-2xl p-3 flex items-center gap-3 border-2 transition-all ${
-            mode === 'dinein'
-              ? 'border-hd-burgundy bg-hd-cream'
-              : 'border-gray-200 bg-white'
-          }`}
-        >
-          <div className={`w-9 h-9 rounded-full flex items-center justify-center ${
-            mode === 'dinein' ? 'bg-hd-burgundy/10' : 'bg-gray-100'
-          }`}>
-            <UtensilsCrossed size={18} className={mode === 'dinein' ? 'text-hd-burgundy' : 'text-gray-400'} />
-          </div>
-          <div className="text-left">
-            <p className={`font-semibold text-sm ${mode === 'dinein' ? 'text-hd-burgundy' : 'text-hd-dark'}`}>
-              Dine-in
-            </p>
-            <p className="text-gray-500 text-xs">Scan QR meja untuk pesan langsung</p>
-          </div>
-          <ChevronRight size={16} className="text-gray-400 ml-auto" />
-        </button>
+        />
 
-        {/* Store selector */}
-        {selectedStore && (
-          <button
-            onClick={() => setStoreOpen(true)}
-            className="mt-3 w-full flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-3 text-left"
-          >
-            <MapPin size={16} className="text-hd-burgundy shrink-0" />
-            <span className="flex-1 text-hd-dark text-sm truncate font-medium">
-              {selectedStore.name}
+        <div className="relative px-5 pt-12 pb-10">
+          {/* Top masthead line */}
+          <div className="flex items-center justify-between border-b border-hd-cream/25 pb-3">
+            <span className="eyebrow text-hd-cream/80">Häagen-Dazs · Est. 1961</span>
+            <span className="numeral text-[0.6rem] text-hd-cream/70 tracking-widest">
+              VOL. XXIV · {dateline}
             </span>
-            <ChevronRight size={16} className="text-gray-400 shrink-0" />
-          </button>
-        )}
-      </div>
+          </div>
 
-      {/* ── Divider ── */}
-      <div className="h-2 bg-gray-100 mt-6" />
+          {/* Oversized headline */}
+          <div className="mt-10 stagger">
+            <p className="eyebrow text-hd-gold-light">Good evening, {firstName}</p>
+            <h1 className="mt-5 font-display text-display-xl leading-[0.9] tracking-editorial">
+              Ice Cream,
+              <br />
+              <span className="italic">perfected.</span>
+            </h1>
+            <p className="mt-6 max-w-sm text-[0.9rem] leading-relaxed text-hd-cream/75">
+              A small luxury, measured in spoonfuls. Choose a store below and
+              we&apos;ll see to the rest.
+            </p>
+          </div>
 
-      {/* ── Yang Menarik di Häagen-Dazs ── */}
-      <div className="px-4 mt-5">
-        <h2 className="text-hd-dark font-bold text-base mb-4">Yang Menarik di Häagen-Dazs</h2>
-
-        <div className="grid grid-cols-2 gap-3">
-          {featureCards.map((card) => (
-            <Link
-              key={card.title}
-              href={card.href}
-              className="bg-white rounded-2xl p-4 border border-gray-100 relative"
-            >
-              {card.badge && (
-                <span className="absolute top-3 right-3 bg-hd-burgundy text-white text-[10px] font-bold px-2 py-0.5 rounded">
-                  {card.badge}
-                </span>
-              )}
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${card.color.split(' ')[0]}`}>
-                <card.icon size={20} className={card.color.split(' ')[1]} />
-              </div>
-              <p className="text-hd-dark font-bold text-sm mt-3">{card.title}</p>
-              <p className="text-gray-500 text-xs mt-1 leading-snug">{card.desc}</p>
-            </Link>
-          ))}
+          {/* Scroll cue */}
+          <div className="mt-10 flex items-center gap-2 text-hd-cream/60">
+            <span className="eyebrow text-hd-cream/60">Scroll to begin</span>
+            <span className="h-px flex-1 max-w-[60px] bg-hd-cream/40" />
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* ── Divider ── */}
-      <div className="h-2 bg-gray-100 mt-6" />
-
-      {/* ── Featured Items ── */}
-      <div className="mt-5">
-        <div className="px-4 flex items-center justify-between mb-3">
-          <h2 className="text-hd-dark font-bold text-base">Best Sellers</h2>
-          <Link href="/menu" className="text-hd-burgundy text-sm font-medium">
-            Lihat Semua
+      {/* ─────────── MEMBER STRIP ─────────── */}
+      <section className="px-5 py-8 border-b border-hd-ink/15 bg-hd-paper relative">
+        <div className="flex items-start justify-between gap-6">
+          <div>
+            <span className="eyebrow text-hd-ink/60">Member · {tier.label}</span>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="numeral text-[2.25rem] leading-none text-hd-ink font-medium">
+                {points.toLocaleString('en-US')}
+              </span>
+              <span className="font-display italic text-[0.9rem] text-hd-ink/60">points</span>
+            </div>
+          </div>
+          <Link
+            href="/voucher"
+            className="flex flex-col items-end gap-1 pt-1 group"
+          >
+            <ArrowUpRight className="w-4 h-4 text-hd-burgundy transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            <span className="eyebrow text-hd-burgundy">Rewards</span>
           </Link>
         </div>
 
-        <div className="flex gap-3 overflow-x-auto px-4 scrollbar-none pb-1">
-          {featuredItems.map((item) => (
+        {/* Progress rule */}
+        <div className="mt-5">
+          <div className="h-[2px] w-full bg-hd-ink/10 relative overflow-hidden">
+            <div
+              className="absolute inset-y-0 left-0 bg-hd-burgundy transition-[width] duration-[900ms]"
+              style={{ width: `${Math.min(100, (points / tier.target) * 100)}%` }}
+            />
+          </div>
+          <div className="mt-2 flex items-center justify-between">
+            <span className="numeral text-[0.65rem] text-hd-ink/50 tracking-widest">
+              {points.toLocaleString('en-US')} / {tier.target.toLocaleString('en-US')}
+            </span>
+            <span className="eyebrow text-hd-ink/50">
+              <span className="numeral text-hd-ink">{toNext}</span> to {tier.next}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* ─────────── ORDER MODES — SECTION 01 ─────────── */}
+      <section className="px-5 pt-10">
+        <header className="flex items-end justify-between border-b border-hd-ink/15 pb-4">
+          <div className="flex items-baseline gap-4">
+            <span className="numeral text-[0.7rem] text-hd-ink/50 tracking-widest">01</span>
+            <h2 className="font-display text-[1.5rem] text-hd-ink tracking-editorial">
+              How will you have it?
+            </h2>
+          </div>
+        </header>
+
+        <div className="mt-6 grid grid-cols-1 divide-y divide-hd-ink/10 border border-hd-ink/10 bg-hd-paper">
+          {orderModes.map(({ key, numeral, title, tagline, Icon }) => {
+            const active = mode === key
+            return (
+              <button
+                key={key}
+                onClick={() => {
+                  setMode(key)
+                  if (key === 'dinein') setQrOpen(true)
+                  else setStoreOpen(true)
+                }}
+                className={`group flex items-center gap-5 px-5 py-5 text-left transition-colors duration-300 ${
+                  active ? 'bg-hd-burgundy text-hd-cream' : 'hover:bg-hd-cream-deep'
+                }`}
+              >
+                <span
+                  className={`numeral text-sm min-w-[24px] ${
+                    active ? 'text-hd-gold-light' : 'text-hd-ink/40'
+                  }`}
+                >
+                  {numeral}
+                </span>
+                <div className="flex-1">
+                  <p
+                    className={`font-display text-xl tracking-editorial ${
+                      active ? 'italic' : ''
+                    }`}
+                  >
+                    {title}
+                  </p>
+                  <p
+                    className={`text-xs mt-1 italic ${
+                      active ? 'text-hd-cream/70' : 'text-hd-ink/55'
+                    }`}
+                  >
+                    {tagline}
+                  </p>
+                </div>
+                <Icon
+                  className={`w-5 h-5 transition-transform duration-500 ${
+                    active ? 'text-hd-cream' : 'text-hd-ink/50 group-hover:translate-x-0.5'
+                  }`}
+                />
+              </button>
+            )
+          })}
+        </div>
+
+        {selectedStore && (
+          <button
+            onClick={() => setStoreOpen(true)}
+            className="mt-5 w-full flex items-center gap-3 border-b border-hd-ink/25 pb-3 text-left hover:border-hd-ink transition-colors"
+          >
+            <MapPin className="w-4 h-4 text-hd-burgundy shrink-0" />
+            <div className="flex-1 min-w-0">
+              <span className="eyebrow text-hd-ink/50 block">Current store</span>
+              <span className="font-display text-[1rem] text-hd-ink truncate block mt-0.5">
+                {selectedStore.name}
+              </span>
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-hd-ink/60" />
+          </button>
+        )}
+      </section>
+
+      {/* ─────────── SHORTLIST — SECTION 02 ─────────── */}
+      <section className="pt-12">
+        <header className="px-5 flex items-end justify-between border-b border-hd-ink/15 pb-4">
+          <div className="flex items-baseline gap-4">
+            <span className="numeral text-[0.7rem] text-hd-ink/50 tracking-widest">02</span>
+            <h2 className="font-display text-[1.5rem] text-hd-ink tracking-editorial">
+              The <span className="italic">shortlist</span>
+            </h2>
+          </div>
+          <Link
+            href="/menu"
+            className="eyebrow text-hd-burgundy flex items-center gap-1.5 pb-1"
+          >
+            All <ArrowUpRight className="w-3 h-3" />
+          </Link>
+        </header>
+
+        <div className="flex gap-4 overflow-x-auto no-scrollbar px-5 pt-6 pb-2">
+          {featuredItems.map((item, i) => (
             <button
               key={item.id}
               onClick={() => addItem(item)}
-              className="snap-start shrink-0 w-36 bg-white rounded-2xl overflow-hidden shadow-sm active:scale-95 transition-transform text-left border border-gray-100"
+              className="shrink-0 w-44 text-left group"
             >
-              <div className="w-full h-28 bg-gray-50 flex items-center justify-center relative">
+              <div className="relative aspect-[4/5] bg-hd-cream-deep border border-hd-ink/10 overflow-hidden">
                 {item.image_url ? (
                   <Image
                     src={item.image_url}
                     alt={item.name}
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] group-hover:scale-105"
                   />
                 ) : (
-                  <span className="text-4xl">🍨</span>
+                  <div className="absolute inset-0 flex items-center justify-center text-4xl opacity-60">
+                    🍨
+                  </div>
                 )}
+                <span className="absolute top-2.5 left-2.5 numeral text-[0.6rem] text-hd-burgundy bg-hd-cream/90 px-1.5 py-0.5">
+                  {String(i + 1).padStart(3, '0')}
+                </span>
               </div>
-              <div className="p-2.5">
-                <p className="text-hd-dark text-xs font-semibold leading-snug line-clamp-2">
+              <div className="mt-3">
+                <p className="font-display text-[1rem] leading-tight text-hd-ink tracking-editorial line-clamp-2">
                   {item.name}
                 </p>
-                <p className="text-hd-burgundy text-xs font-bold mt-1">
-                  {formatRupiah(item.price)}
-                </p>
+                <div className="mt-2 pt-2 border-t border-hd-ink/10 flex items-center justify-between">
+                  <span className="numeral text-[0.85rem] text-hd-ink">
+                    {formatRupiah(item.price)}
+                  </span>
+                  <span className="eyebrow text-hd-burgundy">Add</span>
+                </div>
               </div>
             </button>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* ── Voucher Teaser ── */}
-      <div className="px-4 mt-5">
-        <Link href="/voucher">
-          <div className="bg-white rounded-2xl p-4 flex items-center gap-3 shadow-sm border border-gray-100">
-            <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center shrink-0">
-              <Ticket size={20} className="text-orange-500" />
+      {/* ─────────── SECTIONS — 03 ─────────── */}
+      <section className="px-5 pt-12">
+        <header className="flex items-end justify-between border-b border-hd-ink/15 pb-4">
+          <div className="flex items-baseline gap-4">
+            <span className="numeral text-[0.7rem] text-hd-ink/50 tracking-widest">03</span>
+            <h2 className="font-display text-[1.5rem] text-hd-ink tracking-editorial">
+              Of note
+            </h2>
+          </div>
+        </header>
+
+        <div className="mt-6 grid grid-cols-2 gap-px bg-hd-ink/10 border border-hd-ink/10">
+          {sections.map((s) => (
+            <Link
+              key={s.title}
+              href={s.href}
+              className="relative flex flex-col justify-between min-h-[150px] bg-hd-paper p-4 hover:bg-hd-cream-deep transition-colors duration-400 group"
+            >
+              {s.mark && (
+                <span className="absolute top-3 right-3 eyebrow text-hd-burgundy italic normal-case tracking-normal text-[0.65rem]">
+                  {s.mark}
+                </span>
+              )}
+              <span className="numeral text-[0.65rem] text-hd-ink/40 tracking-widest">
+                {s.num}
+              </span>
+              <div>
+                <p className="font-display text-[1.1rem] leading-tight text-hd-ink tracking-editorial">
+                  {s.title}
+                </p>
+                <p className="mt-1 text-[0.75rem] italic text-hd-ink/55">{s.tagline}</p>
+                <ArrowUpRight className="w-3.5 h-3.5 mt-3 text-hd-ink/40 transition-all duration-300 group-hover:text-hd-burgundy group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ─────────── REWARDS — 04 ─────────── */}
+      <section className="px-5 pt-12">
+        <Link href="/voucher" className="block group">
+          <div className="flex items-end justify-between border-b border-hd-ink/15 pb-4">
+            <div className="flex items-baseline gap-4">
+              <span className="numeral text-[0.7rem] text-hd-ink/50 tracking-widest">04</span>
+              <h2 className="font-display text-[1.5rem] text-hd-ink tracking-editorial">
+                Rewards, unclaimed
+              </h2>
             </div>
-            <div className="flex-1">
-              <p className="text-hd-dark font-semibold text-sm">
-                {voucherCount} voucher tersedia
-              </p>
-              <p className="text-gray-400 text-xs mt-0.5">Klaim sebelum kedaluwarsa</p>
-            </div>
-            <ChevronRight size={16} className="text-gray-300" />
+            <ArrowUpRight className="w-4 h-4 text-hd-ink/50 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </div>
+          <div className="mt-6 flex items-baseline gap-4">
+            <span className="numeral text-[3.5rem] leading-none text-hd-burgundy font-medium">
+              {String(voucherCount).padStart(2, '0')}
+            </span>
+            <p className="font-display italic text-hd-ink/70 text-[1rem]">
+              vouchers await collection.
+            </p>
           </div>
         </Link>
-      </div>
+      </section>
 
-      {/* ── Divider ── */}
-      <div className="h-2 bg-gray-100 mt-6" />
-
-      {/* ── Customer Service ── */}
-      <div className="px-4 mt-5 mb-6">
-        <h2 className="text-hd-dark font-bold text-base mb-1">Perlu Bantuan?</h2>
-        <p className="text-gray-500 text-xs mb-3">Häagen-Dazs Customer Service (chat only)</p>
-        <div className="flex items-center gap-3 bg-white rounded-2xl p-4 border border-gray-100">
-          <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
-            <Phone size={20} className="text-green-600" />
-          </div>
-          <div>
-            <p className="text-hd-dark font-bold text-lg tracking-wide">0812-1111-8456</p>
+      {/* ─────────── ENQUIRIES — FOOTER ─────────── */}
+      <section className="px-5 pt-14 pb-4">
+        <div className="border-t border-hd-ink pt-6">
+          <span className="eyebrow text-hd-ink/60">Enquiries</span>
+          <div className="mt-3 flex items-baseline justify-between">
+            <p className="numeral text-[1.25rem] text-hd-ink">0812&nbsp;1111&nbsp;8456</p>
+            <p className="font-display italic text-[0.85rem] text-hd-ink/55">
+              by chat, always
+            </p>
           </div>
         </div>
-      </div>
+        <p className="mt-10 text-[0.65rem] tracking-widest uppercase text-hd-ink/30 text-center">
+          © Häagen-Dazs Indonesia · Savour the moment
+        </p>
+      </section>
 
-      {/* ── Store selector modal ── */}
-      <StoreSelector
-        stores={stores}
-        open={storeOpen}
-        onClose={() => setStoreOpen(false)}
-      />
-
-      {/* ── QR Scanner ── */}
-      <QRScanner
-        stores={stores}
-        open={qrOpen}
-        onClose={() => setQrOpen(false)}
-      />
-
-      {/* ── Floating cart button ── */}
+      {/* Overlays */}
+      <StoreSelector stores={stores} open={storeOpen} onClose={() => setStoreOpen(false)} />
+      <QRScanner stores={stores} open={qrOpen} onClose={() => setQrOpen(false)} />
       <FloatingCartButton />
     </div>
   )
