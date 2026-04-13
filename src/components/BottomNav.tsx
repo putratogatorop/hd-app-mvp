@@ -2,47 +2,54 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, IceCreamCone, Package, Ticket, User } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
 
 const navItems = [
-  { href: '/home', label: 'Home', Icon: Home },
-  { href: '/menu', label: 'Menu', Icon: IceCreamCone },
-  { href: '/orders', label: 'Pesanan', Icon: Package },
-  { href: '/voucher', label: 'Voucher', Icon: Ticket },
-  { href: '/account', label: 'Akun', Icon: User },
+  { href: '/home', label: 'Index', num: '01' },
+  { href: '/menu', label: 'Menu', num: '02' },
+  { href: '/orders', label: 'Orders', num: '03' },
+  { href: '/voucher', label: 'Rewards', num: '04' },
+  { href: '/account', label: 'Account', num: '05' },
 ]
 
 export default function BottomNav() {
   const pathname = usePathname()
-  const itemCount = useCartStore(s => s.itemCount())
+  const itemCount = useCartStore((s) => s.itemCount())
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 safe-bottom z-50">
-      <div className="flex items-center justify-around py-2 max-w-lg mx-auto">
-        {navItems.map(({ href, label, Icon }) => {
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-hd-cream/95 backdrop-blur-md border-t border-hd-ink/10 safe-bottom">
+      <div className="max-w-lg mx-auto grid grid-cols-5">
+        {navItems.map(({ href, label, num }) => {
           const isActive = pathname === href || (href !== '/home' && pathname.startsWith(href))
           const isMenu = href === '/menu'
-
           return (
             <Link
               key={href}
               href={href}
-              className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-colors relative ${
-                isActive ? 'text-hd-burgundy' : 'text-gray-400 hover:text-gray-600'
-              }`}
+              className="relative flex flex-col items-center gap-1 py-3 group"
             >
-              <span className="relative">
-                <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
-                {isMenu && itemCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2.5 bg-hd-burgundy text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">
-                    {itemCount > 9 ? '9+' : itemCount}
-                  </span>
-                )}
+              <span
+                className={`numeral text-[0.65rem] leading-none transition-colors ${
+                  isActive ? 'text-hd-burgundy' : 'text-hd-ink/40'
+                }`}
+              >
+                {num}
               </span>
-              <span className={`text-[10px] font-medium ${isActive ? 'text-hd-burgundy' : ''}`}>
+              <span
+                className={`font-display text-[0.95rem] leading-none transition-colors ${
+                  isActive ? 'text-hd-burgundy italic' : 'text-hd-ink/70 group-hover:text-hd-ink'
+                }`}
+              >
                 {label}
               </span>
+              {isActive && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 h-[2px] w-10 bg-hd-burgundy" />
+              )}
+              {isMenu && itemCount > 0 && (
+                <span className="absolute top-2 right-3 min-w-[18px] h-[18px] px-1 rounded-full bg-hd-burgundy text-hd-cream numeral text-[0.6rem] flex items-center justify-center">
+                  {itemCount > 9 ? '9+' : itemCount}
+                </span>
+              )}
             </Link>
           )
         })}

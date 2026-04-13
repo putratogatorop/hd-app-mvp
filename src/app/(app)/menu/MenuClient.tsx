@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Search } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import type { Database } from '@/lib/supabase/database.types'
 import { useOrderContext } from '@/lib/store/order-context'
 import MenuItemCard from './MenuItemCard'
 import ProductSheet from '@/components/ProductSheet'
 import FloatingCartButton from '@/components/FloatingCartButton'
+import { Eyebrow } from '@/components/ui'
 
 type MenuItem = Database['public']['Tables']['menu_items']['Row']
 type Category = MenuItem['category'] | 'all'
@@ -14,7 +15,7 @@ type Category = MenuItem['category'] | 'all'
 const CATEGORIES: { label: string; value: Category }[] = [
   { label: 'All', value: 'all' },
   { label: 'Ice Cream', value: 'ice_cream' },
-  { label: 'Cake', value: 'cake' },
+  { label: 'Patisserie', value: 'cake' },
   { label: 'Beverage', value: 'beverage' },
   { label: 'Topping', value: 'topping' },
 ]
@@ -35,76 +36,122 @@ export default function MenuClient({ items }: MenuClientProps) {
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
 
   const { mode, selectedStore } = useOrderContext()
-
   const modeLabel = MODE_LABEL[mode] ?? 'Pick Up'
   const storeName = selectedStore?.name ?? 'HD PIK Avenue'
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim()
-    return items.filter(item => {
+    return items.filter((item) => {
       const matchesSearch = q === '' || item.name.toLowerCase().includes(q)
       const matchesCategory = activeCategory === 'all' || item.category === activeCategory
       return matchesSearch && matchesCategory
     })
   }, [items, search, activeCategory])
 
-  const available = filtered.filter(i => i.is_available)
-  const unavailable = filtered.filter(i => !i.is_available)
+  const available = filtered.filter((i) => i.is_available)
+  const unavailable = filtered.filter((i) => !i.is_available)
   const sorted = [...available, ...unavailable]
 
   return (
-    <div className="page-enter pb-32">
-      {/* Search bar */}
-      <div className="px-4 pt-10 pb-3 bg-white sticky top-0 z-10 shadow-sm">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Cari menu..."
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-hd-burgundy/30 focus:border-hd-burgundy"
-          />
-        </div>
+    <div className="page-enter pb-32 bg-hd-cream min-h-screen">
+      {/* ── Editorial masthead ── */}
+      <header className="sticky top-0 z-20 bg-hd-cream/95 backdrop-blur-md border-b border-hd-ink/10">
+        <div className="px-5 pt-10 pb-4">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <Eyebrow number="02">The Selection</Eyebrow>
+              <h1 className="font-display text-display-lg text-hd-ink mt-3 tracking-editorial">
+                The <span className="italic">Menu</span>
+              </h1>
+            </div>
+            <div className="text-right pb-1">
+              <p className="numeral text-[0.65rem] text-hd-ink/50 uppercase tracking-widest">
+                {modeLabel}
+              </p>
+              <p className="font-display text-[0.95rem] text-hd-ink/90 leading-tight mt-0.5 max-w-[140px] truncate">
+                {storeName}
+              </p>
+            </div>
+          </div>
 
-        {/* Store + order mode pill */}
-        <div className="mt-2.5 inline-flex items-center gap-1.5 bg-hd-cream border border-red-100 rounded-full px-3 py-1">
-          <span className="text-xs font-medium text-hd-burgundy">{modeLabel}</span>
-          <span className="text-gray-300 text-xs">—</span>
-          <span className="text-xs text-gray-600 truncate max-w-[180px]">{storeName}</span>
-        </div>
+          {/* Search — underline only */}
+          <div className="relative mt-6 border-b border-hd-ink/25 focus-within:border-hd-ink transition-colors">
+            <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-hd-ink/40" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search the selection…"
+              className="w-full pl-6 pr-8 py-3 bg-transparent text-[0.95rem] placeholder:text-hd-ink/40 focus:outline-none"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-hd-ink/40 hover:text-hd-ink"
+                aria-label="Clear search"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
 
-        {/* Category tabs */}
-        <div className="flex gap-2 mt-3 overflow-x-auto no-scrollbar pb-0.5">
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat.value}
-              onClick={() => setActiveCategory(cat.value)}
-              className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors border ${
-                activeCategory === cat.value
-                  ? 'bg-hd-burgundy text-white border-hd-burgundy'
-                  : 'bg-white text-gray-600 border-gray-300 hover:border-hd-burgundy hover:text-hd-burgundy'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
+          {/* Category — numbered editorial nav */}
+          <div className="flex gap-5 mt-5 overflow-x-auto no-scrollbar pb-1">
+            {CATEGORIES.map((cat, i) => {
+              const active = activeCategory === cat.value
+              return (
+                <button
+                  key={cat.value}
+                  onClick={() => setActiveCategory(cat.value)}
+                  className="relative flex-shrink-0 flex items-baseline gap-1.5 pb-1.5 group"
+                >
+                  <span
+                    className={`numeral text-[0.6rem] transition-colors ${
+                      active ? 'text-hd-burgundy' : 'text-hd-ink/40'
+                    }`}
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span
+                    className={`text-[0.8rem] font-medium tracking-wide transition-colors ${
+                      active ? 'text-hd-burgundy' : 'text-hd-ink/60 group-hover:text-hd-ink'
+                    }`}
+                  >
+                    {cat.label}
+                  </span>
+                  {active && (
+                    <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-hd-burgundy" />
+                  )}
+                </button>
+              )
+            })}
+          </div>
         </div>
+      </header>
+
+      {/* ── Results count bar ── */}
+      <div className="px-5 py-4 flex items-center justify-between border-b border-hd-ink/5">
+        <span className="eyebrow text-hd-ink/50">
+          <span className="numeral text-hd-ink">{String(sorted.length).padStart(2, '0')}</span>
+          &nbsp;&nbsp;items in view
+        </span>
+        <span className="eyebrow text-hd-ink/40">Est. 1961</span>
       </div>
 
-      {/* Product grid */}
-      <div className="px-4 pt-4">
+      {/* ── Product grid ── */}
+      <div className="px-5 pt-6">
         {sorted.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-2">
-            <Search className="w-10 h-10" />
-            <p className="text-sm">Tidak ada menu ditemukan</p>
+          <div className="flex flex-col items-center justify-center py-24 text-hd-ink/40 gap-3">
+            <Search className="w-8 h-8" />
+            <p className="font-display italic text-lg">Nothing matches that search.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {sorted.map(item => (
+          <div className="grid grid-cols-2 gap-x-4 gap-y-8">
+            {sorted.map((item, i) => (
               <MenuItemCard
                 key={item.id}
                 item={item}
+                index={i}
                 disabled={!item.is_available}
                 onTap={() => setSelectedItem(item)}
               />
@@ -113,15 +160,9 @@ export default function MenuClient({ items }: MenuClientProps) {
         )}
       </div>
 
-      {/* Product detail bottom sheet */}
       {selectedItem && (
-        <ProductSheet
-          item={selectedItem}
-          onClose={() => setSelectedItem(null)}
-        />
+        <ProductSheet item={selectedItem} onClose={() => setSelectedItem(null)} />
       )}
-
-      {/* Floating cart button */}
       <FloatingCartButton />
     </div>
   )
