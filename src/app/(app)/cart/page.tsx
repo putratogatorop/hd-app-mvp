@@ -12,25 +12,20 @@ import {
   CreditCard,
   MapPin,
   StickyNote,
-  ChevronRight,
+  ArrowUpRight,
 } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
 import { useOrderContext } from '@/lib/store/order-context'
 import { formatRupiah } from '@/lib/utils/format'
 import { placeOrder } from './actions'
+import { Eyebrow } from '@/components/ui'
 
 const PAYMENT_OPTIONS = [
-  { id: 'gopay', label: 'GoPay', emoji: '💚' },
-  { id: 'ovo', label: 'OVO', emoji: '💜' },
-  { id: 'dana', label: 'Dana', emoji: '💙' },
-  { id: 'card', label: 'Kartu Kredit/Debit', emoji: '💳' },
+  { id: 'gopay', label: 'GoPay' },
+  { id: 'ovo', label: 'OVO' },
+  { id: 'dana', label: 'Dana' },
+  { id: 'card', label: 'Credit / Debit' },
 ]
-
-const MODE_EMOJI: Record<string, string> = {
-  pickup: '🏃',
-  delivery: '🛵',
-  dinein: '🪑',
-}
 
 const MODE_LABEL: Record<string, string> = {
   pickup: 'Pick Up',
@@ -76,7 +71,7 @@ export default function CartPage() {
     setError(null)
     try {
       await placeOrder({
-        items: items.map(i => ({
+        items: items.map((i) => ({
           id: i.item.id,
           name: i.item.name,
           price: i.item.price,
@@ -86,7 +81,7 @@ export default function CartPage() {
         earnedPoints: points,
         storeId: selectedStore?.id ?? null,
         orderMode: mode,
-        tableNumber: tableNumber,
+        tableNumber,
         voucherId: appliedVoucher?.id ?? null,
         discountAmount: discount,
         deliveryFee: fee,
@@ -95,32 +90,32 @@ export default function CartPage() {
       })
       clearCart()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Terjadi kesalahan')
+      setError(err instanceof Error ? err.message : 'Something went wrong')
       setLoading(false)
     }
   }
 
-  // Empty state
+  // ── Empty state ──
   if (!items.length) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <div className="bg-white px-6 pt-12 pb-4 border-b border-gray-100 flex items-center gap-3">
-          <button onClick={() => router.back()} className="p-2 -ml-2 rounded-xl hover:bg-gray-100 transition-colors">
-            <ArrowLeft size={22} className="text-hd-dark" />
+      <div className="min-h-screen bg-hd-cream flex flex-col">
+        <div className="px-5 pt-10 pb-5 border-b border-hd-ink/15 flex items-center gap-3">
+          <button onClick={() => router.back()} className="w-9 h-9 flex items-center justify-center border border-hd-ink/30 hover:bg-hd-ink hover:text-hd-cream transition-colors">
+            <ArrowLeft size={16} />
           </button>
           <div>
-            <h1 className="text-xl font-bold text-hd-dark">Keranjang</h1>
+            <Eyebrow>Basket</Eyebrow>
           </div>
         </div>
-        <div className="flex-1 flex flex-col items-center justify-center py-16 px-4">
-          <span className="text-6xl mb-4">🛒</span>
-          <p className="text-gray-600 font-semibold text-lg">Keranjang kosong</p>
-          <p className="text-gray-400 text-sm mt-1 mb-6">Tambahkan ice cream favoritmu!</p>
+        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center gap-5">
+          <p className="font-display italic text-[1.4rem] text-hd-ink/60">
+            Your basket awaits<br />its first flavour.
+          </p>
           <Link
             href="/menu"
-            className="bg-hd-burgundy text-white font-semibold px-6 py-3 rounded-xl hover:bg-hd-burgundy-dark transition-colors"
+            className="eyebrow text-hd-burgundy inline-flex items-center gap-2 border-b border-hd-burgundy pb-1 hover:border-hd-burgundy-dark"
           >
-            Lihat Menu
+            Browse the selection <ArrowUpRight className="w-3 h-3" />
           </Link>
         </div>
       </div>
@@ -128,186 +123,209 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-32">
-      {/* Header */}
-      <div className="bg-white px-6 pt-12 pb-4 border-b border-gray-100 flex items-center gap-3">
-        <button onClick={() => router.back()} className="p-2 -ml-2 rounded-xl hover:bg-gray-100 transition-colors">
-          <ArrowLeft size={22} className="text-hd-dark" />
-        </button>
-        <div>
-          <h1 className="text-xl font-bold text-hd-dark">Keranjang</h1>
-          <p className="text-gray-400 text-xs">{itemCount} item</p>
+    <div className="min-h-screen bg-hd-cream pb-36">
+      {/* ── Masthead ── */}
+      <header className="px-5 pt-10 pb-5 border-b border-hd-ink/15 sticky top-0 bg-hd-cream/95 backdrop-blur-md z-20">
+        <div className="flex items-center gap-3">
+          <button onClick={() => router.back()} className="w-9 h-9 flex items-center justify-center border border-hd-ink/30 hover:bg-hd-ink hover:text-hd-cream transition-colors">
+            <ArrowLeft size={16} />
+          </button>
+          <div className="flex-1">
+            <Eyebrow number={String(itemCount).padStart(2, '0')}>Basket</Eyebrow>
+            <h1 className="font-display text-[2rem] leading-tight text-hd-ink tracking-editorial mt-1">
+              Your <span className="italic">order</span>
+            </h1>
+          </div>
         </div>
-      </div>
+      </header>
 
-      <div className="px-4 pt-4 space-y-3">
-        {/* Order mode reminder */}
-        <div className="bg-white rounded-2xl px-4 py-3 flex items-center gap-3 shadow-sm border border-gray-50">
-          <MapPin size={18} className="text-hd-burgundy flex-shrink-0" />
+      {/* ── Order mode strip ── */}
+      <section className="px-5 py-5 border-b border-hd-ink/10">
+        <div className="flex items-center gap-3">
+          <MapPin size={16} className="text-hd-burgundy" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-hd-dark">
-              {MODE_EMOJI[mode]} {MODE_LABEL[mode]}
-              {mode === 'dinein' && tableNumber ? ` — Meja ${tableNumber}` : ''}
-            </p>
-            <p className="text-xs text-gray-400 truncate">
+            <span className="eyebrow text-hd-ink/50">{MODE_LABEL[mode]}{mode === 'dinein' && tableNumber ? ` · Table ${tableNumber}` : ''}</span>
+            <p className="font-display text-[1rem] text-hd-ink mt-0.5 truncate">
               {selectedStore?.name ?? 'Häagen-Dazs PIK Avenue'}
             </p>
           </div>
         </div>
+      </section>
 
-        {/* Cart items */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-50 divide-y divide-gray-50">
+      {/* ── Items ── */}
+      <section className="px-5 pt-6">
+        <div className="flex items-end justify-between border-b border-hd-ink/15 pb-3">
+          <Eyebrow number="01">Items</Eyebrow>
+          <span className="numeral text-[0.7rem] text-hd-ink/50">{String(itemCount).padStart(2, '0')} units</span>
+        </div>
+        <ul className="divide-y divide-hd-ink/10">
           {items.map(({ item, quantity }) => (
-            <div key={item.id} className="p-4 flex items-center gap-3">
-              <div className="w-11 h-11 bg-gradient-to-br from-hd-cream to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <span className="text-2xl">🍨</span>
-              </div>
+            <li key={item.id} className="py-5 flex items-start gap-4">
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-hd-dark text-sm truncate">{item.name}</p>
-                <p className="text-hd-burgundy font-bold text-sm">{formatRupiah(item.price)}</p>
+                <p className="font-display text-[1.05rem] text-hd-ink tracking-editorial leading-tight">
+                  {item.name}
+                </p>
+                <p className="numeral text-[0.8rem] text-hd-ink/55 mt-1">
+                  {formatRupiah(item.price)} × {quantity}
+                </p>
               </div>
+
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => updateQuantity(item.id, quantity - 1)}
-                  className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors"
+                  className="w-7 h-7 flex items-center justify-center border border-hd-ink/30 hover:bg-hd-ink hover:text-hd-cream transition-colors"
+                  aria-label="Decrease"
                 >
-                  <Minus size={14} />
+                  <Minus size={12} />
                 </button>
-                <span className="w-5 text-center font-semibold text-sm text-hd-dark">{quantity}</span>
+                <span className="numeral w-6 text-center text-hd-ink">{String(quantity).padStart(2, '0')}</span>
                 <button
                   onClick={() => updateQuantity(item.id, quantity + 1)}
-                  className="w-7 h-7 rounded-full bg-hd-burgundy text-white flex items-center justify-center hover:bg-hd-burgundy-dark transition-colors"
+                  className="w-7 h-7 flex items-center justify-center border border-hd-ink/30 hover:bg-hd-ink hover:text-hd-cream transition-colors"
+                  aria-label="Increase"
                 >
-                  <Plus size={14} />
+                  <Plus size={12} />
                 </button>
                 <button
                   onClick={() => removeItem(item.id)}
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-gray-300 hover:text-red-400 hover:bg-hd-cream transition-colors ml-1"
+                  className="w-7 h-7 flex items-center justify-center text-hd-ink/30 hover:text-hd-burgundy transition-colors ml-1"
+                  aria-label="Remove"
                 >
                   <Trash2 size={14} />
                 </button>
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
+      </section>
 
-        {/* Notes */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-50 px-4 py-3">
-          <div className="flex items-center gap-2 mb-2">
-            <StickyNote size={16} className="text-gray-400" />
-            <span className="text-sm font-semibold text-hd-dark">Catatan</span>
-          </div>
-          <input
-            type="text"
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            placeholder="Catatan untuk pesanan..."
-            className="w-full text-sm text-gray-600 placeholder-gray-300 bg-transparent outline-none"
-          />
+      {/* ── Notes ── */}
+      <section className="px-5 pt-8">
+        <div className="flex items-end justify-between border-b border-hd-ink/15 pb-3">
+          <Eyebrow number="02">A note</Eyebrow>
+          <StickyNote size={14} className="text-hd-ink/40" />
         </div>
+        <input
+          type="text"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Anything we should know…"
+          className="w-full h-12 bg-transparent border-b border-hd-ink/20 focus:border-hd-ink transition-colors text-[0.9rem] placeholder:text-hd-ink/35 focus:outline-none italic font-display"
+        />
+      </section>
 
-        {/* Voucher */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-50 px-4 py-3">
-          {appliedVoucher ? (
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Ticket size={16} className="text-green-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-green-700 truncate">{appliedVoucher.title}</p>
-                <p className="text-xs text-green-500">Hemat {formatRupiah(discount)}</p>
-              </div>
-              <button
-                onClick={removeVoucher}
-                className="text-xs text-red-400 font-semibold hover:text-red-600 transition-colors"
-              >
-                Hapus
-              </button>
+      {/* ── Voucher ── */}
+      <section className="px-5 pt-8">
+        <div className="flex items-end justify-between border-b border-hd-ink/15 pb-3">
+          <Eyebrow number="03">Voucher</Eyebrow>
+          <Ticket size={14} className="text-hd-ink/40" />
+        </div>
+        {appliedVoucher ? (
+          <div className="py-4 flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="font-display text-[1rem] text-hd-ink truncate">{appliedVoucher.title}</p>
+              <p className="numeral text-[0.75rem] text-hd-burgundy mt-1">
+                − {formatRupiah(discount)}
+              </p>
             </div>
-          ) : (
-            <Link href="/voucher" className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Ticket size={16} className="text-gray-400" />
-              </div>
-              <span className="flex-1 text-sm font-semibold text-hd-dark">Pakai Voucher</span>
-              <ChevronRight size={16} className="text-gray-300" />
-            </Link>
-          )}
-        </div>
-
-        {/* Payment method */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-50 px-4 py-3">
-          <div className="flex items-center gap-2 mb-3">
-            <CreditCard size={16} className="text-gray-400" />
-            <span className="text-sm font-semibold text-hd-dark">Metode Pembayaran</span>
+            <button
+              onClick={removeVoucher}
+              className="eyebrow text-hd-burgundy hover:text-hd-burgundy-dark transition-colors ml-4"
+            >
+              Remove
+            </button>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            {PAYMENT_OPTIONS.map(opt => (
+        ) : (
+          <Link
+            href="/voucher"
+            className="flex items-center justify-between py-4 group hover:text-hd-burgundy transition-colors"
+          >
+            <span className="font-display italic text-[0.95rem] text-hd-ink/60 group-hover:text-hd-burgundy transition-colors">
+              Apply a voucher
+            </span>
+            <ArrowUpRight className="w-4 h-4 text-hd-ink/40 group-hover:text-hd-burgundy transition-colors" />
+          </Link>
+        )}
+      </section>
+
+      {/* ── Payment ── */}
+      <section className="px-5 pt-8">
+        <div className="flex items-end justify-between border-b border-hd-ink/15 pb-3">
+          <Eyebrow number="04">Payment</Eyebrow>
+          <CreditCard size={14} className="text-hd-ink/40" />
+        </div>
+        <div className="grid grid-cols-2 gap-px bg-hd-ink/10 border border-hd-ink/10 mt-4">
+          {PAYMENT_OPTIONS.map((opt) => {
+            const active = paymentMethod === opt.id
+            return (
               <button
                 key={opt.id}
                 onClick={() => setPaymentMethod(opt.id)}
-                className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-left ${
-                  paymentMethod === opt.id
-                    ? 'border-hd-burgundy bg-hd-cream'
-                    : 'border-gray-100 hover:border-gray-200'
+                className={`py-4 px-4 text-left transition-colors ${
+                  active ? 'bg-hd-burgundy text-hd-cream' : 'bg-hd-paper hover:bg-hd-cream-deep'
                 }`}
               >
-                <span className="text-lg leading-none">{opt.emoji}</span>
-                <span className={`text-xs font-semibold truncate ${paymentMethod === opt.id ? 'text-hd-burgundy' : 'text-gray-600'}`}>
+                <span
+                  className={`font-display text-[0.95rem] tracking-editorial ${
+                    active ? 'italic' : ''
+                  }`}
+                >
                   {opt.label}
                 </span>
               </button>
-            ))}
-          </div>
+            )
+          })}
         </div>
+      </section>
 
-        {/* Order summary */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-50 px-4 py-4">
-          <p className="text-sm font-bold text-hd-dark mb-3">Ringkasan Pesanan</p>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-gray-500">
-              <span>Subtotal</span>
-              <span>{formatRupiah(sub)}</span>
-            </div>
-            {discount > 0 && (
-              <div className="flex justify-between text-sm text-green-600">
-                <span>Diskon Voucher</span>
-                <span>-{formatRupiah(discount)}</span>
-              </div>
-            )}
-            {mode === 'delivery' && (
-              <div className="flex justify-between text-sm text-gray-500">
-                <span>Ongkos Kirim</span>
-                <span>{formatRupiah(fee)}</span>
-              </div>
-            )}
-            <div className="flex justify-between text-sm text-amber-500 pt-1">
-              <span>⭐ Poin yang didapat</span>
-              <span>+{points} poin</span>
-            </div>
-            <div className="border-t border-gray-100 pt-3 flex justify-between font-bold">
-              <span className="text-hd-dark">Total</span>
-              <span className="text-hd-burgundy">{formatRupiah(grandTotal)}</span>
-            </div>
+      {/* ── Summary ── */}
+      <section className="px-5 pt-10">
+        <Eyebrow number="05">Summary</Eyebrow>
+        <dl className="mt-4 space-y-3 border-b border-hd-ink/15 pb-4">
+          <div className="flex justify-between text-[0.85rem]">
+            <dt className="text-hd-ink/60">Subtotal</dt>
+            <dd className="numeral text-hd-ink">{formatRupiah(sub)}</dd>
           </div>
+          {discount > 0 && (
+            <div className="flex justify-between text-[0.85rem] text-hd-burgundy">
+              <dt>Voucher discount</dt>
+              <dd className="numeral">− {formatRupiah(discount)}</dd>
+            </div>
+          )}
+          {mode === 'delivery' && (
+            <div className="flex justify-between text-[0.85rem]">
+              <dt className="text-hd-ink/60">Delivery</dt>
+              <dd className="numeral text-hd-ink">{formatRupiah(fee)}</dd>
+            </div>
+          )}
+          <div className="flex justify-between text-[0.8rem] pt-2">
+            <dt className="eyebrow text-hd-gold">Points earned</dt>
+            <dd className="numeral text-hd-gold">+ {points}</dd>
+          </div>
+        </dl>
+        <div className="flex items-baseline justify-between pt-5">
+          <span className="eyebrow text-hd-ink/60">Total</span>
+          <span className="numeral text-[1.8rem] text-hd-ink">{formatRupiah(grandTotal)}</span>
         </div>
+      </section>
 
-        {/* Error */}
-        {error && (
-          <div className="bg-hd-cream border border-red-200 text-red-700 text-sm px-4 py-3 rounded-2xl">
-            {error}
-          </div>
-        )}
-      </div>
+      {error && (
+        <div className="mx-5 mt-4 border border-hd-burgundy/30 bg-hd-burgundy/5 text-hd-burgundy text-[0.8rem] px-4 py-3">
+          {error}
+        </div>
+      )}
 
-      {/* CTA fixed at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-3 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent">
+      {/* Fixed CTA */}
+      <div className="fixed bottom-0 left-0 right-0 px-5 pb-6 pt-4 bg-gradient-to-t from-hd-cream via-hd-cream/95 to-transparent z-30">
         <button
           onClick={handleCheckout}
           disabled={loading}
-          className="w-full py-4 bg-hd-burgundy text-white font-bold text-base rounded-2xl hover:bg-hd-burgundy-dark transition-colors disabled:opacity-60 shadow-lg shadow-hd-burgundy/20 flex items-center justify-center gap-2"
+          className="w-full h-14 flex items-center justify-between px-6 bg-hd-burgundy text-hd-cream border border-hd-burgundy hover:bg-hd-burgundy-dark transition-colors disabled:opacity-60 group"
         >
-          {loading ? 'Memproses...' : `Pesan Sekarang — ${formatRupiah(grandTotal)}`}
+          <span className="eyebrow">{loading ? 'Processing…' : 'Place order'}</span>
+          <span className="numeral text-[1rem] transition-transform group-hover:translate-x-0.5">
+            {formatRupiah(grandTotal)}
+          </span>
         </button>
       </div>
     </div>

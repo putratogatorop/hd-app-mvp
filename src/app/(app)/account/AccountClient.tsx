@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
-  User,
   MapPin,
   CreditCard,
   HelpCircle,
@@ -12,11 +11,11 @@ import {
   FileText,
   Shield,
   LogOut,
-  ChevronRight,
-  Star,
+  ArrowUpRight,
   Users,
 } from 'lucide-react'
 import type { Database } from '@/lib/supabase/database.types'
+import { Eyebrow } from '@/components/ui'
 
 type ProfileRow = Database['public']['Tables']['profiles']['Row']
 type Profile = Pick<ProfileRow, 'full_name' | 'email' | 'phone' | 'loyalty_points' | 'tier' | 'referral_code'> | null
@@ -25,24 +24,19 @@ interface AccountClientProps {
   profile: Profile
 }
 
-function getTierGradient(tier: string | undefined | null) {
-  switch (tier) {
-    case 'gold':
-      return 'from-yellow-400 to-yellow-600'
-    case 'platinum':
-      return 'from-blue-500 to-blue-700'
-    default:
-      return 'from-gray-400 to-gray-600'
-  }
+const TIER_LABEL: Record<string, string> = {
+  silver: 'Silver',
+  gold: 'Gold',
+  platinum: 'Platinum',
 }
 
 const menuItems = [
-  { icon: MapPin, label: 'Alamat Tersimpan' },
-  { icon: CreditCard, label: 'Metode Pembayaran' },
-  { icon: HelpCircle, label: 'Pusat Bantuan' },
-  { icon: Settings, label: 'Pengaturan' },
-  { icon: FileText, label: 'Syarat dan Ketentuan' },
-  { icon: Shield, label: 'Kebijakan Privasi' },
+  { icon: MapPin, label: 'Saved addresses' },
+  { icon: CreditCard, label: 'Payment methods' },
+  { icon: HelpCircle, label: 'Help centre' },
+  { icon: Settings, label: 'Preferences' },
+  { icon: FileText, label: 'Terms & conditions' },
+  { icon: Shield, label: 'Privacy policy' },
 ]
 
 export default function AccountClient({ profile }: AccountClientProps) {
@@ -55,86 +49,133 @@ export default function AccountClient({ profile }: AccountClientProps) {
   }
 
   const tier = profile?.tier ?? 'silver'
-  const gradient = getTierGradient(tier)
+  const tierLabel = TIER_LABEL[tier] ?? 'Silver'
+  const points = profile?.loyalty_points ?? 0
+  const initials = (profile?.full_name ?? 'Guest')
+    .split(' ')
+    .map((s) => s[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
 
   return (
-    <div className="page-enter min-h-screen bg-hd-cream">
-      {/* Header */}
-      <div className="px-4 pt-12 pb-4">
-        <h1 className="text-2xl font-bold text-hd-dark">Akun</h1>
-      </div>
+    <div className="page-enter min-h-screen bg-hd-cream pb-24">
+      {/* Masthead */}
+      <header className="px-5 pt-12 pb-6 border-b border-hd-ink/15">
+        <Eyebrow number="05">Account</Eyebrow>
+        <h1 className="mt-3 font-display text-display-lg text-hd-ink tracking-editorial">
+          Your profile
+        </h1>
+      </header>
 
-      {/* Profile card */}
-      <div className="px-4 mb-4">
-        <div className={`bg-gradient-to-br ${gradient} rounded-2xl p-4 shadow-md`}>
+      {/* ── Profile card: burgundy with gold accent ── */}
+      <section className="px-5 pt-6">
+        <div className="relative overflow-hidden border border-hd-ink bg-hd-burgundy-dark text-hd-cream">
+          <div className="texture-grain absolute inset-0 opacity-25" aria-hidden />
+          <div
+            className="absolute inset-0 opacity-60"
+            aria-hidden
+            style={{
+              background:
+                'radial-gradient(ellipse 60% 60% at 100% 0%, rgba(184,146,42,0.25), transparent 60%)',
+            }}
+          />
+          <div className="relative p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 border border-hd-cream/40 flex items-center justify-center">
+                  <span className="font-display italic text-[1.3rem] text-hd-cream">
+                    {initials}
+                  </span>
+                </div>
+                <div>
+                  <span className="eyebrow text-hd-gold-light">Member · {tierLabel}</span>
+                  <p className="mt-1 font-display text-[1.4rem] leading-tight tracking-editorial">
+                    {profile?.full_name ?? 'Guest'}
+                  </p>
+                  <p className="text-[0.75rem] text-hd-cream/60 mt-1">
+                    {profile?.phone ?? profile?.email ?? '—'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <hr className="my-5 border-hd-cream/20" />
+
+            <div className="flex items-baseline justify-between">
+              <div>
+                <span className="eyebrow text-hd-cream/60">Points</span>
+                <p className="numeral text-[2rem] leading-none mt-1 text-hd-cream">
+                  {points.toLocaleString('en-US')}
+                </p>
+              </div>
+              {profile?.referral_code && (
+                <div className="text-right">
+                  <span className="eyebrow text-hd-cream/60">Referral</span>
+                  <p className="numeral text-[0.9rem] mt-1 text-hd-gold-light">
+                    {profile.referral_code}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Referral teaser ── */}
+      <section className="px-5 pt-8">
+        <Link
+          href="/voucher"
+          className="group flex items-center justify-between py-4 border-b border-hd-ink/15 hover:border-hd-ink transition-colors"
+        >
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center shrink-0">
-              <User className="w-7 h-7 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-white font-bold text-base truncate">
-                {profile?.full_name ?? 'Pelanggan'}
+            <Users className="w-5 h-5 text-hd-burgundy" />
+            <div>
+              <p className="font-display italic text-[1rem] text-hd-ink">
+                Share the Sip
               </p>
-              <p className="text-white/80 text-xs truncate">
-                {profile?.phone ?? profile?.email ?? '-'}
+              <p className="eyebrow text-hd-ink/50 mt-1">
+                Invitation, with reward
               </p>
-              <div className="flex items-center gap-1 mt-1">
-                <Star className="w-3 h-3 text-white fill-white" />
-                <span className="text-white text-xs font-semibold">
-                  {profile?.loyalty_points ?? 0} poin
-                </span>
-                <span className="ml-2 text-white/70 text-xs capitalize">
-                  {tier} Member
-                </span>
-              </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-white/70 shrink-0" />
           </div>
-        </div>
-      </div>
-
-      {/* Referral teaser */}
-      <div className="px-4 mb-4">
-        <Link href="/voucher">
-          <div className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3">
-            <div className="w-10 h-10 bg-hd-burgundy/10 rounded-full flex items-center justify-center shrink-0">
-              <Users className="w-5 h-5 text-hd-burgundy" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-hd-dark">Ajak Teman, Dapat Voucher!</p>
-              <p className="text-xs text-gray-500">Bagikan kode referralmu sekarang</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-gray-300 shrink-0" />
-          </div>
+          <ArrowUpRight className="w-4 h-4 text-hd-ink/50 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </Link>
-      </div>
+      </section>
 
-      {/* Menu list */}
-      <div className="px-4 mb-6">
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-100">
-          {menuItems.map(({ icon: Icon, label }) => (
-            <Link key={label} href="#">
-              <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
-                <Icon className="w-5 h-5 text-gray-400 shrink-0" />
-                <span className="text-sm font-medium text-gray-700 flex-1">{label}</span>
-                <ChevronRight className="w-4 h-4 text-gray-300 shrink-0" />
-              </div>
-            </Link>
+      {/* ── Menu list ── */}
+      <section className="px-5 pt-8">
+        <span className="eyebrow text-hd-ink/50 block mb-3">Settings</span>
+        <ul className="divide-y divide-hd-ink/10 border-y border-hd-ink/10">
+          {menuItems.map(({ icon: Icon, label }, i) => (
+            <li key={label}>
+              <Link
+                href="#"
+                className="flex items-center gap-4 py-4 hover:bg-hd-paper transition-colors group"
+              >
+                <span className="numeral text-[0.65rem] text-hd-ink/40 tracking-widest w-8">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <Icon className="w-4 h-4 text-hd-ink/50" />
+                <span className="text-[0.9rem] text-hd-ink flex-1">{label}</span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-hd-ink/30 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
+            </li>
           ))}
-        </div>
-      </div>
+        </ul>
+      </section>
 
-      {/* Footer */}
-      <div className="px-4 pb-8 flex flex-col items-center gap-3">
+      {/* ── Footer ── */}
+      <section className="px-5 pt-10 flex flex-col items-center gap-3 text-center">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 text-red-500 hover:text-red-600 transition-colors py-2"
+          className="flex items-center gap-2 text-hd-burgundy hover:text-hd-burgundy-dark transition-colors py-3 eyebrow"
         >
-          <LogOut className="w-4 h-4" />
-          <span className="text-sm font-semibold">Keluar</span>
+          <LogOut className="w-3.5 h-3.5" />
+          <span>Sign out</span>
         </button>
-        <p className="text-xs text-gray-300">Version 1.0.0</p>
-      </div>
+        <p className="numeral text-[0.65rem] text-hd-ink/30 tracking-widest">V. 1.0.0</p>
+      </section>
     </div>
   )
 }
