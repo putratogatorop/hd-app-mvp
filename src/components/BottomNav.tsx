@@ -17,8 +17,8 @@ export default function BottomNav() {
   const itemCount = useCartStore((s) => s.itemCount())
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-hd-cream/95 backdrop-blur-md border-t border-hd-ink/10 safe-bottom">
-      <div className="max-w-lg mx-auto grid grid-cols-5">
+    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg z-50 bg-hd-cream/95 backdrop-blur-md border-t border-hd-ink/10 safe-bottom">
+      <div className="grid grid-cols-5">
         {navItems.map(({ href, label }) => {
           const isActive = pathname === href || (href !== '/home' && pathname.startsWith(href))
           const isMenu = href === '/menu'
