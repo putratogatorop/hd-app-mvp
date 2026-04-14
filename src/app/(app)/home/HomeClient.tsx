@@ -83,6 +83,9 @@ export default function HomeClient({
   const dateline = today
     .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
     .toUpperCase()
+  const hour = today.getHours()
+  const greeting =
+    hour < 11 ? 'Selamat pagi' : hour < 15 ? 'Selamat siang' : hour < 19 ? 'Selamat sore' : 'Selamat malam'
 
   return (
     <div className="min-h-screen bg-hd-cream pb-28">
@@ -150,7 +153,7 @@ export default function HomeClient({
 
           {/* Oversized headline */}
           <div className="mt-10 stagger">
-            <p className="eyebrow text-hd-gold-light">Good evening, {firstName}</p>
+            <p className="eyebrow text-hd-gold-light">{greeting}, {firstName}</p>
             <h1 className="mt-5 font-display text-display-xl leading-[0.9] tracking-editorial">
               Ice Cream,
               <br />
