@@ -11,9 +11,13 @@ export default async function HomePage() {
 
   const { data: profile } = (await supabase
     .from('profiles')
-    .select('full_name, loyalty_points, tier, referral_code')
+    .select('full_name, loyalty_points, tier, referral_code, birthday')
     .single()) as unknown as {
-    data: Pick<ProfileRow, 'full_name' | 'loyalty_points' | 'tier' | 'referral_code'> | null
+    data:
+      | (Pick<ProfileRow, 'full_name' | 'loyalty_points' | 'tier' | 'referral_code'> & {
+          birthday: string | null
+        })
+      | null
   }
 
   const { data: menuItems } = (await supabase

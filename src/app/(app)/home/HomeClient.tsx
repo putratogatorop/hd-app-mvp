@@ -9,7 +9,10 @@ import {
   ShoppingBag,
   Truck,
   UtensilsCrossed,
+  Gift,
+  Cake,
 } from 'lucide-react'
+import { getActiveOccasion } from '@/lib/events/occasions'
 import type { Database } from '@/lib/supabase/database.types'
 import { useOrderContext } from '@/lib/store/order-context'
 import { useCartStore } from '@/lib/store/cart'
@@ -22,7 +25,9 @@ import PromoPopup from '@/components/PromoPopup'
 type ProfileRow = Database['public']['Tables']['profiles']['Row']
 type MenuItem = Database['public']['Tables']['menu_items']['Row']
 type Store = Database['public']['Tables']['stores']['Row']
-type Profile = Pick<ProfileRow, 'full_name' | 'loyalty_points' | 'tier' | 'referral_code'>
+type Profile = Pick<ProfileRow, 'full_name' | 'loyalty_points' | 'tier' | 'referral_code'> & {
+  birthday?: string | null
+}
 
 interface HomeClientProps {
   profile: Profile | null
@@ -72,6 +77,7 @@ export default function HomeClient({
   const points = profile?.loyalty_points ?? 0
   const toNext = Math.max(0, tier.target - points)
   const firstName = profile?.full_name?.split(' ')[0] ?? 'Guest'
+  const occasion = getActiveOccasion({ birthday: profile?.birthday ?? null })
 
   const today = new Date()
   const dateline = today
@@ -81,6 +87,37 @@ export default function HomeClient({
   return (
     <div className="min-h-screen bg-hd-cream pb-28">
       <PromoPopup />
+
+      {/* ─────────── OCCASION STRIP ─────────── */}
+      {occasion && (
+        <Link
+          href={occasion.href}
+          className="block bg-hd-gold text-hd-burgundy-dark border-b border-hd-burgundy/30 group"
+        >
+          <div className="max-w-lg mx-auto px-5 py-3 flex items-center gap-4">
+            {occasion.isPersonal ? (
+              <Cake className="w-4 h-4 shrink-0" />
+            ) : (
+              <Gift className="w-4 h-4 shrink-0" />
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="eyebrow text-hd-burgundy-dark/80 text-[0.6rem]">
+                {occasion.eyebrow}
+              </p>
+              <p className="font-display text-[0.95rem] tracking-editorial leading-tight truncate">
+                {occasion.title}
+                <span className="italic font-normal text-hd-burgundy-dark/75 text-[0.8rem]">
+                  {' '}— {occasion.tagline}
+                </span>
+              </p>
+            </div>
+            <span className="eyebrow text-[0.65rem] inline-flex items-center gap-1 shrink-0">
+              {occasion.cta}
+              <ArrowUpRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </span>
+          </div>
+        </Link>
+      )}
 
       {/* ─────────── MASTHEAD / HERO ─────────── */}
       <section className="relative overflow-hidden bg-hd-burgundy-dark text-hd-cream">
