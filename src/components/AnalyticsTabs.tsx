@@ -4,28 +4,46 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const tabs = [
-  { href: '/analytics', label: 'Overview' },
-  { href: '/analytics/gift', label: 'Gifting' },
-  { href: '/analytics/transactional', label: 'Transactional' },
+  { href: '/analytics', label: 'Overview', num: '01' },
+  { href: '/analytics/gift', label: 'Gifting', num: '02' },
+  { href: '/analytics/transactional', label: 'Transactional', num: '03' },
 ]
 
 export default function AnalyticsTabs() {
   const pathname = usePathname()
   return (
-    <nav className="flex items-center gap-1 border-b border-[#2A2A35] overflow-x-auto">
+    <nav className="flex items-end gap-8 overflow-x-auto">
       {tabs.map((t) => {
         const active = pathname === t.href
         return (
           <Link
             key={t.href}
             href={t.href}
-            className={`relative px-4 py-2.5 text-xs font-semibold tracking-wide transition-colors whitespace-nowrap ${
-              active ? 'text-white' : 'text-[#9CA3AF] hover:text-white'
-            }`}
+            className="group relative flex items-baseline gap-2 pb-3 whitespace-nowrap"
           >
-            {t.label}
+            <span
+              className="numeral text-[0.65rem] tracking-widest transition-colors"
+              style={{
+                color: active ? '#B8922A' : 'rgba(254,242,227,0.3)',
+              }}
+            >
+              {t.num}
+            </span>
+            <span
+              className={`font-display text-[1rem] tracking-editorial transition-colors ${
+                active ? 'italic' : ''
+              }`}
+              style={{
+                color: active ? '#FEF2E3' : 'rgba(254,242,227,0.55)',
+              }}
+            >
+              {t.label}
+            </span>
             {active && (
-              <span className="absolute left-2 right-2 bottom-0 h-[2px] bg-[#B8922A]" />
+              <span
+                className="absolute left-0 right-0 bottom-0 h-[2px]"
+                style={{ backgroundColor: '#B8922A' }}
+              />
             )}
           </Link>
         )
