@@ -15,20 +15,21 @@ import type { RealOverviewData, Period } from '@/lib/dashboard/real-metrics'
 import ChatPanel from '@/components/ChatPanel'
 import AnalyticsTabs from '@/components/AnalyticsTabs'
 
-// ── Theme constants ─────────────────────────────────────────────
+// ── Theme constants (editorial maison, brand-aligned) ──────────────
 const COLORS = {
-  bg: '#0F0F12',
-  card: '#1A1A24',
-  cardBorder: '#2A2A35',
+  bg: '#1C0810',              // burgundy-tinted noir
+  card: '#2A0F1C',            // card surface
+  cardBorder: 'rgba(184, 146, 42, 0.18)',
   burgundy: '#650A30',
-  burgundyLight: '#8B1A45',
+  burgundyLight: '#801237',
   gold: '#B8922A',
-  goldLight: '#D4AC3A',
-  emerald: '#10B981',
-  red: '#EF4444',
-  textPrimary: '#FFFFFF',
-  textSecondary: '#9CA3AF',
-  gridLine: '#2A2A35',
+  goldLight: '#F5E6C8',
+  emerald: '#4ECDC4',
+  red: '#D96C6C',
+  textPrimary: '#FEF2E3',     // cream
+  textSecondary: 'rgba(254, 242, 227, 0.55)',
+  textMuted: 'rgba(254, 242, 227, 0.35)',
+  gridLine: 'rgba(254, 242, 227, 0.08)',
 }
 
 // ── Sparkline SVG ───────────────────────────────────────────────
@@ -96,11 +97,11 @@ function KPICard({ label, metric, formatter }: {
   const isPositive = metric.changePercent >= 0
 
   return (
-    <div className="group relative bg-[#1A1A24] border border-[#2A2A35] rounded-2xl p-5 hover:border-[#B8922A]/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(184,146,42,0.08)]">
-      <p className="text-xs text-[#9CA3AF] font-medium uppercase tracking-wider mb-2">{label}</p>
+    <div className="group relative bg-[#2A0F1C] border border-[rgba(184,146,42,0.18)] p-5 hover:border-[#B8922A]/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(184,146,42,0.08)]">
+      <p className="eyebrow text-[#b8a89a] mb-3">{label}</p>
       <div className="flex items-end justify-between">
         <div>
-          <p className="text-2xl font-bold text-white tabular-nums">{formatter(animated)}</p>
+          <p className="numeral text-[1.8rem] text-[#FEF2E3] leading-none">{formatter(animated)}</p>
           <span className={`inline-flex items-center gap-1 mt-1.5 text-xs font-semibold px-2 py-0.5 rounded-full ${
             isPositive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
           }`}>
@@ -127,12 +128,12 @@ function Section({ title, children, defaultOpen = true }: {
         className="flex items-center gap-3 mb-4 group w-full text-left"
       >
         <svg
-          className={`w-4 h-4 text-[#9CA3AF] transition-transform ${open ? 'rotate-90' : ''}`}
+          className={`w-4 h-4 text-[#b8a89a] transition-transform ${open ? 'rotate-90' : ''}`}
           fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>
-        <h2 className="text-lg font-bold text-white">{title}</h2>
+        <h2 className="font-display text-[1.25rem] tracking-editorial text-[#FEF2E3]">{title}</h2>
         <div className="flex-1 h-px bg-gradient-to-r from-[#B8922A]/40 to-transparent" />
       </button>
       {open && <div className="animate-[fadeIn_0.2s_ease-out]">{children}</div>}
@@ -148,8 +149,8 @@ function DarkTooltip({ active, payload, label }: {
 }) {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-[#1A1A24] border border-[#650A30] rounded-lg px-3 py-2 shadow-xl">
-      <p className="text-xs text-[#9CA3AF] mb-1">{label}</p>
+    <div className="bg-[#2A0F1C] border border-[#650A30] rounded-lg px-3 py-2 shadow-xl">
+      <p className="text-xs text-[#b8a89a] mb-1">{label}</p>
       {payload.map((entry, i) => (
         <p key={i} className="text-xs font-medium" style={{ color: entry.color }}>
           {entry.name}: {entry.value.toLocaleString('id-ID')}
@@ -167,7 +168,7 @@ function RevenueHeatmap({ data }: { data: HeatmapPoint[] }) {
 
   const getColor = (value: number) => {
     const ratio = value / maxVal
-    if (ratio < 0.25) return '#1A1A24'
+    if (ratio < 0.25) return '#2A0F1C'
     if (ratio < 0.45) return '#3D2A10'
     if (ratio < 0.65) return '#8B6914'
     if (ratio < 0.8) return '#B8922A'
@@ -184,13 +185,13 @@ function RevenueHeatmap({ data }: { data: HeatmapPoint[] }) {
         <div className="grid gap-1 mb-1" style={{ gridTemplateColumns: `60px repeat(${hours.length}, 1fr)` }}>
           <div />
           {hours.map(h => (
-            <div key={h} className="text-center text-[10px] text-[#9CA3AF] font-mono">{h}:00</div>
+            <div key={h} className="text-center text-[10px] text-[#b8a89a] font-mono">{h}:00</div>
           ))}
         </div>
         {/* Rows */}
         {days.map(day => (
           <div key={day} className="grid gap-1 mb-1" style={{ gridTemplateColumns: `60px repeat(${hours.length}, 1fr)` }}>
-            <div className="text-xs text-[#9CA3AF] font-medium flex items-center">{day}</div>
+            <div className="text-xs text-[#b8a89a] font-medium flex items-center">{day}</div>
             {hours.map(hour => {
               const val = lookup.get(`${day}-${hour}`) ?? 0
               return (
@@ -211,11 +212,11 @@ function RevenueHeatmap({ data }: { data: HeatmapPoint[] }) {
         ))}
         {/* Legend */}
         <div className="flex items-center gap-2 mt-3 justify-end">
-          <span className="text-[10px] text-[#9CA3AF]">Low</span>
-          {['#1A1A24', '#3D2A10', '#8B6914', '#B8922A', '#650A30'].map((c, i) => (
+          <span className="text-[10px] text-[#b8a89a]">Low</span>
+          {['#2A0F1C', '#3D2A10', '#8B6914', '#B8922A', '#650A30'].map((c, i) => (
             <div key={i} className="w-6 h-3 rounded-sm" style={{ backgroundColor: c }} />
           ))}
-          <span className="text-[10px] text-[#9CA3AF]">High</span>
+          <span className="text-[10px] text-[#b8a89a]">High</span>
         </div>
       </div>
     </div>
@@ -281,7 +282,7 @@ export default function OverviewClient({
 
   // Tier colors
   const tierColors: Record<string, string> = {
-    Silver: '#9CA3AF',
+    Silver: '#b8a89a',
     Gold: '#B8922A',
     Platinum: '#D4AC3A',
   }
@@ -289,19 +290,21 @@ export default function OverviewClient({
   return (
     <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
       {/* ── Sticky Header ── */}
-      <header className="sticky top-0 z-30 backdrop-blur-xl border-b border-[#2A2A35]" style={{ backgroundColor: 'rgba(15,15,18,0.85)' }}>
+      <header className="sticky top-0 z-30 backdrop-blur-xl border-b border-[#3d1825]" style={{ backgroundColor: 'rgba(15,15,18,0.85)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-3 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold text-white tracking-tight">
-              HD Analytics <span className="text-[#B8922A]">&#10022;</span>
-            </h1>
-            <span className="text-[10px] text-[#9CA3AF] bg-[#1A1A24] border border-[#2A2A35] px-2 py-0.5 rounded-full">Overview · live data</span>
+            <div>
+              <span className="eyebrow text-[#B8922A]">HD Analytics</span>
+              <h1 className="font-display text-[1.6rem] tracking-editorial text-[#FEF2E3] leading-tight mt-0.5">
+                Overview, <span className="italic">live.</span>
+              </h1>
+            </div>
             <div className="flex items-center gap-1.5 ml-2">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
               </span>
-              <span className="text-[10px] text-[#9CA3AF]">Updated 2 min ago</span>
+              <span className="text-[10px] text-[#b8a89a]">Updated 2 min ago</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -311,14 +314,14 @@ export default function OverviewClient({
                 onClick={() => setPeriod(p)}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
                   period === p
-                    ? 'bg-[#650A30] text-white shadow-lg shadow-[#650A30]/20'
-                    : 'bg-[#1A1A24] text-[#9CA3AF] hover:bg-[#2A2A35]'
+                    ? 'bg-[#650A30] text-[#FEF2E3] shadow-lg shadow-[#650A30]/20'
+                    : 'bg-[#2A0F1C] text-[#b8a89a] hover:bg-[#3d1825]'
                 }`}
               >
                 {p}
               </button>
             ))}
-            <select className="ml-2 bg-[#1A1A24] border border-[#2A2A35] text-xs text-[#9CA3AF] rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#B8922A]">
+            <select className="ml-2 bg-[#2A0F1C] border border-[#3d1825] text-xs text-[#b8a89a] rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#B8922A]">
               <option>All Stores</option>
               <option>PIK Avenue</option>
               <option>Grand Indonesia</option>
@@ -327,7 +330,7 @@ export default function OverviewClient({
             </select>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2">
           <AnalyticsTabs />
         </div>
       </header>
@@ -347,8 +350,8 @@ export default function OverviewClient({
         <Section title="Revenue Performance">
           <div className="grid lg:grid-cols-2 gap-4">
             {/* Revenue line chart */}
-            <div className="bg-[#1A1A24] border border-[#2A2A35] rounded-2xl p-5">
-              <h3 className="text-sm font-semibold text-white mb-4">Revenue by Channel</h3>
+            <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5">
+              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4">Revenue by Channel</h3>
               <ResponsiveContainer width="100%" height={280}>
                 <LineChart data={revenueSeries}>
                   <CartesianGrid stroke={COLORS.gridLine} strokeDasharray="3 3" />
@@ -362,8 +365,8 @@ export default function OverviewClient({
               </ResponsiveContainer>
             </div>
             {/* Store performance */}
-            <div className="bg-[#1A1A24] border border-[#2A2A35] rounded-2xl p-5">
-              <h3 className="text-sm font-semibold text-white mb-4">Store Performance</h3>
+            <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5">
+              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4">Store Performance</h3>
               <div className="space-y-4">
                 {sortedStores.map((s) => {
                   const maxRev = sortedStores[0].revenue
@@ -371,15 +374,15 @@ export default function OverviewClient({
                   return (
                     <div key={s.store}>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs text-[#9CA3AF]">{s.store}</span>
+                        <span className="text-xs text-[#b8a89a]">{s.store}</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-white">{formatRupiah(s.revenue)}</span>
+                          <span className="text-xs font-semibold text-[#FEF2E3]">{formatRupiah(s.revenue)}</span>
                           <span className={`text-[10px] font-semibold ${s.growth >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                             {s.growth >= 0 ? '\u2191' : '\u2193'}{Math.abs(s.growth)}%
                           </span>
                         </div>
                       </div>
-                      <div className="h-2 bg-[#2A2A35] rounded-full overflow-hidden">
+                      <div className="h-2 bg-[#3d1825] rounded-full overflow-hidden">
                         <div className="h-full rounded-full bg-gradient-to-r from-[#650A30] to-[#8B1A45] transition-all duration-700" style={{ width: `${pct}%` }} />
                       </div>
                     </div>
@@ -394,8 +397,8 @@ export default function OverviewClient({
         <Section title="Customer Intelligence">
           <div className="grid lg:grid-cols-2 gap-4">
             {/* Tier revenue */}
-            <div className="bg-[#1A1A24] border border-[#2A2A35] rounded-2xl p-5">
-              <h3 className="text-sm font-semibold text-white mb-4">Revenue by Tier</h3>
+            <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5">
+              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4">Revenue by Tier</h3>
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={segments} layout="vertical">
                   <CartesianGrid stroke={COLORS.gridLine} strokeDasharray="3 3" horizontal={false} />
@@ -411,8 +414,8 @@ export default function OverviewClient({
               </ResponsiveContainer>
             </div>
             {/* Brand health donut */}
-            <div className="bg-[#1A1A24] border border-[#2A2A35] rounded-2xl p-5 flex flex-col items-center justify-center">
-              <h3 className="text-sm font-semibold text-white mb-4 self-start">Brand Health</h3>
+            <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5 flex flex-col items-center justify-center">
+              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4 self-start">Brand Health</h3>
               <div className="relative">
                 <ResponsiveContainer width={200} height={200}>
                   <PieChart>
@@ -430,18 +433,18 @@ export default function OverviewClient({
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-2xl font-bold text-white">{fullPricePct}%</span>
-                  <span className="text-[10px] text-[#9CA3AF]">Full Price</span>
+                  <span className="text-2xl font-bold text-[#FEF2E3]">{fullPricePct}%</span>
+                  <span className="text-[10px] text-[#b8a89a]">Full Price</span>
                 </div>
               </div>
               <div className="flex gap-6 mt-4">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.burgundyLight }} />
-                  <span className="text-xs text-[#9CA3AF]">Full Price ({fullPricePct}%)</span>
+                  <span className="text-xs text-[#b8a89a]">Full Price ({fullPricePct}%)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.gold }} />
-                  <span className="text-xs text-[#9CA3AF]">Voucher ({voucherPct}%)</span>
+                  <span className="text-xs text-[#b8a89a]">Voucher ({voucherPct}%)</span>
                 </div>
               </div>
             </div>
@@ -452,11 +455,11 @@ export default function OverviewClient({
         <Section title="Marketing ROI">
           <div className="grid lg:grid-cols-2 gap-4">
             {/* Voucher table */}
-            <div className="bg-[#1A1A24] border border-[#2A2A35] rounded-2xl p-5 overflow-x-auto">
-              <h3 className="text-sm font-semibold text-white mb-4">Voucher Performance</h3>
+            <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5 overflow-x-auto">
+              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4">Voucher Performance</h3>
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-[#2A2A35]">
+                  <tr className="border-b border-[#3d1825]">
                     {[
                       { key: 'code', label: 'Code' },
                       { key: 'redeemed', label: 'Redeemed' },
@@ -466,7 +469,7 @@ export default function OverviewClient({
                       <th
                         key={col.key}
                         onClick={() => handleVoucherSort(col.key)}
-                        className="text-left py-2 px-2 text-[#9CA3AF] font-medium cursor-pointer hover:text-white transition-colors"
+                        className="text-left py-2 px-2 text-[#b8a89a] font-medium cursor-pointer hover:text-[#FEF2E3] transition-colors"
                       >
                         {col.label} {sortCol === col.key ? (sortAsc ? '\u25B2' : '\u25BC') : ''}
                       </th>
@@ -475,16 +478,16 @@ export default function OverviewClient({
                 </thead>
                 <tbody>
                   {sortedVouchers.map(v => (
-                    <tr key={v.code} className="border-b border-[#2A2A35]/50 hover:bg-[#2A2A35]/30 transition-colors">
+                    <tr key={v.code} className="border-b border-[#3d1825]/50 hover:bg-[#3d1825]/30 transition-colors">
                       <td className="py-2.5 px-2">
-                        <span className="text-white font-mono font-medium">{v.code}</span>
+                        <span className="text-[#FEF2E3] font-mono font-medium">{v.code}</span>
                         <br />
-                        <span className="text-[10px] text-[#9CA3AF]">{v.title}</span>
+                        <span className="text-[10px] text-[#b8a89a]">{v.title}</span>
                       </td>
-                      <td className="py-2.5 px-2 text-[#9CA3AF]">{v.redeemed.toLocaleString('id-ID')}/{v.issued.toLocaleString('id-ID')}</td>
-                      <td className="py-2.5 px-2 text-[#9CA3AF]">{v.redemptionRate}%</td>
+                      <td className="py-2.5 px-2 text-[#b8a89a]">{v.redeemed.toLocaleString('id-ID')}/{v.issued.toLocaleString('id-ID')}</td>
+                      <td className="py-2.5 px-2 text-[#b8a89a]">{v.redemptionRate}%</td>
                       <td className="py-2.5 px-2">
-                        <span className={`font-bold ${v.roi >= 2 ? 'text-[#B8922A]' : 'text-[#9CA3AF]'}`}>
+                        <span className={`font-bold ${v.roi >= 2 ? 'text-[#B8922A]' : 'text-[#b8a89a]'}`}>
                           {v.roi.toFixed(1)}x
                         </span>
                       </td>
@@ -494,18 +497,18 @@ export default function OverviewClient({
               </table>
             </div>
             {/* Referral funnel */}
-            <div className="bg-[#1A1A24] border border-[#2A2A35] rounded-2xl p-5">
-              <h3 className="text-sm font-semibold text-white mb-4">Referral Funnel</h3>
+            <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5">
+              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4">Referral Funnel</h3>
               <div className="space-y-3">
                 {funnel.map((stage, i) => {
                   const pct = (stage.value / funnelMax) * 100
                   return (
                     <div key={stage.stage}>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs text-[#9CA3AF]">{stage.stage}</span>
-                        <span className="text-xs font-semibold text-white">{stage.value.toLocaleString('id-ID')}</span>
+                        <span className="text-xs text-[#b8a89a]">{stage.stage}</span>
+                        <span className="text-xs font-semibold text-[#FEF2E3]">{stage.value.toLocaleString('id-ID')}</span>
                       </div>
-                      <div className="h-3 bg-[#2A2A35] rounded-full overflow-hidden">
+                      <div className="h-3 bg-[#3d1825] rounded-full overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-700"
                           style={{
@@ -526,8 +529,8 @@ export default function OverviewClient({
         <Section title="Operations">
           <div className="grid lg:grid-cols-2 gap-4">
             {/* Orders by hour */}
-            <div className="bg-[#1A1A24] border border-[#2A2A35] rounded-2xl p-5">
-              <h3 className="text-sm font-semibold text-white mb-4">Orders by Hour</h3>
+            <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5">
+              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4">Orders by Hour</h3>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={ordersByHour}>
                   <CartesianGrid stroke={COLORS.gridLine} strokeDasharray="3 3" />
@@ -541,15 +544,15 @@ export default function OverviewClient({
               </ResponsiveContainer>
             </div>
             {/* Top 5 products */}
-            <div className="bg-[#1A1A24] border border-[#2A2A35] rounded-2xl p-5">
-              <h3 className="text-sm font-semibold text-white mb-4">Top 5 Products</h3>
+            <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5">
+              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4">Top 5 Products</h3>
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-[#2A2A35]">
-                    <th className="text-left py-2 px-2 text-[#9CA3AF] font-medium w-8">#</th>
-                    <th className="text-left py-2 px-2 text-[#9CA3AF] font-medium">Product</th>
-                    <th className="text-right py-2 px-2 text-[#9CA3AF] font-medium">Orders</th>
-                    <th className="text-right py-2 px-2 text-[#9CA3AF] font-medium">Revenue</th>
+                  <tr className="border-b border-[#3d1825]">
+                    <th className="text-left py-2 px-2 text-[#b8a89a] font-medium w-8">#</th>
+                    <th className="text-left py-2 px-2 text-[#b8a89a] font-medium">Product</th>
+                    <th className="text-right py-2 px-2 text-[#b8a89a] font-medium">Orders</th>
+                    <th className="text-right py-2 px-2 text-[#b8a89a] font-medium">Revenue</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -557,11 +560,11 @@ export default function OverviewClient({
                     const badges = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49']
                     const badge = i < 3 ? badges[i] : `${i + 1}`
                     return (
-                      <tr key={p.name} className="border-b border-[#2A2A35]/50 hover:bg-[#2A2A35]/30 transition-colors">
+                      <tr key={p.name} className="border-b border-[#3d1825]/50 hover:bg-[#3d1825]/30 transition-colors">
                         <td className="py-2.5 px-2 text-center">{badge}</td>
-                        <td className="py-2.5 px-2 text-white font-medium">{p.name}</td>
-                        <td className="py-2.5 px-2 text-right text-[#9CA3AF] tabular-nums">{p.orders.toLocaleString('id-ID')}</td>
-                        <td className="py-2.5 px-2 text-right text-white font-medium tabular-nums">{formatRupiah(p.revenue)}</td>
+                        <td className="py-2.5 px-2 text-[#FEF2E3] font-medium">{p.name}</td>
+                        <td className="py-2.5 px-2 text-right text-[#b8a89a] tabular-nums">{p.orders.toLocaleString('id-ID')}</td>
+                        <td className="py-2.5 px-2 text-right text-[#FEF2E3] font-medium tabular-nums">{formatRupiah(p.revenue)}</td>
                       </tr>
                     )
                   })}
@@ -573,7 +576,7 @@ export default function OverviewClient({
 
         {/* ── Revenue Heatmap ── */}
         <Section title="Revenue Heatmap — Orders by Day & Hour">
-          <div className="bg-[#1A1A24] border border-[#2A2A35] rounded-2xl p-5">
+          <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5">
             <RevenueHeatmap data={heatmap} />
           </div>
         </Section>
@@ -582,7 +585,7 @@ export default function OverviewClient({
       {/* ── Floating Chat Button ── */}
       <button
         onClick={() => setChatOpen(!chatOpen)}
-        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-[#B8922A] to-[#D4AC3A] text-white shadow-xl shadow-[#B8922A]/30 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center"
+        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-[#B8922A] to-[#D4AC3A] text-[#FEF2E3] shadow-xl shadow-[#B8922A]/30 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center"
         aria-label="Open AI Chat"
       >
         <span className="text-xl">&#10022;</span>
