@@ -98,15 +98,20 @@ WHERE p.id = sp.id;
 DO $$
 DECLARE
   v_customers uuid[];
+  v_customer_tiers text[];
   v_stores uuid[];
   v_menu_ids uuid[];
   v_menu_prices numeric[];
   v_voucher_ids uuid[];
+  v_voucher_tiers text[]; -- NULL means open to any tier
+  v_user_idx int;
   v_user uuid;
+  v_user_tier text;
   v_store uuid;
   v_mode text;
   v_payment text;
   v_voucher uuid;
+  v_eligible_voucher_ids uuid[];
   v_is_gift boolean;
   v_discount numeric;
   v_fee numeric;
@@ -128,13 +133,15 @@ DECLARE
   j int;
   order_count int := 200;
 BEGIN
-  SELECT array_agg(id) INTO v_customers
+  SELECT array_agg(id ORDER BY email), array_agg(tier ORDER BY email)
+    INTO v_customers, v_customer_tiers
     FROM public.profiles WHERE email LIKE 'seed%@hd.test';
   SELECT array_agg(id) INTO v_stores FROM public.stores;
   SELECT array_agg(id), array_agg(price)
     INTO v_menu_ids, v_menu_prices
     FROM public.menu_items WHERE is_available = TRUE;
-  SELECT array_agg(id) INTO v_voucher_ids
+  SELECT array_agg(id), array_agg(tier_required)
+    INTO v_voucher_ids, v_voucher_tiers
     FROM public.vouchers WHERE is_active = TRUE;
 
   IF array_length(v_customers,1) IS NULL
@@ -145,7 +152,9 @@ BEGIN
   END IF;
 
   FOR i IN 1..order_count LOOP
-    v_user := v_customers[1 + (floor(random() * array_length(v_customers,1)))::int];
+    v_user_idx := 1 + (floor(random() * array_length(v_customers,1)))::int;
+    v_user := v_customers[v_user_idx];
+    v_user_tier := v_customer_tiers[v_user_idx];
     v_store := v_stores[1 + (floor(random() * array_length(v_stores,1)))::int];
 
     -- Mode distribution: 50% pickup, 35% delivery, 15% dinein
@@ -157,10 +166,26 @@ BEGIN
 
     v_payment := (ARRAY['gopay','ovo','dana','card'])[1 + (floor(random() * 4))::int];
 
-    -- 30% chance a voucher was applied
-    v_voucher := CASE WHEN random() < 0.30 AND v_voucher_ids IS NOT NULL
-      THEN v_voucher_ids[1 + (floor(random() * array_length(v_voucher_ids,1)))::int]
-      ELSE NULL END;
+    -- 30% chance a voucher was applied — RESTRICTED TO TIER
+    -- (Platinum vouchers → platinum only; gold vouchers → gold or platinum;
+    --  tier-less vouchers → anyone)
+    v_voucher := NULL;
+    IF random() < 0.30 AND v_voucher_ids IS NOT NULL THEN
+      SELECT array_agg(vid) INTO v_eligible_voucher_ids
+      FROM (
+        SELECT unnest(v_voucher_ids) AS vid, unnest(v_voucher_tiers) AS vtier
+      ) x
+      WHERE vtier IS NULL
+         OR (vtier = 'gold' AND v_user_tier IN ('gold', 'platinum'))
+         OR (vtier = 'platinum' AND v_user_tier = 'platinum');
+
+      IF v_eligible_voucher_ids IS NOT NULL
+         AND array_length(v_eligible_voucher_ids, 1) > 0 THEN
+        v_voucher := v_eligible_voucher_ids[
+          1 + (floor(random() * array_length(v_eligible_voucher_ids, 1)))::int
+        ];
+      END IF;
+    END IF;
 
     v_is_gift := random() < 0.20;
 
