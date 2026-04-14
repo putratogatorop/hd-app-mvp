@@ -13,9 +13,15 @@ export default async function AccountPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, email, phone, loyalty_points, tier, referral_code')
+    .select('full_name, email, phone, loyalty_points, tier, referral_code, birthday')
     .eq('id', user.id)
-    .single() as unknown as { data: Pick<ProfileRow, 'full_name' | 'email' | 'phone' | 'loyalty_points' | 'tier' | 'referral_code'> | null }
+    .single() as unknown as {
+      data:
+        | (Pick<ProfileRow, 'full_name' | 'email' | 'phone' | 'loyalty_points' | 'tier' | 'referral_code'> & {
+            birthday: string | null
+          })
+        | null
+    }
 
   return <AccountClient profile={profile} />
 }

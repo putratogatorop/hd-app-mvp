@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -13,12 +14,18 @@ import {
   LogOut,
   ArrowUpRight,
   Users,
+  Cake,
 } from 'lucide-react'
 import type { Database } from '@/lib/supabase/database.types'
 import { Eyebrow } from '@/components/ui'
+import { updateBirthday } from './actions'
 
 type ProfileRow = Database['public']['Tables']['profiles']['Row']
-type Profile = Pick<ProfileRow, 'full_name' | 'email' | 'phone' | 'loyalty_points' | 'tier' | 'referral_code'> | null
+type Profile =
+  | (Pick<ProfileRow, 'full_name' | 'email' | 'phone' | 'loyalty_points' | 'tier' | 'referral_code'> & {
+      birthday?: string | null
+    })
+  | null
 
 interface AccountClientProps {
   profile: Profile
@@ -42,6 +49,24 @@ const menuItems = [
 export default function AccountClient({ profile }: AccountClientProps) {
   const router = useRouter()
   const supabase = createClient()
+
+  const [birthday, setBirthday] = useState(profile?.birthday ?? '')
+  const [saving, startSaving] = useTransition()
+  const [savedAt, setSavedAt] = useState<number | null>(null)
+  const [err, setErr] = useState<string | null>(null)
+
+  function handleBirthdayChange(value: string) {
+    setBirthday(value)
+    setErr(null)
+    startSaving(async () => {
+      try {
+        await updateBirthday(value || null)
+        setSavedAt(Date.now())
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : 'Save failed')
+      }
+    })
+  }
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -119,6 +144,41 @@ export default function AccountClient({ profile }: AccountClientProps) {
               )}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── Personal details ── */}
+      <section className="px-5 pt-8">
+        <span className="eyebrow text-hd-ink/50 block mb-3">Personal</span>
+        <div className="border-y border-hd-ink/10 divide-y divide-hd-ink/10">
+          <div className="flex items-center gap-4 py-4">
+            <Cake className="w-4 h-4 text-hd-burgundy" />
+            <label htmlFor="acc-birthday" className="text-[0.9rem] text-hd-ink flex-1">
+              Birthday
+              <span className="block eyebrow text-hd-ink/45 mt-0.5 normal-case tracking-normal text-[0.7rem] italic">
+                A treat awaits, every year.
+              </span>
+            </label>
+            <input
+              id="acc-birthday"
+              type="date"
+              value={birthday}
+              max={new Date().toISOString().split('T')[0]}
+              onChange={(e) => handleBirthdayChange(e.target.value)}
+              className="bg-transparent text-[0.9rem] text-hd-ink px-0 py-1 border-b border-hd-ink/30 focus:border-hd-ink focus:outline-none transition-colors"
+            />
+          </div>
+          {(saving || savedAt || err) && (
+            <div className="py-2 eyebrow text-[0.65rem]">
+              {err ? (
+                <span className="text-hd-burgundy">{err}</span>
+              ) : saving ? (
+                <span className="text-hd-ink/50">Saving…</span>
+              ) : (
+                <span className="text-hd-gold">Saved</span>
+              )}
+            </div>
+          )}
         </div>
       </section>
 

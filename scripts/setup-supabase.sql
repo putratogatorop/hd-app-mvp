@@ -15,11 +15,15 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   full_name TEXT,
   phone TEXT,
   avatar_url TEXT,
+  birthday DATE,
   loyalty_points INTEGER DEFAULT 0,
   tier TEXT DEFAULT 'silver' CHECK (tier IN ('silver', 'gold', 'platinum')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+CREATE INDEX IF NOT EXISTS idx_profiles_birthday_mmdd
+  ON public.profiles ((to_char(birthday, 'MM-DD')))
+  WHERE birthday IS NOT NULL;
 
 -- Auto-create profile on user signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
