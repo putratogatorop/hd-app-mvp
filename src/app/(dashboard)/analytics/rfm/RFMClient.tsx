@@ -395,12 +395,24 @@ export default function RFMClient({ data }: { data: RFMData }) {
                   tick={{ fill: DC.textMuted, fontSize: 11 }}
                   label={{ value: 'Frequency Score  (1 = rare  ·  5 = very frequent)', angle: -90, position: 'insideLeft', offset: 18, fill: DC.textMuted, fontSize: 10 }} />
                 <Tooltip content={<ScatterTooltip />} cursor={false} />
-                <Scatter data={segmentBubbles} isAnimationActive={false}>
-                  {segmentBubbles.map((seg, i) => (
-                    <Cell key={i} fill={seg.color} fillOpacity={0.72} stroke={seg.color} strokeOpacity={0.4} strokeWidth={2}
-                      r={Math.max(12, Math.round((seg.count / maxBubbleCount) * 44))} />
-                  ))}
-                </Scatter>
+                {/* shape prop is the only way Recharts respects per-point radius in ScatterChart */}
+                <Scatter
+                  data={segmentBubbles}
+                  isAnimationActive={false}
+                  shape={(props: { cx?: number; cy?: number; payload?: SegmentBubble }) => {
+                    const { cx = 0, cy = 0, payload } = props
+                    if (!payload) return <circle cx={cx} cy={cy} r={0} />
+                    // Area-proportional radius: sqrt scaling so visual area = count
+                    const r = Math.max(10, Math.round(Math.sqrt(payload.count / maxBubbleCount) * 58))
+                    return (
+                      <circle
+                        cx={cx} cy={cy} r={r}
+                        fill={payload.color} fillOpacity={0.72}
+                        stroke={payload.color} strokeOpacity={0.5} strokeWidth={2}
+                      />
+                    )
+                  }}
+                />
               </ScatterChart>
             </ResponsiveContainer>
             <div className="flex flex-wrap gap-x-5 gap-y-2 mt-4 pt-3" style={{ borderTop: `1px solid ${DC.divider}` }}>
