@@ -339,7 +339,7 @@ export async function getOverviewRealData(
   const { data: ordersRaw } = await supabase
     .from('orders')
     .select(
-      'id, total_amount, discount_amount, created_at, user_id, order_mode, store_id, voucher_id, payment_method, is_gift, order_items(quantity, unit_price, menu_item:menu_items(name)), store:stores(name), voucher:vouchers(code, title, discount_type, discount_value)'
+      'id, total_amount, discount_amount, created_at, user_id, order_mode, store_id, voucher_id, payment_method, is_gift, order_items(quantity, unit_price, menu_item:menu_items(name)), store:stores(name), voucher:vouchers(code, title, discount_type, discount_value), profile:profiles!user_id(tier)'
     )
     .gte('created_at', sincePrev)
     .order('created_at', { ascending: false })
@@ -368,6 +368,7 @@ export async function getOverviewRealData(
       discount_type: string
       discount_value: number
     } | null
+    profile: { tier: string } | null
   }
 
   const orders = (ordersRaw ?? []) as OrderRow[]
@@ -491,26 +492,15 @@ export async function getOverviewRealData(
     growth: pctChange(s.revenue, storePrevMap.get(s.store) ?? 0),
   }))
 
-  // ─── Customer tiers (from profiles joined by user_id in window) ───
-  const userIdsCurr = Array.from(new Set(curr.map((o) => o.user_id)))
-  let tierMap = new Map<string, { revenue: number; customers: Set<string>; orders: number }>()
-  if (userIdsCurr.length > 0) {
-    const { data: profs } = await supabase
-      .from('profiles')
-      .select('id, tier')
-      .in('id', userIdsCurr)
-    const profileTiers = new Map<string, string>()
-    for (const p of (profs ?? []) as Array<{ id: string; tier: string }>) {
-      profileTiers.set(p.id, p.tier)
-    }
-    for (const o of curr) {
-      const tier = profileTiers.get(o.user_id) ?? 'silver'
-      const row = tierMap.get(tier) ?? { revenue: 0, customers: new Set(), orders: 0 }
-      row.revenue += Number(o.total_amount ?? 0)
-      row.customers.add(o.user_id)
-      row.orders += 1
-      tierMap.set(tier, row)
-    }
+  // ─── Customer tiers — read from embedded profile join (avoids RLS on a separate profiles query) ───
+  const tierMap = new Map<string, { revenue: number; customers: Set<string>; orders: number }>()
+  for (const o of curr) {
+    const tier = o.profile?.tier ?? 'silver'
+    const row = tierMap.get(tier) ?? { revenue: 0, customers: new Set(), orders: 0 }
+    row.revenue += Number(o.total_amount ?? 0)
+    row.customers.add(o.user_id)
+    row.orders += 1
+    tierMap.set(tier, row)
   }
   const TIER_ORDER = ['platinum', 'gold', 'silver']
   const TIER_LABEL: Record<string, string> = { silver: 'Silver', gold: 'Gold', platinum: 'Platinum' }
