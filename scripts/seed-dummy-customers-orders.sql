@@ -3,8 +3,25 @@
 -- Run in Supabase Dashboard → SQL Editor (AFTER setup-supabase.sql
 -- and seed-accounts.sql have been applied).
 --
--- Re-runnable — uses ON CONFLICT / idempotent inserts.
+-- Re-runnable — idempotent. Also ensures required columns exist
+-- (auto-applies v3 gifting + v4 birthday migrations if missing).
 -- ============================================
+
+-- ============================================
+-- 0. ENSURE REQUIRED COLUMNS EXIST (v3 + v4 migrations)
+-- Safe no-op if already applied.
+-- ============================================
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS birthday DATE;
+
+ALTER TABLE public.orders
+  ADD COLUMN IF NOT EXISTS is_gift             BOOLEAN     NOT NULL DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS recipient_name      TEXT,
+  ADD COLUMN IF NOT EXISTS recipient_phone     TEXT,
+  ADD COLUMN IF NOT EXISTS recipient_address   TEXT,
+  ADD COLUMN IF NOT EXISTS gift_message        TEXT,
+  ADD COLUMN IF NOT EXISTS scheduled_for       TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS gift_token          UUID        UNIQUE DEFAULT uuid_generate_v4();
 
 -- ============================================
 -- 1. CREATE 25 AUTH USERS (seed01@hd.test — seed25@hd.test, password: seed123!)
