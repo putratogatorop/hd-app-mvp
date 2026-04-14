@@ -16,6 +16,7 @@ import type {
   OrdersByHourPoint, TopProduct, HeatmapPoint,
 } from '@/lib/dashboard/dummy-data'
 import ChatPanel from '@/components/ChatPanel'
+import AnalyticsTabs from '@/components/AnalyticsTabs'
 
 // ── Theme constants ─────────────────────────────────────────────
 const COLORS = {
@@ -282,11 +283,12 @@ export default function DashboardPage() {
     <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
       {/* ── Sticky Header ── */}
       <header className="sticky top-0 z-30 backdrop-blur-xl border-b border-[#2A2A35]" style={{ backgroundColor: 'rgba(15,15,18,0.85)' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-3 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-bold text-white tracking-tight">
               HD Analytics <span className="text-[#B8922A]">&#10022;</span>
             </h1>
+            <span className="text-[10px] text-[#9CA3AF] bg-[#1A1A24] border border-[#2A2A35] px-2 py-0.5 rounded-full">Overview · demo data</span>
             <div className="flex items-center gap-1.5 ml-2">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -317,6 +319,9 @@ export default function DashboardPage() {
               <option>Pakuwon Surabaya</option>
             </select>
           </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <AnalyticsTabs />
         </div>
       </header>
 
