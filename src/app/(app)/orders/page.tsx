@@ -12,7 +12,7 @@ export default async function OrdersPage() {
 
   const { data: orders } = await supabase
     .from('orders')
-    .select('id, status, total_amount, order_mode, created_at, store:stores(name), order_items(quantity, menu_item:menu_items(name))')
+    .select('id, status, total_amount, order_mode, created_at, is_gift, recipient_name, gift_token, store:stores(name), order_items(quantity, menu_item:menu_items(name))')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(50)

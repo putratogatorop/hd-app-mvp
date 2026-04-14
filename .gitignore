@@ -54,3 +54,8 @@ android/app/debug/
 *.aab
 *.keystore
 *.jks
+
+# Internal / proposal decks — never commit
+*.pptx
+/logo/Haagen-Dazs_Infra_*
+/logo/*.pptx

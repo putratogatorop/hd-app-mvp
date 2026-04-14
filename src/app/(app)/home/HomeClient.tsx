@@ -9,7 +9,10 @@ import {
   ShoppingBag,
   Truck,
   UtensilsCrossed,
+  Gift,
+  Cake,
 } from 'lucide-react'
+import { getActiveOccasion } from '@/lib/events/occasions'
 import type { Database } from '@/lib/supabase/database.types'
 import { useOrderContext } from '@/lib/store/order-context'
 import { useCartStore } from '@/lib/store/cart'
@@ -22,7 +25,9 @@ import PromoPopup from '@/components/PromoPopup'
 type ProfileRow = Database['public']['Tables']['profiles']['Row']
 type MenuItem = Database['public']['Tables']['menu_items']['Row']
 type Store = Database['public']['Tables']['stores']['Row']
-type Profile = Pick<ProfileRow, 'full_name' | 'loyalty_points' | 'tier' | 'referral_code'>
+type Profile = Pick<ProfileRow, 'full_name' | 'loyalty_points' | 'tier' | 'referral_code'> & {
+  birthday?: string | null
+}
 
 interface HomeClientProps {
   profile: Profile | null
@@ -50,10 +55,10 @@ const orderModes: {
 ]
 
 const sections = [
-  { num: '01', title: 'MyHD Plan', tagline: 'A standing subscription', href: '/voucher' },
-  { num: '02', title: 'Catering', tagline: 'For the occasion', href: '/menu', mark: 'Nouveau' },
-  { num: '03', title: 'Share the Sip', tagline: 'Invitation, with reward', href: '/voucher' },
-  { num: '04', title: 'The Gift', tagline: 'Sent, sealed, savoured', href: '/menu' },
+  { num: '01', title: 'Send a Gift', tagline: 'Sealed, with a note', href: '/menu?gift=1', mark: 'Nouveau' },
+  { num: '02', title: 'Catering', tagline: 'For the occasion', href: '/menu' },
+  { num: '03', title: 'MyHD Plan', tagline: 'A standing subscription', href: '/voucher' },
+  { num: '04', title: 'Share the Sip', tagline: 'Invitation, with reward', href: '/voucher' },
 ]
 
 export default function HomeClient({
@@ -72,15 +77,50 @@ export default function HomeClient({
   const points = profile?.loyalty_points ?? 0
   const toNext = Math.max(0, tier.target - points)
   const firstName = profile?.full_name?.split(' ')[0] ?? 'Guest'
+  const occasion = getActiveOccasion({ birthday: profile?.birthday ?? null })
 
   const today = new Date()
   const dateline = today
     .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
     .toUpperCase()
+  const hour = today.getHours()
+  const greeting =
+    hour < 11 ? 'Selamat pagi' : hour < 15 ? 'Selamat siang' : hour < 19 ? 'Selamat sore' : 'Selamat malam'
 
   return (
     <div className="min-h-screen bg-hd-cream pb-28">
       <PromoPopup />
+
+      {/* ─────────── OCCASION STRIP ─────────── */}
+      {occasion && (
+        <Link
+          href={occasion.href}
+          className="block bg-hd-gold text-hd-burgundy-dark border-b border-hd-burgundy/30 group"
+        >
+          <div className="max-w-lg mx-auto px-5 py-3 flex items-center gap-4">
+            {occasion.isPersonal ? (
+              <Cake className="w-4 h-4 shrink-0" />
+            ) : (
+              <Gift className="w-4 h-4 shrink-0" />
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="eyebrow text-hd-burgundy-dark/80 text-[0.6rem]">
+                {occasion.eyebrow}
+              </p>
+              <p className="font-display text-[0.95rem] tracking-editorial leading-tight truncate">
+                {occasion.title}
+                <span className="italic font-normal text-hd-burgundy-dark/75 text-[0.8rem]">
+                  {' '}— {occasion.tagline}
+                </span>
+              </p>
+            </div>
+            <span className="eyebrow text-[0.65rem] inline-flex items-center gap-1 shrink-0">
+              {occasion.cta}
+              <ArrowUpRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </span>
+          </div>
+        </Link>
+      )}
 
       {/* ─────────── MASTHEAD / HERO ─────────── */}
       <section className="relative overflow-hidden bg-hd-burgundy-dark text-hd-cream">
@@ -113,7 +153,7 @@ export default function HomeClient({
 
           {/* Oversized headline */}
           <div className="mt-10 stagger">
-            <p className="eyebrow text-hd-gold-light">Good evening, {firstName}</p>
+            <p className="eyebrow text-hd-gold-light">{greeting}, {firstName}</p>
             <h1 className="mt-5 font-display text-display-xl leading-[0.9] tracking-editorial">
               Ice Cream,
               <br />

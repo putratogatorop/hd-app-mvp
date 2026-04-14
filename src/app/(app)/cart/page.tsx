@@ -14,6 +14,7 @@ import {
   StickyNote,
   ArrowUpRight,
   Sparkles,
+  Gift,
 } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
 import { useOrderContext } from '@/lib/store/order-context'
@@ -57,6 +58,10 @@ export default function CartPage() {
     setPaymentMethod,
     notes,
     setNotes,
+    isGift,
+    setIsGift,
+    gift,
+    setGift,
   } = useCartStore()
 
   const [toppings, setToppings] = useState<MenuItem[]>([])
@@ -93,6 +98,12 @@ export default function CartPage() {
 
   async function handleCheckout() {
     if (!items.length) return
+    if (isGift) {
+      if (!gift.recipientName.trim() || !gift.recipientPhone.trim()) {
+        setError('Please enter the recipient name and phone.')
+        return
+      }
+    }
     setLoading(true)
     setError(null)
     try {
@@ -113,6 +124,7 @@ export default function CartPage() {
         deliveryFee: fee,
         paymentMethod,
         notes,
+        gift: isGift ? gift : null,
       })
       clearCart()
     } catch (err) {
@@ -164,6 +176,128 @@ export default function CartPage() {
           </div>
         </div>
       </header>
+
+      {/* ── Gift toggle ── */}
+      <section className="px-5 pt-5">
+        <button
+          type="button"
+          onClick={() => setIsGift(!isGift)}
+          aria-pressed={isGift}
+          className={`w-full flex items-center gap-4 px-4 py-4 border transition-colors text-left ${
+            isGift
+              ? 'bg-hd-burgundy text-hd-cream border-hd-burgundy'
+              : 'bg-hd-paper text-hd-ink border-hd-ink/20 hover:border-hd-burgundy'
+          }`}
+        >
+          <Gift size={20} className={isGift ? 'text-hd-gold-light' : 'text-hd-burgundy'} />
+          <div className="flex-1 min-w-0">
+            <p className="font-display text-[1.05rem] tracking-editorial leading-tight">
+              Send as a <span className="italic">gift</span>
+            </p>
+            <p className={`text-[0.78rem] mt-0.5 italic ${isGift ? 'text-hd-cream/70' : 'text-hd-ink/55'}`}>
+              {isGift ? 'Gift mode on — recipient details below.' : 'Surprise someone — sealed and delivered.'}
+            </p>
+          </div>
+          <span
+            className={`relative inline-block w-10 h-6 rounded-full transition-colors ${
+              isGift ? 'bg-hd-gold' : 'bg-hd-ink/20'
+            }`}
+            aria-hidden
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
+                isGift ? 'translate-x-4' : ''
+              }`}
+            />
+          </span>
+        </button>
+      </section>
+
+      {/* ── Recipient details (only when gifting) ── */}
+      {isGift && (
+        <section className="px-5 pt-6">
+          <div className="flex items-end justify-between border-b border-hd-ink/15 pb-3">
+            <Eyebrow number="00">Recipient</Eyebrow>
+            <Gift size={14} className="text-hd-burgundy" />
+          </div>
+          <div className="mt-4 space-y-5">
+            <div>
+              <label htmlFor="gift-name" className="eyebrow text-hd-ink/60 block mb-2">
+                Recipient name
+              </label>
+              <input
+                id="gift-name"
+                type="text"
+                required
+                value={gift.recipientName}
+                onChange={(e) => setGift({ recipientName: e.target.value })}
+                placeholder="e.g. Sarah Wijaya"
+                className="w-full h-12 bg-transparent border-b border-hd-ink/30 px-0 text-[0.95rem] placeholder:text-hd-ink/30 focus:outline-none focus:border-hd-ink transition-colors"
+              />
+            </div>
+            <div>
+              <label htmlFor="gift-phone" className="eyebrow text-hd-ink/60 block mb-2">
+                WhatsApp number
+              </label>
+              <input
+                id="gift-phone"
+                type="tel"
+                required
+                value={gift.recipientPhone}
+                onChange={(e) => setGift({ recipientPhone: e.target.value })}
+                placeholder="0812 1234 5678"
+                className="w-full h-12 bg-transparent border-b border-hd-ink/30 px-0 text-[0.95rem] placeholder:text-hd-ink/30 focus:outline-none focus:border-hd-ink transition-colors"
+              />
+              <p className="text-[0.72rem] text-hd-ink/50 italic mt-1.5">
+                We&apos;ll notify them when their gift is on the way.
+              </p>
+            </div>
+            <div>
+              <label htmlFor="gift-address" className="eyebrow text-hd-ink/60 block mb-2">
+                Delivery address <span className="text-hd-ink/40 normal-case tracking-normal">(optional for pickup)</span>
+              </label>
+              <textarea
+                id="gift-address"
+                rows={2}
+                value={gift.recipientAddress}
+                onChange={(e) => setGift({ recipientAddress: e.target.value })}
+                placeholder="Full address with landmark"
+                className="w-full bg-transparent border-b border-hd-ink/30 px-0 py-2 text-[0.95rem] placeholder:text-hd-ink/30 focus:outline-none focus:border-hd-ink transition-colors resize-none"
+              />
+            </div>
+            <div>
+              <label htmlFor="gift-msg" className="eyebrow text-hd-ink/60 block mb-2">
+                A note for them
+              </label>
+              <textarea
+                id="gift-msg"
+                rows={3}
+                maxLength={240}
+                value={gift.message}
+                onChange={(e) => setGift({ message: e.target.value })}
+                placeholder="Happy birthday — savour every spoonful."
+                className="w-full bg-transparent border-b border-hd-ink/30 px-0 py-2 text-[0.95rem] italic font-display placeholder:text-hd-ink/30 focus:outline-none focus:border-hd-ink transition-colors resize-none"
+              />
+              <p className="text-[0.7rem] text-hd-ink/40 mt-1 numeral text-right">
+                {gift.message.length}/240
+              </p>
+            </div>
+            <div>
+              <label htmlFor="gift-when" className="eyebrow text-hd-ink/60 block mb-2">
+                Deliver on <span className="text-hd-ink/40 normal-case tracking-normal">(optional, leave blank for ASAP)</span>
+              </label>
+              <input
+                id="gift-when"
+                type="date"
+                value={gift.scheduledFor}
+                min={new Date().toISOString().split('T')[0]}
+                onChange={(e) => setGift({ scheduledFor: e.target.value })}
+                className="w-full h-12 bg-transparent border-b border-hd-ink/30 px-0 text-[0.95rem] focus:outline-none focus:border-hd-ink transition-colors"
+              />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Order mode strip ── */}
       <section className="px-5 py-5 border-b border-hd-ink/10">

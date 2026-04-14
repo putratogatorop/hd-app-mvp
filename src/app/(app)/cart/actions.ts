@@ -2,7 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import type { Database } from '@/lib/supabase/database.types'
+import { sendGiftNotification } from '@/lib/notifications/whatsapp'
 
 type OrderInsert = Database['public']['Tables']['orders']['Insert']
 type OrderItemInsert = Database['public']['Tables']['order_items']['Insert']
@@ -28,6 +30,13 @@ export interface PlaceOrderInput {
   deliveryFee: number
   paymentMethod: string
   notes: string
+  gift?: {
+    recipientName: string
+    recipientPhone: string
+    recipientAddress: string
+    message: string
+    scheduledFor: string // ISO or ''
+  } | null
 }
 
 export async function placeOrder(input: PlaceOrderInput) {
@@ -43,9 +52,16 @@ export async function placeOrder(input: PlaceOrderInput) {
     deliveryFee,
     paymentMethod,
     notes,
+    gift,
   } = input
 
   if (!items.length) throw new Error('Cart is empty')
+
+  if (gift) {
+    if (!gift.recipientName.trim() || !gift.recipientPhone.trim()) {
+      throw new Error('Recipient name and phone are required for gift orders')
+    }
+  }
 
   const supabase = await createClient()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,10 +85,21 @@ export async function placeOrder(input: PlaceOrderInput) {
     payment_method: paymentMethod,
     notes: notes || null,
   }
+  const orderInsertWithGift = gift
+    ? {
+        ...orderInsert,
+        is_gift: true,
+        recipient_name: gift.recipientName.trim(),
+        recipient_phone: gift.recipientPhone.trim(),
+        recipient_address: gift.recipientAddress.trim() || null,
+        gift_message: gift.message.trim() || null,
+        scheduled_for: gift.scheduledFor || null,
+      }
+    : orderInsert
   const { data: order, error: orderErr } = await db
     .from('orders')
-    .insert(orderInsert)
-    .select('id')
+    .insert(orderInsertWithGift)
+    .select('id, gift_token')
     .single()
 
   if (orderErr || !order) throw new Error('Gagal membuat pesanan')
@@ -91,9 +118,9 @@ export async function placeOrder(input: PlaceOrderInput) {
   // 3. Credit loyalty points to profile
   const { data: profile } = await supabase
     .from('profiles')
-    .select('loyalty_points, tier')
+    .select('loyalty_points, tier, full_name')
     .eq('id', user.id)
-    .single() as unknown as { data: { loyalty_points: number; tier: string } | null }
+    .single() as unknown as { data: { loyalty_points: number; tier: string; full_name: string | null } | null }
 
   if (profile) {
     const newPoints = (profile.loyalty_points ?? 0) + earnedPoints
@@ -125,6 +152,23 @@ export async function placeOrder(input: PlaceOrderInput) {
       .eq('user_id', user.id)
       .eq('voucher_id', voucherId)
       .eq('is_used', false)
+  }
+
+  // 6. Notify recipient via WhatsApp (no-op until provider env vars configured)
+  if (gift && order.gift_token) {
+    const h = await headers()
+    const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'localhost:3000'
+    const proto = h.get('x-forwarded-proto') ?? 'https'
+    const senderName = (profile as { full_name?: string } | null)?.full_name ?? undefined
+    // Fire-and-forget; don't block checkout if provider is down or unconfigured
+    void sendGiftNotification({
+      recipientPhone: gift.recipientPhone.trim(),
+      recipientName: gift.recipientName.trim(),
+      senderName,
+      giftMessage: gift.message?.trim() || undefined,
+      giftToken: order.gift_token as string,
+      appBaseUrl: `${proto}://${host}`,
+    })
   }
 
   redirect('/orders')

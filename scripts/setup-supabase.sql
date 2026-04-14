@@ -15,11 +15,15 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   full_name TEXT,
   phone TEXT,
   avatar_url TEXT,
+  birthday DATE,
   loyalty_points INTEGER DEFAULT 0,
   tier TEXT DEFAULT 'silver' CHECK (tier IN ('silver', 'gold', 'platinum')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+CREATE INDEX IF NOT EXISTS idx_profiles_birthday_mmdd
+  ON public.profiles ((to_char(birthday, 'MM-DD')))
+  WHERE birthday IS NOT NULL;
 
 -- Auto-create profile on user signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -61,9 +65,25 @@ CREATE TABLE IF NOT EXISTS public.orders (
   delivery_address TEXT,
   notes TEXT,
   points_earned INTEGER DEFAULT 0,
+  is_gift BOOLEAN NOT NULL DEFAULT FALSE,
+  recipient_name TEXT,
+  recipient_phone TEXT,
+  recipient_address TEXT,
+  gift_message TEXT,
+  scheduled_for TIMESTAMPTZ,
+  gift_token UUID UNIQUE DEFAULT uuid_generate_v4(),
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT orders_gift_requires_recipient CHECK (
+    is_gift = FALSE
+    OR (recipient_name IS NOT NULL AND recipient_phone IS NOT NULL)
+  )
 );
+CREATE INDEX IF NOT EXISTS idx_orders_scheduled_for
+  ON public.orders (scheduled_for)
+  WHERE is_gift = TRUE AND scheduled_for IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_orders_user_is_gift
+  ON public.orders (user_id, is_gift);
 
 CREATE TABLE IF NOT EXISTS public.order_items (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,

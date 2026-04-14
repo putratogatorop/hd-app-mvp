@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { Search, X } from 'lucide-react'
+import { useState, useMemo, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Search, X, Gift } from 'lucide-react'
 import type { Database } from '@/lib/supabase/database.types'
 import { useOrderContext } from '@/lib/store/order-context'
+import { useCartStore } from '@/lib/store/cart'
 import MenuItemCard from './MenuItemCard'
 import ProductSheet from '@/components/ProductSheet'
 import FloatingCartButton from '@/components/FloatingCartButton'
@@ -38,6 +40,16 @@ export default function MenuClient({ items }: MenuClientProps) {
   const { mode, selectedStore } = useOrderContext()
   const modeLabel = MODE_LABEL[mode] ?? 'Pick Up'
   const storeName = selectedStore?.name ?? 'Select a store'
+
+  // Auto-enable cart gift mode when arriving from /menu?gift=1 (e.g. from home tile)
+  const searchParams = useSearchParams()
+  const setIsGift = useCartStore((s) => s.setIsGift)
+  const isGift = useCartStore((s) => s.isGift)
+  useEffect(() => {
+    if (searchParams.get('gift') === '1' && !isGift) {
+      setIsGift(true)
+    }
+  }, [searchParams, isGift, setIsGift])
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim()

@@ -27,6 +27,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // Protect these routes — redirect to login if not authenticated
+  // /gift/[token] is intentionally public so recipients (no account) can view receipts
   const protectedPaths = ['/home', '/menu', '/orders', '/voucher', '/account', '/cart', '/pos']
   const isProtected = protectedPaths.some(p => request.nextUrl.pathname.startsWith(p))
 
