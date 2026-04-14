@@ -5,11 +5,11 @@ import { usePathname } from 'next/navigation'
 import { useCartStore } from '@/lib/store/cart'
 
 const navItems = [
-  { href: '/home', label: 'Home' },
+  { href: '/home', label: 'Beranda' },
   { href: '/menu', label: 'Menu' },
-  { href: '/orders', label: 'Orders' },
-  { href: '/voucher', label: 'Rewards' },
-  { href: '/account', label: 'Account' },
+  { href: '/orders', label: 'Pesanan' },
+  { href: '/voucher', label: 'Hadiah' },
+  { href: '/account', label: 'Akun' },
 ]
 
 export default function BottomNav() {
