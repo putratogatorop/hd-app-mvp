@@ -687,6 +687,9 @@ export interface CustomerRFM {
   segment: RFMSegment
 }
 
+/** Actual min/max values for each score band (1–5), derived from the live dataset. */
+export type ScoreBand = Partial<Record<number, { min: number; max: number }>>
+
 export interface RFMData {
   customers: CustomerRFM[]
   segments: { name: RFMSegment; count: number; revenue: number; color: string }[]
@@ -701,9 +704,14 @@ export interface RFMData {
     championRevenue: number
     atRiskRevenue: number
   }
+  /** Computed value ranges per score band from the actual DB data. */
+  thresholds: { r: ScoreBand; f: ScoreBand; m: ScoreBand }
   avgRecencyDays: number
   avgFrequency: number
   avgMonetary: number
+  /** How many customers are in the dataset — used to warn about small-sample fragility. */
+  sampleSize: number
+  computedAt: string  // ISO date string
 }
 
 const SEGMENT_COLORS: Record<RFMSegment, string> = {
@@ -730,6 +738,18 @@ function assignSegment(r: number, f: number, m: number): RFMSegment {
   if (r >= 2 && f >= 2)           return 'Needs Attention'
   if (r >= 2)                     return 'Hibernating'
   return 'Lost'
+}
+
+/** Compute the actual min/max value in each score band (1-5) for display in the UI. */
+function getScoreRanges(values: number[], scores: number[]): ScoreBand {
+  const bands: Record<number, number[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] }
+  values.forEach((v, i) => { bands[scores[i]]?.push(v) })
+  const result: ScoreBand = {}
+  for (let s = 1; s <= 5; s++) {
+    const b = bands[s]
+    if (b.length > 0) result[s] = { min: Math.min(...b), max: Math.max(...b) }
+  }
+  return result
 }
 
 /** Score an array of numeric values into 1–5 bands (quintile-based).
@@ -803,9 +823,12 @@ export async function getRFMData(supabase: Supa): Promise<RFMData> {
       customers: [],
       segments: [],
       totals: { customers: 0, champions: 0, loyal: 0, atRisk: 0, cannotLose: 0, lost: 0, totalRevenue: 0, championRevenue: 0, atRiskRevenue: 0 },
+      thresholds: { r: {}, f: {}, m: {} },
       avgRecencyDays: 0,
       avgFrequency: 0,
       avgMonetary: 0,
+      sampleSize: 0,
+      computedAt: new Date().toISOString(),
     }
   }
 
@@ -817,6 +840,11 @@ export async function getRFMData(supabase: Supa): Promise<RFMData> {
   const rScores = quintileScores(recencies,   false)  // lower days = better
   const fScores = quintileScores(frequencies, true)
   const mScores = quintileScores(monetaries,  true)
+
+  // Capture actual value ranges per score band for display in the UI
+  const rBands = getScoreRanges(recencies,   rScores)
+  const fBands = getScoreRanges(frequencies, fScores)
+  const mBands = getScoreRanges(monetaries,  mScores)
 
   const customers: CustomerRFM[] = userIds.map((uid, idx) => {
     const d = map.get(uid)!
@@ -882,8 +910,11 @@ export async function getRFMData(supabase: Supa): Promise<RFMData> {
       championRevenue: champions.reduce((s, c) => s + c.monetary, 0),
       atRiskRevenue: atRisk.reduce((s, c) => s + c.monetary, 0),
     },
+    thresholds: { r: rBands, f: fBands, m: mBands },
     avgRecencyDays: Math.round(recencies.reduce((a, b) => a + b, 0) / recencies.length),
     avgFrequency:   Math.round((frequencies.reduce((a, b) => a + b, 0) / frequencies.length) * 10) / 10,
     avgMonetary:    Math.round(monetaries.reduce((a, b) => a + b, 0) / monetaries.length),
+    sampleSize: customers.length,
+    computedAt: new Date().toISOString(),
   }
 }
