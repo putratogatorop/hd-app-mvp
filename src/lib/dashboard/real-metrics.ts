@@ -768,72 +768,73 @@ function quintileScores(values: number[], higherIsBetter: boolean): number[] {
 }
 
 export async function getRFMData(supabase: Supa): Promise<RFMData> {
-  // Fetch all non-cancelled orders with embedded profile tier
+  // Fetch all non-cancelled orders — no profile embed here since RLS on profiles
+  // blocks the joined read for other users. We fetch profiles separately via
+  // the admin client which bypasses RLS.
   const { data: raw } = await supabase
     .from('orders')
-    .select(
-      'user_id, total_amount, created_at, profile:profiles!user_id(full_name, email, tier)'
-    )
+    .select('user_id, total_amount, created_at')
     .neq('status', 'cancelled')
     .order('created_at', { ascending: false })
     .limit(10000)
 
-  type Row = {
-    user_id: string
-    total_amount: number
-    created_at: string
-    profile: { full_name: string | null; email: string; tier: string } | null
-  }
-
+  type Row = { user_id: string; total_amount: number; created_at: string }
   const rows = (raw ?? []) as Row[]
   const now = Date.now()
 
-  // Aggregate per customer
+  // Aggregate order metrics per customer
   const map = new Map<string, {
-    name: string
-    email: string
-    tier: string
-    lastDate: number   // ms timestamp
-    count: number
-    spend: number
+    lastDate: number; count: number; spend: number
   }>()
-
   for (const row of rows) {
     const uid = row.user_id
-    const ts = new Date(row.created_at).getTime()
-    const existing = map.get(uid)
-    if (!existing) {
-      map.set(uid, {
-        name: row.profile?.full_name ?? 'Unknown',
-        email: row.profile?.email ?? '',
-        tier: row.profile?.tier ?? 'silver',
-        lastDate: ts,
-        count: 1,
-        spend: Number(row.total_amount ?? 0),
-      })
+    const ts  = new Date(row.created_at).getTime()
+    const ex  = map.get(uid)
+    if (!ex) {
+      map.set(uid, { lastDate: ts, count: 1, spend: Number(row.total_amount ?? 0) })
     } else {
-      existing.lastDate = Math.max(existing.lastDate, ts)
-      existing.count += 1
-      existing.spend += Number(row.total_amount ?? 0)
+      ex.lastDate = Math.max(ex.lastDate, ts)
+      ex.count   += 1
+      ex.spend   += Number(row.total_amount ?? 0)
     }
   }
 
   if (map.size === 0) {
     return {
-      customers: [],
-      segments: [],
+      customers: [], segments: [],
       totals: { customers: 0, champions: 0, loyal: 0, atRisk: 0, cannotLose: 0, lost: 0, totalRevenue: 0, championRevenue: 0, atRiskRevenue: 0 },
       thresholds: { r: {}, f: {}, m: {} },
-      avgRecencyDays: 0,
-      avgFrequency: 0,
-      avgMonetary: 0,
-      sampleSize: 0,
-      computedAt: new Date().toISOString(),
+      avgRecencyDays: 0, avgFrequency: 0, avgMonetary: 0,
+      sampleSize: 0, computedAt: new Date().toISOString(),
     }
   }
 
-  const userIds    = Array.from(map.keys())
-  const recencies  = userIds.map(id => Math.floor((now - map.get(id)!.lastDate) / 86_400_000))
+  // Fetch profiles via admin client to bypass RLS — safe because this only
+  // runs server-side in a Server Component that has already auth-checked the user.
+  const userIds = Array.from(map.keys())
+  let profileMap = new Map<string, { name: string; email: string; tier: string }>()
+  try {
+    const { createAdminClient } = await import('@/lib/supabase/admin')
+    const admin = createAdminClient()
+    const { data: profs } = await admin
+      .from('profiles')
+      .select('id, full_name, email, tier')
+      .in('id', userIds)
+    for (const p of (profs ?? []) as Array<{ id: string; full_name: string | null; email: string; tier: string }>) {
+      profileMap.set(p.id, {
+        name:  p.full_name?.trim() || p.email?.split('@')[0] || `User ${p.id.slice(-4)}`,
+        email: p.email ?? '',
+        tier:  p.tier  ?? 'silver',
+      })
+    }
+  } catch {
+    // If service role key is missing, fall back to user_id display
+    for (const uid of userIds) {
+      profileMap.set(uid, { name: `User ${uid.slice(-6).toUpperCase()}`, email: '', tier: 'silver' })
+    }
+  }
+
+  const recencies   = userIds.map(id => Math.floor((now - map.get(id)!.lastDate) / 86_400_000))
   const frequencies = userIds.map(id => map.get(id)!.count)
   const monetaries  = userIds.map(id => map.get(id)!.spend)
 
@@ -847,13 +848,14 @@ export async function getRFMData(supabase: Supa): Promise<RFMData> {
   const mBands = getScoreRanges(monetaries,  mScores)
 
   const customers: CustomerRFM[] = userIds.map((uid, idx) => {
-    const d = map.get(uid)!
+    const d    = map.get(uid)!
+    const prof = profileMap.get(uid) ?? { name: `User ${uid.slice(-6).toUpperCase()}`, email: '', tier: 'silver' }
     const r = rScores[idx], f = fScores[idx], m = mScores[idx]
     return {
       userId: uid,
-      name: d.name,
-      email: d.email,
-      tier: d.tier,
+      name:  prof.name,
+      email: prof.email,
+      tier:  prof.tier,
       lastOrderDate: new Date(d.lastDate).toISOString().slice(0, 10),
       recencyDays: recencies[idx],
       frequency: frequencies[idx],
