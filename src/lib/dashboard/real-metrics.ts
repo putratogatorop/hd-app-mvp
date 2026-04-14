@@ -656,3 +656,234 @@ export async function requireStaff(supabase: Supa) {
   const role = profile?.role ?? 'customer'
   return { user, role }
 }
+
+// ─────────────── RFM Analysis ───────────────
+
+export type RFMSegment =
+  | 'Champions'
+  | 'Loyal'
+  | 'Potential Loyalists'
+  | 'New Customers'
+  | 'Promising'
+  | 'Needs Attention'
+  | 'At Risk'
+  | 'Cannot Lose'
+  | 'Hibernating'
+  | 'Lost'
+
+export interface CustomerRFM {
+  userId: string
+  name: string
+  email: string
+  tier: string
+  lastOrderDate: string
+  recencyDays: number
+  frequency: number
+  monetary: number
+  rScore: number   // 1–5, 5 = most recent
+  fScore: number   // 1–5, 5 = most frequent
+  mScore: number   // 1–5, 5 = highest spender
+  rfmScore: string // e.g. "455"
+  segment: RFMSegment
+}
+
+export interface RFMData {
+  customers: CustomerRFM[]
+  segments: { name: RFMSegment; count: number; revenue: number; color: string }[]
+  totals: {
+    customers: number
+    champions: number
+    loyal: number
+    atRisk: number
+    cannotLose: number
+    lost: number
+    totalRevenue: number
+    championRevenue: number
+    atRiskRevenue: number
+  }
+  avgRecencyDays: number
+  avgFrequency: number
+  avgMonetary: number
+}
+
+const SEGMENT_COLORS: Record<RFMSegment, string> = {
+  'Champions':           '#B8922A',
+  'Loyal':               '#D4AC3A',
+  'Potential Loyalists': '#801237',
+  'New Customers':       '#4ECDC4',
+  'Promising':           '#5BA3A0',
+  'Needs Attention':     '#9B7653',
+  'At Risk':             '#C0392B',
+  'Cannot Lose':         '#E74C3C',
+  'Hibernating':         '#5C4A3A',
+  'Lost':                '#3D2A20',
+}
+
+function assignSegment(r: number, f: number, m: number): RFMSegment {
+  if (r >= 4 && f >= 4 && m >= 4) return 'Champions'
+  if (r >= 2 && f >= 3 && m >= 3) return 'Loyal'
+  if (r <= 1 && f >= 4)           return 'Cannot Lose'
+  if (r <= 2 && f >= 2 && m >= 2) return 'At Risk'
+  if (r >= 4 && f <= 1)           return 'New Customers'
+  if (r >= 3 && f <= 3 && m >= 2) return 'Potential Loyalists'
+  if (r >= 3 && f <= 2)           return 'Promising'
+  if (r >= 2 && f >= 2)           return 'Needs Attention'
+  if (r >= 2)                     return 'Hibernating'
+  return 'Lost'
+}
+
+/** Score an array of numeric values into 1–5 bands (quintile-based).
+ *  higherIsBetter=true → high values get score 5 (Frequency, Monetary)
+ *  higherIsBetter=false → low values get score 5 (Recency in days) */
+function quintileScores(values: number[], higherIsBetter: boolean): number[] {
+  if (values.length === 0) return []
+  const indexed = values.map((v, i) => ({ v, i }))
+  const sorted = [...indexed].sort((a, b) => higherIsBetter ? a.v - b.v : b.v - a.v)
+  const n = sorted.length
+  const result = new Array(n).fill(1)
+  sorted.forEach(({ i }, rank) => {
+    result[i] = Math.min(5, Math.floor((rank / n) * 5) + 1)
+  })
+  return result
+}
+
+export async function getRFMData(supabase: Supa): Promise<RFMData> {
+  // Fetch all non-cancelled orders with embedded profile tier
+  const { data: raw } = await supabase
+    .from('orders')
+    .select(
+      'user_id, total_amount, created_at, profile:profiles!user_id(full_name, email, tier)'
+    )
+    .neq('status', 'cancelled')
+    .order('created_at', { ascending: false })
+    .limit(10000)
+
+  type Row = {
+    user_id: string
+    total_amount: number
+    created_at: string
+    profile: { full_name: string | null; email: string; tier: string } | null
+  }
+
+  const rows = (raw ?? []) as Row[]
+  const now = Date.now()
+
+  // Aggregate per customer
+  const map = new Map<string, {
+    name: string
+    email: string
+    tier: string
+    lastDate: number   // ms timestamp
+    count: number
+    spend: number
+  }>()
+
+  for (const row of rows) {
+    const uid = row.user_id
+    const ts = new Date(row.created_at).getTime()
+    const existing = map.get(uid)
+    if (!existing) {
+      map.set(uid, {
+        name: row.profile?.full_name ?? 'Unknown',
+        email: row.profile?.email ?? '',
+        tier: row.profile?.tier ?? 'silver',
+        lastDate: ts,
+        count: 1,
+        spend: Number(row.total_amount ?? 0),
+      })
+    } else {
+      existing.lastDate = Math.max(existing.lastDate, ts)
+      existing.count += 1
+      existing.spend += Number(row.total_amount ?? 0)
+    }
+  }
+
+  if (map.size === 0) {
+    return {
+      customers: [],
+      segments: [],
+      totals: { customers: 0, champions: 0, loyal: 0, atRisk: 0, cannotLose: 0, lost: 0, totalRevenue: 0, championRevenue: 0, atRiskRevenue: 0 },
+      avgRecencyDays: 0,
+      avgFrequency: 0,
+      avgMonetary: 0,
+    }
+  }
+
+  const userIds    = Array.from(map.keys())
+  const recencies  = userIds.map(id => Math.floor((now - map.get(id)!.lastDate) / 86_400_000))
+  const frequencies = userIds.map(id => map.get(id)!.count)
+  const monetaries  = userIds.map(id => map.get(id)!.spend)
+
+  const rScores = quintileScores(recencies,   false)  // lower days = better
+  const fScores = quintileScores(frequencies, true)
+  const mScores = quintileScores(monetaries,  true)
+
+  const customers: CustomerRFM[] = userIds.map((uid, idx) => {
+    const d = map.get(uid)!
+    const r = rScores[idx], f = fScores[idx], m = mScores[idx]
+    return {
+      userId: uid,
+      name: d.name,
+      email: d.email,
+      tier: d.tier,
+      lastOrderDate: new Date(d.lastDate).toISOString().slice(0, 10),
+      recencyDays: recencies[idx],
+      frequency: frequencies[idx],
+      monetary: monetaries[idx],
+      rScore: r,
+      fScore: f,
+      mScore: m,
+      rfmScore: `${r}${f}${m}`,
+      segment: assignSegment(r, f, m),
+    }
+  })
+
+  // Segment rollup
+  const segMap = new Map<RFMSegment, { count: number; revenue: number }>()
+  for (const c of customers) {
+    const s = segMap.get(c.segment) ?? { count: 0, revenue: 0 }
+    s.count += 1
+    s.revenue += c.monetary
+    segMap.set(c.segment, s)
+  }
+
+  const segmentOrder: RFMSegment[] = [
+    'Champions', 'Loyal', 'Potential Loyalists', 'New Customers',
+    'Promising', 'Needs Attention', 'At Risk', 'Cannot Lose',
+    'Hibernating', 'Lost',
+  ]
+  const segments = segmentOrder
+    .filter(n => segMap.has(n))
+    .map(name => ({
+      name,
+      count: segMap.get(name)!.count,
+      revenue: segMap.get(name)!.revenue,
+      color: SEGMENT_COLORS[name],
+    }))
+
+  const champions   = customers.filter(c => c.segment === 'Champions')
+  const loyal       = customers.filter(c => c.segment === 'Loyal')
+  const atRisk      = customers.filter(c => c.segment === 'At Risk')
+  const cannotLose  = customers.filter(c => c.segment === 'Cannot Lose')
+  const lost        = customers.filter(c => c.segment === 'Lost')
+  const totalRevenue = customers.reduce((s, c) => s + c.monetary, 0)
+
+  return {
+    customers: customers.sort((a, b) => b.monetary - a.monetary),
+    segments,
+    totals: {
+      customers: customers.length,
+      champions: champions.length,
+      loyal: loyal.length,
+      atRisk: atRisk.length,
+      cannotLose: cannotLose.length,
+      lost: lost.length,
+      totalRevenue,
+      championRevenue: champions.reduce((s, c) => s + c.monetary, 0),
+      atRiskRevenue: atRisk.reduce((s, c) => s + c.monetary, 0),
+    },
+    avgRecencyDays: Math.round(recencies.reduce((a, b) => a + b, 0) / recencies.length),
+    avgFrequency:   Math.round((frequencies.reduce((a, b) => a + b, 0) / frequencies.length) * 10) / 10,
+    avgMonetary:    Math.round(monetaries.reduce((a, b) => a + b, 0) / monetaries.length),
+  }
+}
