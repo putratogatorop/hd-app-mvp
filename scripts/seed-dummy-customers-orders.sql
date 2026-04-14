@@ -23,23 +23,27 @@ BEGIN
   FOR i IN 1..25 LOOP
     v_email := 'seed' || lpad(i::text, 2, '0') || '@hd.test';
     v_name := first_names[i];
-    INSERT INTO auth.users (
-      instance_id, id, aud, role, email, encrypted_password,
-      email_confirmed_at, created_at, updated_at,
-      raw_app_meta_data, raw_user_meta_data, is_super_admin, is_sso_user
-    ) VALUES (
-      '00000000-0000-0000-0000-000000000000',
-      gen_random_uuid(),
-      'authenticated', 'authenticated',
-      v_email,
-      crypt('seed123!', gen_salt('bf')),
-      NOW() - (random() * INTERVAL '180 days'),
-      NOW() - (random() * INTERVAL '180 days'),
-      NOW(),
-      '{"provider":"email","providers":["email"]}'::jsonb,
-      jsonb_build_object('full_name', v_name || ' Wijaya'),
-      false, false
-    ) ON CONFLICT (email) DO NOTHING;
+    -- Skip if this seed user already exists (auth.users has no plain
+    -- UNIQUE on email, so we guard with NOT EXISTS instead of ON CONFLICT)
+    IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = v_email) THEN
+      INSERT INTO auth.users (
+        instance_id, id, aud, role, email, encrypted_password,
+        email_confirmed_at, created_at, updated_at,
+        raw_app_meta_data, raw_user_meta_data, is_super_admin, is_sso_user
+      ) VALUES (
+        '00000000-0000-0000-0000-000000000000',
+        gen_random_uuid(),
+        'authenticated', 'authenticated',
+        v_email,
+        crypt('seed123!', gen_salt('bf')),
+        NOW() - (random() * INTERVAL '180 days'),
+        NOW() - (random() * INTERVAL '180 days'),
+        NOW(),
+        '{"provider":"email","providers":["email"]}'::jsonb,
+        jsonb_build_object('full_name', v_name || ' Wijaya'),
+        false, false
+      );
+    END IF;
   END LOOP;
 END $$;
 
