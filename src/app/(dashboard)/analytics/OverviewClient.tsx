@@ -98,7 +98,7 @@ function KPICard({ label, metric, formatter }: {
 
   return (
     <div className="group relative bg-[#2A0F1C] border border-[rgba(184,146,42,0.18)] p-5 hover:border-[#B8922A]/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(184,146,42,0.08)]">
-      <p className="eyebrow text-[#b8a89a] mb-3">{label}</p>
+      <p className="eyebrow mb-3" style={{ color: '#b8a89a' }}>{label}</p>
       <div className="flex items-end justify-between">
         <div>
           <p className="numeral text-[1.8rem] text-[#FEF2E3] leading-none">{formatter(animated)}</p>
@@ -304,7 +304,7 @@ export default function OverviewClient({
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
               </span>
-              <span className="text-[10px] text-[#b8a89a]">Updated 2 min ago</span>
+              <span className="text-[10px] text-[#b8a89a]">Live · {period} window</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -321,13 +321,9 @@ export default function OverviewClient({
                 {p}
               </button>
             ))}
-            <select className="ml-2 bg-[#2A0F1C] border border-[#3d1825] text-xs text-[#b8a89a] rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#B8922A]">
-              <option>All Stores</option>
-              <option>PIK Avenue</option>
-              <option>Grand Indonesia</option>
-              <option>Plaza Senayan</option>
-              <option>Pakuwon Surabaya</option>
-            </select>
+            <span className="ml-2 text-[10px] text-[#b8a89a] border border-[#3d1825] rounded-lg px-3 py-1.5">
+              All Stores
+            </span>
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2">
@@ -356,7 +352,7 @@ export default function OverviewClient({
                 <LineChart data={revenueSeries}>
                   <CartesianGrid stroke={COLORS.gridLine} strokeDasharray="3 3" />
                   <XAxis dataKey="date" tick={{ fill: COLORS.textSecondary, fontSize: 10 }} tickFormatter={(v: string) => v.slice(5)} />
-                  <YAxis tick={{ fill: COLORS.textSecondary, fontSize: 10 }} tickFormatter={(v: number) => `${(v / 1_000_000).toFixed(0)}jt`} />
+                  <YAxis tick={{ fill: COLORS.textSecondary, fontSize: 10 }} tickFormatter={(v: number) => v === 0 ? '0' : v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}jt` : `${(v / 1_000).toFixed(0)}rb`} />
                   <Tooltip content={<DarkTooltip />} />
                   <Line type="monotone" dataKey="pickup" stroke={COLORS.burgundyLight} strokeWidth={2} dot={false} name="Pickup" />
                   <Line type="monotone" dataKey="delivery" stroke={COLORS.gold} strokeWidth={2} dot={false} name="Delivery" />
@@ -402,7 +398,7 @@ export default function OverviewClient({
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={segments} layout="vertical">
                   <CartesianGrid stroke={COLORS.gridLine} strokeDasharray="3 3" horizontal={false} />
-                  <XAxis type="number" tick={{ fill: COLORS.textSecondary, fontSize: 10 }} tickFormatter={(v: number) => `${(v / 1_000_000).toFixed(0)}jt`} />
+                  <XAxis type="number" tick={{ fill: COLORS.textSecondary, fontSize: 10 }} tickFormatter={(v: number) => v === 0 ? '0' : v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}jt` : `${(v / 1_000).toFixed(0)}rb`} />
                   <YAxis type="category" dataKey="tier" tick={{ fill: COLORS.textSecondary, fontSize: 11 }} width={70} />
                   <Tooltip content={<DarkTooltip />} />
                   <Bar dataKey="revenue" radius={[0, 6, 6, 0]} name="Revenue">

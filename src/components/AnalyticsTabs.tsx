@@ -7,6 +7,7 @@ const tabs = [
   { href: '/analytics', label: 'Overview', num: '01' },
   { href: '/analytics/gift', label: 'Gifting', num: '02' },
   { href: '/analytics/transactional', label: 'Transactional', num: '03' },
+  { href: '/analytics/rfm', label: 'RFM', num: '04' },
 ]
 
 export default function AnalyticsTabs() {

@@ -16,8 +16,8 @@
 }
 
 html, body {
-  background-color: var(--hd-cream) !important;
-  color: var(--hd-ink) !important;
+  background-color: var(--hd-cream);
+  color: var(--hd-ink);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
