@@ -14,6 +14,7 @@ import type {
 import type { RealOverviewData, Period } from '@/lib/dashboard/real-metrics'
 import ChatPanel from '@/components/ChatPanel'
 import AnalyticsTabs from '@/components/AnalyticsTabs'
+import FilterBar, { type FilterBarStore } from '@/components/analytics/FilterBar'
 
 // ── Theme constants (editorial maison, brand-aligned) ──────────────
 const COLORS = {
@@ -227,12 +228,15 @@ function RevenueHeatmap({ data }: { data: HeatmapPoint[] }) {
 export default function OverviewClient({
   period,
   data,
+  stores: storeList,
 }: {
   period: Period
   data: RealOverviewData
+  stores: FilterBarStore[]
 }) {
-  const router = useRouter()
-  const pathname = usePathname()
+  const _router = useRouter()
+  const _pathname = usePathname()
+  void _router; void _pathname
   const [chatOpen, setChatOpen] = useState(false)
   const [sortCol, setSortCol] = useState<string>('roi')
   const [sortAsc, setSortAsc] = useState(false)
@@ -247,10 +251,6 @@ export default function OverviewClient({
   const ordersByHour: OrdersByHourPoint[] = data.ordersByHour
   const topProducts: TopProduct[] = data.topProducts.slice(0, 5)
   const heatmap: HeatmapPoint[] = data.heatmap
-
-  function setPeriod(p: Period) {
-    router.push(`${pathname}?period=${p}`)
-  }
 
   // Sort vouchers
   const sortedVouchers = [...vouchers].sort((a, b) => {
@@ -307,27 +307,12 @@ export default function OverviewClient({
               <span className="text-[10px] text-[#b8a89a]">Live · {period} window</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {(['7d', '30d', '90d'] as const).map(p => (
-              <button
-                key={p}
-                onClick={() => setPeriod(p)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                  period === p
-                    ? 'bg-[#650A30] text-[#FEF2E3] shadow-lg shadow-[#650A30]/20'
-                    : 'bg-[#2A0F1C] text-[#b8a89a] hover:bg-[#3d1825]'
-                }`}
-              >
-                {p}
-              </button>
-            ))}
-            <span className="ml-2 text-[10px] text-[#b8a89a] border border-[#3d1825] rounded-lg px-3 py-1.5">
-              All Stores
-            </span>
-          </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2">
           <AnalyticsTabs />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <FilterBar stores={storeList} />
         </div>
       </header>
 

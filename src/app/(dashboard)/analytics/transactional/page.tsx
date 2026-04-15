@@ -2,6 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getTransactionalMetrics, requireStaff } from '@/lib/dashboard/real-metrics'
 import AnalyticsTabs from '@/components/AnalyticsTabs'
+import FilterBar from '@/components/analytics/FilterBar'
+import { fetchStoresForFilter } from '@/lib/dashboard/semantic'
+import { parseFilterSearchParams } from '@/lib/dashboard/filter-url'
 import { DASH_COLORS } from '@/lib/dashboard/theme'
 
 export const dynamic = 'force-dynamic'
@@ -19,13 +22,23 @@ const MODE_LABEL: Record<string, string> = {
   unknown: '—',
 }
 
-export default async function TransactionalAnalyticsPage() {
+export default async function TransactionalAnalyticsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const sp = await searchParams
+  const { filters } = parseFilterSearchParams(sp)
+
   const supabase = await createClient()
   const { user, role } = await requireStaff(supabase)
   if (!user) redirect('/login')
   if (role !== 'staff' && role !== 'admin') redirect('/home')
 
-  const m = await getTransactionalMetrics(supabase)
+  const [m, stores] = await Promise.all([
+    getTransactionalMetrics(supabase, filters),
+    fetchStoresForFilter(supabase),
+  ])
   const maxOrders = Math.max(1, ...m.dailyLast30.map((d) => d.orders))
   const modeTotal = m.modeBreakdown.reduce((s, r) => s + r.count, 0) || 1
   const payTotal = m.paymentBreakdown.reduce((s, r) => s + r.count, 0) || 1
@@ -52,6 +65,7 @@ export default async function TransactionalAnalyticsPage() {
           <div className="mt-6">
             <AnalyticsTabs />
           </div>
+          <FilterBar stores={stores} lockedGift />
         </div>
       </header>
 

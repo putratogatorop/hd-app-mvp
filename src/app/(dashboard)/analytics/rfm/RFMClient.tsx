@@ -6,6 +6,7 @@ import {
   ResponsiveContainer, Cell,
 } from 'recharts'
 import AnalyticsTabs from '@/components/AnalyticsTabs'
+import FilterBar, { type FilterBarStore } from '@/components/analytics/FilterBar'
 import type { CustomerRFM, RFMData, RFMSegment, ScoreBand } from '@/lib/dashboard/real-metrics'
 
 // ── Theme ──────────────────────────────────────────────────────────────
@@ -108,7 +109,7 @@ function ScatterTooltip({ active, payload }: { active?: boolean; payload?: Array
 }
 
 // ── Main ───────────────────────────────────────────────────────────────
-export default function RFMClient({ data }: { data: RFMData }) {
+export default function RFMClient({ data, stores }: { data: RFMData; stores: FilterBarStore[] }) {
   const [sortCol, setSortCol] = useState<keyof CustomerRFM>('monetary')
   const [sortAsc, setSortAsc] = useState(false)
   const [filterSeg, setFilterSeg] = useState<RFMSegment | 'All'>('All')
@@ -193,6 +194,7 @@ export default function RFMClient({ data }: { data: RFMData }) {
             </div>
           </div>
           <div className="mt-5"><AnalyticsTabs /></div>
+          <FilterBar stores={stores} show={{ period: false, stores: false, channels: false, gift: false, tiers: true }} />
         </div>
       </header>
 
