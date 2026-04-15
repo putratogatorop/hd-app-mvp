@@ -76,6 +76,20 @@ export async function fetchEnrichedOrderItems(
   return (data ?? []) as EnrichedOrderItem[]
 }
 
+/** Fetch the store list for FilterBar dropdowns. */
+export async function fetchStoresForFilter(
+  supabase: Supa,
+): Promise<Array<{ id: string; name: string }>> {
+  const { data, error } = await (supabase as unknown as { from: (t: string) => AnyBuilder })
+    .from('stores')
+    .select('id, name')
+    .order('name', { ascending: true })
+  if (error) return []
+  return ((data ?? []) as Array<{ id: string; name: string }>).map((s) => ({
+    id: s.id, name: s.name,
+  }))
+}
+
 /** Fetch per-customer RFM aggregates.
  *  Uses the admin client since the view joins profiles (RLS-protected). */
 export async function fetchCustomersRFM(): Promise<CustomerRFMRow[]> {

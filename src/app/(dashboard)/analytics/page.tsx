@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { getOverviewRealData, requireStaff, type Period } from '@/lib/dashboard/real-metrics'
+import { getOverviewRealData, requireStaff } from '@/lib/dashboard/real-metrics'
+import { fetchStoresForFilter } from '@/lib/dashboard/semantic'
+import { parseFilterSearchParams } from '@/lib/dashboard/filter-url'
 import OverviewClient from './OverviewClient'
 
 export const dynamic = 'force-dynamic'
@@ -8,18 +10,24 @@ export const dynamic = 'force-dynamic'
 export default async function OverviewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ period?: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const sp = await searchParams
-  const raw = sp.period
-  const period: Period = raw === '7d' || raw === '90d' ? raw : '30d'
+  const state = parseFilterSearchParams(sp)
+  // Overview still uses period-over-period deltas, so it needs a Period.
+  // For custom ranges we fall back to 30d-style bucketing (period-agnostic math
+  // still works inside getOverviewRealData since it reads filters directly).
+  const period = state.period === 'custom' ? '30d' : state.period
 
   const supabase = await createClient()
   const { user, role } = await requireStaff(supabase)
   if (!user) redirect('/login')
   if (role !== 'staff' && role !== 'admin') redirect('/home')
 
-  const data = await getOverviewRealData(supabase, period)
+  const [data, stores] = await Promise.all([
+    getOverviewRealData(supabase, period, state.filters),
+    fetchStoresForFilter(supabase),
+  ])
 
-  return <OverviewClient period={period} data={data} />
+  return <OverviewClient period={period} data={data} stores={stores} />
 }

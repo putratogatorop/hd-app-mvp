@@ -2,6 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getGiftMetrics, requireStaff } from '@/lib/dashboard/real-metrics'
 import AnalyticsTabs from '@/components/AnalyticsTabs'
+import FilterBar from '@/components/analytics/FilterBar'
+import { fetchStoresForFilter } from '@/lib/dashboard/semantic'
+import { parseFilterSearchParams } from '@/lib/dashboard/filter-url'
 import { DASH_COLORS } from '@/lib/dashboard/theme'
 
 export const dynamic = 'force-dynamic'
@@ -12,13 +15,23 @@ function rupiah(n: number): string {
   return `Rp ${Math.round(n)}`
 }
 
-export default async function GiftAnalyticsPage() {
+export default async function GiftAnalyticsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const sp = await searchParams
+  const { filters } = parseFilterSearchParams(sp)
+
   const supabase = await createClient()
   const { user, role } = await requireStaff(supabase)
   if (!user) redirect('/login')
   if (role !== 'staff' && role !== 'admin') redirect('/home')
 
-  const m = await getGiftMetrics(supabase)
+  const [m, stores] = await Promise.all([
+    getGiftMetrics(supabase, filters),
+    fetchStoresForFilter(supabase),
+  ])
   const maxGift = Math.max(1, ...m.giftsByDay.map((d) => d.gifts))
 
   return (
@@ -51,6 +64,7 @@ export default async function GiftAnalyticsPage() {
           <div className="mt-6">
             <AnalyticsTabs />
           </div>
+          <FilterBar stores={stores} lockedGift />
         </div>
       </header>
 
