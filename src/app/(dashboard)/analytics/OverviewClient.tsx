@@ -17,7 +17,6 @@ import AnalyticsTabs from '@/components/AnalyticsTabs'
 import FilterBar, { type FilterBarStore } from '@/components/analytics/FilterBar'
 import DrillModal, { type DrillSpec } from '@/components/analytics/DrillModal'
 import { useFilterPatch } from '@/lib/dashboard/use-filter-patch'
-import { downloadCSV } from '@/lib/dashboard/csv'
 const useSearchParams = _useSP
 
 // ── Theme constants (editorial maison, brand-aligned) ──────────────
@@ -154,12 +153,14 @@ function DarkTooltip({ active, payload, label }: {
 }) {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-[#2A0F1C] border border-[#650A30] rounded-lg px-3 py-2 shadow-xl">
-      <p className="text-xs text-[#b8a89a] mb-1">{label}</p>
+    <div className="bg-[#1C0810] border border-[#B8922A]/40 rounded-lg px-3 py-2 shadow-xl">
+      <p className="text-[11px] text-[#B8922A] mb-1 font-semibold">{label}</p>
       {payload.map((entry, i) => (
-        <p key={i} className="text-xs font-medium" style={{ color: entry.color }}>
-          {entry.name}: {entry.value.toLocaleString('id-ID')}
-        </p>
+        <div key={i} className="flex items-center gap-2 text-xs text-[#FEF2E3]">
+          <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: entry.color }} />
+          <span className="text-[#b8a89a]">{entry.name}:</span>
+          <span className="font-semibold tabular-nums">{entry.value.toLocaleString('id-ID')}</span>
+        </div>
       ))}
     </div>
   )
@@ -365,22 +366,9 @@ export default function OverviewClient({
             </div>
             {/* Store performance — click a row to filter by that store */}
             <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-baseline justify-between mb-4">
                 <h3 className="text-sm font-semibold text-[#FEF2E3]">Store Performance</h3>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-[#b8a89a]">click to filter</span>
-                  <CSVButton
-                    filename="hd-store-performance"
-                    rows={sortedStores}
-                    columns={[
-                      { header: 'Store', value: 'store' },
-                      { header: 'Revenue', value: 'revenue' },
-                      { header: 'Orders', value: 'orders' },
-                      { header: 'AOV', value: 'aov' },
-                      { header: 'Growth %', value: 'growth' },
-                    ]}
-                  />
-                </div>
+                <span className="text-[10px] text-[#b8a89a]">click to filter</span>
               </div>
               <div className="space-y-4">
                 {sortedStores.map((s) => {
@@ -503,21 +491,7 @@ export default function OverviewClient({
           <div className="grid lg:grid-cols-2 gap-4">
             {/* Voucher table */}
             <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5 overflow-x-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-[#FEF2E3]">Voucher Performance</h3>
-                <CSVButton
-                  filename="hd-voucher-performance"
-                  rows={sortedVouchers}
-                  columns={[
-                    { header: 'Code', value: 'code' },
-                    { header: 'Title', value: 'title' },
-                    { header: 'Issued', value: 'issued' },
-                    { header: 'Redeemed', value: 'redeemed' },
-                    { header: 'Redemption Rate %', value: 'redemptionRate' },
-                    { header: 'ROI', value: 'roi' },
-                  ]}
-                />
-              </div>
+              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4">Voucher Performance</h3>
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-[#3d1825]">
@@ -627,18 +601,7 @@ export default function OverviewClient({
             </div>
             {/* Top 5 products */}
             <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-[#FEF2E3]">Top 5 Products</h3>
-                <CSVButton
-                  filename="hd-top-products"
-                  rows={topProducts}
-                  columns={[
-                    { header: 'Name', value: 'name' },
-                    { header: 'Orders', value: 'orders' },
-                    { header: 'Revenue', value: 'revenue' },
-                  ]}
-                />
-              </div>
+              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4">Top 5 Products</h3>
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-[#3d1825]">
@@ -707,23 +670,3 @@ export default function OverviewClient({
   )
 }
 
-// Small CSV-download button that any table can drop in.
-function CSVButton<T>({
-  filename, rows, columns,
-}: {
-  filename: string
-  rows: T[]
-  columns: import('@/lib/dashboard/csv').CSVColumn<T>[]
-}) {
-  return (
-    <button
-      disabled={rows.length === 0}
-      onClick={() => downloadCSV(filename, rows, columns)}
-      className="text-[10px] px-2.5 py-1 rounded-full border border-[#3d1825] text-[#b8a89a] hover:text-[#FEF2E3] hover:border-[#B8922A]/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-      title="Download as CSV"
-    >
-      ⬇ CSV
-    </button>
-  )
-}
-export { CSVButton }
