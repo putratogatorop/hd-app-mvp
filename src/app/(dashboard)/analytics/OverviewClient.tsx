@@ -256,6 +256,9 @@ export default function OverviewClient({
   const activeStores = (sp.get('stores') ?? '').split(',').filter(Boolean)
   const activeTiers = (sp.get('tiers') ?? '').split(',').filter(Boolean)
   const activeChannels = (sp.get('channels') ?? '').split(',').filter(Boolean)
+  const activeVoucherIds = (sp.get('vouchers') ?? '').split(',').filter(Boolean)
+  const activeHasVoucher = sp.get('voucher')
+  const { push: pushFilter } = useFilterPatch()
   const storeIdByName = new Map(storeList.map((s) => [s.name, s.id]))
   const [sortCol, setSortCol] = useState<string>('roi')
   const [sortAsc, setSortAsc] = useState(false)
@@ -448,9 +451,12 @@ export default function OverviewClient({
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            {/* Brand health donut */}
+            {/* Brand health donut — click to filter by voucher usage */}
             <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5 flex flex-col items-center justify-center">
-              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4 self-start">Brand Health</h3>
+              <div className="flex items-baseline justify-between w-full mb-4">
+                <h3 className="text-sm font-semibold text-[#FEF2E3]">Brand Health</h3>
+                <span className="text-[10px] text-[#b8a89a]">click segment</span>
+              </div>
               <div className="relative">
                 <ResponsiveContainer width={200} height={200}>
                   <PieChart>
@@ -461,26 +467,41 @@ export default function OverviewClient({
                       dataKey="value"
                       startAngle={90} endAngle={-270}
                       stroke="none"
+                      cursor="pointer"
+                      onClick={(_, idx) => {
+                        // idx 0 = Full Price (hasVoucher=false), idx 1 = With Voucher (true)
+                        const target = idx === 0 ? false : true
+                        const next = activeHasVoucher === String(target) ? null : target
+                        pushFilter({ voucher: next })
+                      }}
                     >
-                      <Cell fill={COLORS.burgundyLight} />
-                      <Cell fill={COLORS.gold} />
+                      <Cell fill={COLORS.burgundyLight} fillOpacity={activeHasVoucher === null || activeHasVoucher === 'false' ? 1 : 0.35} />
+                      <Cell fill={COLORS.gold} fillOpacity={activeHasVoucher === null || activeHasVoucher === 'true' ? 1 : 0.35} />
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-2xl font-bold text-[#FEF2E3]">{fullPricePct}%</span>
                   <span className="text-[10px] text-[#b8a89a]">Full Price</span>
                 </div>
               </div>
-              <div className="flex gap-6 mt-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.burgundyLight }} />
-                  <span className="text-xs text-[#b8a89a]">Full Price ({fullPricePct}%)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.gold }} />
-                  <span className="text-xs text-[#b8a89a]">Voucher ({voucherPct}%)</span>
-                </div>
+              <div className="flex gap-2 mt-4">
+                {([
+                  { label: 'Full Price', pct: fullPricePct, color: COLORS.burgundyLight, v: false },
+                  { label: 'Voucher', pct: voucherPct, color: COLORS.gold, v: true },
+                ] as const).map((o) => {
+                  const active = activeHasVoucher === String(o.v)
+                  return (
+                    <button
+                      key={o.label}
+                      onClick={() => pushFilter({ voucher: active ? null : o.v })}
+                      className={`flex items-center gap-2 px-2 py-1 rounded-full text-xs transition-colors ${active ? 'bg-[#650A30] text-[#FEF2E3]' : 'text-[#b8a89a] hover:text-[#FEF2E3]'}`}
+                    >
+                      <span className="w-3 h-3 rounded-full" style={{ backgroundColor: o.color }} />
+                      {o.label} ({o.pct}%)
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </div>
@@ -489,9 +510,12 @@ export default function OverviewClient({
         {/* ── Section 3: Marketing ROI ── */}
         <Section title="Marketing ROI">
           <div className="grid lg:grid-cols-2 gap-4">
-            {/* Voucher table */}
+            {/* Voucher table — click a row to filter */}
             <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5 overflow-x-auto">
-              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4">Voucher Performance</h3>
+              <div className="flex items-baseline justify-between mb-4">
+                <h3 className="text-sm font-semibold text-[#FEF2E3]">Voucher Performance</h3>
+                <span className="text-[10px] text-[#b8a89a]">click row to filter</span>
+              </div>
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-[#3d1825]">
@@ -512,28 +536,41 @@ export default function OverviewClient({
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedVouchers.map(v => (
-                    <tr key={v.code} className="border-b border-[#3d1825]/50 hover:bg-[#3d1825]/30 transition-colors">
-                      <td className="py-2.5 px-2">
-                        <span className="text-[#FEF2E3] font-mono font-medium">{v.code}</span>
-                        <br />
-                        <span className="text-[10px] text-[#b8a89a]">{v.title}</span>
-                      </td>
-                      <td className="py-2.5 px-2 text-[#b8a89a]">{v.redeemed.toLocaleString('id-ID')}/{v.issued.toLocaleString('id-ID')}</td>
-                      <td className="py-2.5 px-2 text-[#b8a89a]">{v.redemptionRate}%</td>
-                      <td className="py-2.5 px-2">
-                        <span className={`font-bold ${v.roi >= 2 ? 'text-[#B8922A]' : 'text-[#b8a89a]'}`}>
-                          {v.roi.toFixed(1)}x
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {sortedVouchers.map(v => {
+                    const active = !!v.id && activeVoucherIds.includes(v.id)
+                    const clickable = !!v.id
+                    return (
+                      <tr
+                        key={v.code}
+                        onClick={() => clickable && togglePatch('vouchers', v.id!)}
+                        className={`border-b border-[#3d1825]/50 transition-colors ${clickable ? 'cursor-pointer hover:bg-[#3d1825]/50' : ''} ${active ? 'bg-[#650A30]/30 ring-1 ring-[#B8922A]/40' : ''}`}
+                      >
+                        <td className="py-2.5 px-2">
+                          <span className={`font-mono font-medium ${active ? 'text-[#B8922A]' : 'text-[#FEF2E3]'}`}>
+                            {active ? '● ' : ''}{v.code}
+                          </span>
+                          <br />
+                          <span className="text-[10px] text-[#b8a89a]">{v.title}</span>
+                        </td>
+                        <td className="py-2.5 px-2 text-[#b8a89a]">{v.redeemed.toLocaleString('id-ID')}/{v.issued.toLocaleString('id-ID')}</td>
+                        <td className="py-2.5 px-2 text-[#b8a89a]">{v.redemptionRate}%</td>
+                        <td className="py-2.5 px-2">
+                          <span className={`font-bold ${v.roi >= 2 ? 'text-[#B8922A]' : 'text-[#b8a89a]'}`}>
+                            {v.roi.toFixed(1)}x
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
-            {/* Referral funnel */}
+            {/* Referral funnel (read-only — different population from orders) */}
             <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5">
-              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4">Referral Funnel</h3>
+              <div className="flex items-baseline justify-between mb-4">
+                <h3 className="text-sm font-semibold text-[#FEF2E3]">Referral Funnel</h3>
+                <span className="text-[10px] text-[#b8a89a]/60" title="Referrals live in a separate table from orders, so there's no order-level filter to push.">read-only</span>
+              </div>
               <div className="space-y-3">
                 {funnel.map((stage, i) => {
                   const pct = (stage.value / funnelMax) * 100

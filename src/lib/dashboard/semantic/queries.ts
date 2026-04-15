@@ -20,6 +20,9 @@ function applyFilters(query: AnyBuilder, f: Filters): AnyBuilder {
   if (f.channels && f.channels.length > 0) q = q.in('channel', f.channels)
   if (f.tiers && f.tiers.length > 0) q = q.in('tier', f.tiers)
   if (typeof f.isGift === 'boolean') q = q.eq('is_gift', f.isGift)
+  if (f.voucherIds && f.voucherIds.length > 0) q = q.in('voucher_id', f.voucherIds)
+  if (f.hasVoucher === true) q = q.not('voucher_id', 'is', null)
+  if (f.hasVoucher === false) q = q.is('voucher_id', null)
   if (f.excludeCancelled !== false) q = q.neq('status', 'cancelled')
   return q
 }

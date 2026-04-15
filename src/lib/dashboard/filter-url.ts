@@ -100,6 +100,10 @@ export function parseFilterSearchParams(
   const rawGift = get('gift')
   const isGift =
     rawGift === 'true' ? true : rawGift === 'false' ? false : undefined
+  const rawHasVoucher = get('voucher')
+  const hasVoucher =
+    rawHasVoucher === 'true' ? true : rawHasVoucher === 'false' ? false : undefined
+  const voucherIds = splitList(get('vouchers'))
 
   const filters: Filters = {
     from: toIsoDateStart(fromDate),
@@ -108,6 +112,8 @@ export function parseFilterSearchParams(
     channels: channels.length > 0 ? channels : undefined,
     tiers: tiers.length > 0 ? tiers : undefined,
     isGift,
+    hasVoucher,
+    voucherIds: voucherIds.length > 0 ? voucherIds : undefined,
     excludeCancelled: true,
   }
 
@@ -159,6 +165,8 @@ export function encodeFilterPatch(
     channels: Channel[]
     tiers: Tier[]
     gift: boolean | undefined | null
+    voucher: boolean | undefined | null
+    vouchers: string[]
   }>,
 ): URLSearchParams {
   const next = new URLSearchParams(current.toString())
@@ -179,5 +187,10 @@ export function encodeFilterPatch(
     const g = patch.gift
     setOrDel('gift', g === true ? 'true' : g === false ? 'false' : null)
   }
+  if ('voucher' in patch) {
+    const v = patch.voucher
+    setOrDel('voucher', v === true ? 'true' : v === false ? 'false' : null)
+  }
+  if ('vouchers' in patch) setOrDel('vouchers', (patch.vouchers ?? []).join(',') || null)
   return next
 }

@@ -24,7 +24,7 @@ export function useFilterPatch() {
 
   /** Toggle a single value in a comma-list filter key. */
   const toggle = useCallback(
-    (key: 'stores' | 'channels' | 'tiers', value: string) => {
+    (key: 'stores' | 'channels' | 'tiers' | 'vouchers', value: string) => {
       const current = (sp.get(key) ?? '').split(',').filter(Boolean)
       const next = current.includes(value)
         ? current.filter((v) => v !== value)
