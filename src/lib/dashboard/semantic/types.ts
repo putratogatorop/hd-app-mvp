@@ -18,6 +18,10 @@ export interface Filters {
   tiers?: Tier[]
   /** true = gifts only, false = non-gift only, undefined = both. */
   isGift?: boolean
+  /** Restrict to orders that used a specific voucher (by UUID). */
+  voucherIds?: string[]
+  /** true = voucher-redeemed orders only, false = full-price only, undefined = both. */
+  hasVoucher?: boolean
   /** Exclude cancelled orders by default. Set false to include all statuses. */
   excludeCancelled?: boolean
 }

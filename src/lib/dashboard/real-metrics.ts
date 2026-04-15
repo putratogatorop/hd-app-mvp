@@ -355,6 +355,7 @@ export async function getOverviewRealData(
     vouchers = Array.from(voucherAgg, ([id, row]) => {
       const i = issued.get(id) ?? row.redeemed
       return {
+        id,
         code: row.code,
         title: row.title,
         issued: i,

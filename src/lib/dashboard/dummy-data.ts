@@ -50,6 +50,8 @@ export interface CustomerSegment {
 }
 
 export interface VoucherPerformance {
+  /** Voucher UUID — optional because dummy-data rows don't carry one. */
+  id?: string
   code: string
   title: string
   issued: number
