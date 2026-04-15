@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { parseFilterSearchParams } from '@/lib/dashboard/filter-url'
-import { downloadCSV } from '@/lib/dashboard/csv'
 
 interface DrillRow {
   order_id: string
@@ -78,26 +77,6 @@ export default function DrillModal({ open, onClose, spec }: Props) {
 
   if (!open || !spec) return null
 
-  const exportRows = () => {
-    downloadCSV(
-      `hd-drill-${spec.title.replace(/[^a-z0-9]+/gi, '-')}`,
-      rows,
-      [
-        { header: 'Order ID', value: 'order_id' },
-        { header: 'Created At', value: 'created_at' },
-        { header: 'Status', value: 'status' },
-        { header: 'Channel', value: 'channel' },
-        { header: 'Store', value: 'store_name' },
-        { header: 'Customer', value: 'customer_name' },
-        { header: 'Email', value: 'customer_email' },
-        { header: 'Tier', value: 'tier' },
-        { header: 'Revenue', value: 'net_revenue' },
-        { header: 'Voucher', value: 'voucher_code' },
-        { header: 'Is Gift', value: (r) => (r.is_gift ? 'true' : 'false') },
-      ],
-    )
-  }
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
@@ -116,22 +95,13 @@ export default function DrillModal({ open, onClose, spec }: Props) {
               {rows.length > 0 && total > rows.length && ' (showing first 200)'}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              disabled={rows.length === 0}
-              onClick={exportRows}
-              className="text-[11px] px-3 py-1.5 rounded-full bg-[#650A30] text-[#FEF2E3] hover:bg-[#801237] disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              ⬇ CSV
-            </button>
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-full text-[#b8a89a] hover:bg-[#3d1825] hover:text-[#FEF2E3]"
-              aria-label="Close"
-            >
-              ✕
-            </button>
-          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full text-[#b8a89a] hover:bg-[#3d1825] hover:text-[#FEF2E3]"
+            aria-label="Close"
+          >
+            ✕
+          </button>
         </div>
 
         {/* Body */}
