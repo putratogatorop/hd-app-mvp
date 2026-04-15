@@ -15,7 +15,9 @@ import type { RealOverviewData, Period } from '@/lib/dashboard/real-metrics'
 import ChatPanel from '@/components/ChatPanel'
 import AnalyticsTabs from '@/components/AnalyticsTabs'
 import FilterBar, { type FilterBarStore } from '@/components/analytics/FilterBar'
+import DrillModal, { type DrillSpec } from '@/components/analytics/DrillModal'
 import { useFilterPatch } from '@/lib/dashboard/use-filter-patch'
+import { downloadCSV } from '@/lib/dashboard/csv'
 const useSearchParams = _useSP
 
 // ── Theme constants (editorial maison, brand-aligned) ──────────────
@@ -164,7 +166,13 @@ function DarkTooltip({ active, payload, label }: {
 }
 
 // ── Revenue Heatmap ─────────────────────────────────────────────
-function RevenueHeatmap({ data }: { data: HeatmapPoint[] }) {
+function RevenueHeatmap({
+  data,
+  onCellClick,
+}: {
+  data: HeatmapPoint[]
+  onCellClick?: (day: string, hour: number) => void
+}) {
   const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
   const hours = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
   const maxVal = Math.max(...data.map(d => d.value))
@@ -197,18 +205,22 @@ function RevenueHeatmap({ data }: { data: HeatmapPoint[] }) {
             <div className="text-xs text-[#b8a89a] font-medium flex items-center">{day}</div>
             {hours.map(hour => {
               const val = lookup.get(`${day}-${hour}`) ?? 0
+              const clickable = !!onCellClick && val > 0
               return (
-                <div
+                <button
                   key={hour}
-                  title={`${day} ${hour}:00 — ${val} orders`}
-                  className="aspect-[2/1] rounded-sm flex items-center justify-center text-[9px] font-mono transition-all duration-200 hover:scale-110 hover:z-10 cursor-default"
+                  type="button"
+                  disabled={!clickable}
+                  onClick={() => onCellClick?.(day, hour)}
+                  title={clickable ? `Click to drill: ${day} ${hour}:00 — ${val} orders` : `${day} ${hour}:00 — ${val} orders`}
+                  className={`aspect-[2/1] rounded-sm flex items-center justify-center text-[9px] font-mono transition-all duration-200 hover:scale-110 hover:z-10 ${clickable ? 'cursor-pointer' : 'cursor-default'}`}
                   style={{
                     backgroundColor: getColor(val),
                     color: val / maxVal > 0.45 ? '#FFF' : '#666',
                   }}
                 >
                   {val}
-                </div>
+                </button>
               )
             })}
           </div>
@@ -237,6 +249,7 @@ export default function OverviewClient({
   stores: FilterBarStore[]
 }) {
   const [chatOpen, setChatOpen] = useState(false)
+  const [drill, setDrill] = useState<DrillSpec | null>(null)
   const { toggle: togglePatch } = useFilterPatch()
   const sp = useSearchParams()
   const activeStores = (sp.get('stores') ?? '').split(',').filter(Boolean)
@@ -352,9 +365,22 @@ export default function OverviewClient({
             </div>
             {/* Store performance — click a row to filter by that store */}
             <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5">
-              <div className="flex items-baseline justify-between mb-4">
+              <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-[#FEF2E3]">Store Performance</h3>
-                <span className="text-[10px] text-[#b8a89a]">click to filter</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-[#b8a89a]">click to filter</span>
+                  <CSVButton
+                    filename="hd-store-performance"
+                    rows={sortedStores}
+                    columns={[
+                      { header: 'Store', value: 'store' },
+                      { header: 'Revenue', value: 'revenue' },
+                      { header: 'Orders', value: 'orders' },
+                      { header: 'AOV', value: 'aov' },
+                      { header: 'Growth %', value: 'growth' },
+                    ]}
+                  />
+                </div>
               </div>
               <div className="space-y-4">
                 {sortedStores.map((s) => {
@@ -477,7 +503,21 @@ export default function OverviewClient({
           <div className="grid lg:grid-cols-2 gap-4">
             {/* Voucher table */}
             <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5 overflow-x-auto">
-              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4">Voucher Performance</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-[#FEF2E3]">Voucher Performance</h3>
+                <CSVButton
+                  filename="hd-voucher-performance"
+                  rows={sortedVouchers}
+                  columns={[
+                    { header: 'Code', value: 'code' },
+                    { header: 'Title', value: 'title' },
+                    { header: 'Issued', value: 'issued' },
+                    { header: 'Redeemed', value: 'redeemed' },
+                    { header: 'Redemption Rate %', value: 'redemptionRate' },
+                    { header: 'ROI', value: 'roi' },
+                  ]}
+                />
+              </div>
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-[#3d1825]">
@@ -587,7 +627,18 @@ export default function OverviewClient({
             </div>
             {/* Top 5 products */}
             <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5">
-              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4">Top 5 Products</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-[#FEF2E3]">Top 5 Products</h3>
+                <CSVButton
+                  filename="hd-top-products"
+                  rows={topProducts}
+                  columns={[
+                    { header: 'Name', value: 'name' },
+                    { header: 'Orders', value: 'orders' },
+                    { header: 'Revenue', value: 'revenue' },
+                  ]}
+                />
+              </div>
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-[#3d1825]">
@@ -616,10 +667,24 @@ export default function OverviewClient({
           </div>
         </Section>
 
-        {/* ── Revenue Heatmap ── */}
+        {/* ── Revenue Heatmap — click a cell to drill ── */}
         <Section title="Revenue Heatmap — Orders by Day & Hour">
           <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5">
-            <RevenueHeatmap data={heatmap} />
+            <div className="flex items-baseline justify-between mb-3">
+              <p className="text-[11px] text-[#b8a89a]">Click a cell to inspect the underlying orders.</p>
+            </div>
+            <RevenueHeatmap
+              data={heatmap}
+              onCellClick={(day, hour) => {
+                // day labels: 'Sen','Sel','Rab','Kam','Jum','Sab','Min' → iso 1..7
+                const DAY_TO_ISO: Record<string, number> = { Sen: 1, Sel: 2, Rab: 3, Kam: 4, Jum: 5, Sab: 6, Min: 7 }
+                setDrill({
+                  title: `${day} · ${hour}:00`,
+                  isoDow: DAY_TO_ISO[day],
+                  hour,
+                })
+              }}
+            />
           </div>
         </Section>
       </main>
@@ -635,6 +700,30 @@ export default function OverviewClient({
 
       {/* ── Chat Panel ── */}
       <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} />
+
+      {/* ── Drill-down Modal ── */}
+      <DrillModal open={!!drill} onClose={() => setDrill(null)} spec={drill} />
     </div>
   )
 }
+
+// Small CSV-download button that any table can drop in.
+function CSVButton<T>({
+  filename, rows, columns,
+}: {
+  filename: string
+  rows: T[]
+  columns: import('@/lib/dashboard/csv').CSVColumn<T>[]
+}) {
+  return (
+    <button
+      disabled={rows.length === 0}
+      onClick={() => downloadCSV(filename, rows, columns)}
+      className="text-[10px] px-2.5 py-1 rounded-full border border-[#3d1825] text-[#b8a89a] hover:text-[#FEF2E3] hover:border-[#B8922A]/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      title="Download as CSV"
+    >
+      ⬇ CSV
+    </button>
+  )
+}
+export { CSVButton }
