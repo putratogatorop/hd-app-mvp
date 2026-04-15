@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useSearchParams as _useSP } from 'next/navigation'
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -15,6 +15,8 @@ import type { RealOverviewData, Period } from '@/lib/dashboard/real-metrics'
 import ChatPanel from '@/components/ChatPanel'
 import AnalyticsTabs from '@/components/AnalyticsTabs'
 import FilterBar, { type FilterBarStore } from '@/components/analytics/FilterBar'
+import { useFilterPatch } from '@/lib/dashboard/use-filter-patch'
+const useSearchParams = _useSP
 
 // ── Theme constants (editorial maison, brand-aligned) ──────────────
 const COLORS = {
@@ -234,10 +236,13 @@ export default function OverviewClient({
   data: RealOverviewData
   stores: FilterBarStore[]
 }) {
-  const _router = useRouter()
-  const _pathname = usePathname()
-  void _router; void _pathname
   const [chatOpen, setChatOpen] = useState(false)
+  const { toggle: togglePatch } = useFilterPatch()
+  const sp = useSearchParams()
+  const activeStores = (sp.get('stores') ?? '').split(',').filter(Boolean)
+  const activeTiers = (sp.get('tiers') ?? '').split(',').filter(Boolean)
+  const activeChannels = (sp.get('channels') ?? '').split(',').filter(Boolean)
+  const storeIdByName = new Map(storeList.map((s) => [s.name, s.id]))
   const [sortCol, setSortCol] = useState<string>('roi')
   const [sortAsc, setSortAsc] = useState(false)
 
@@ -345,17 +350,32 @@ export default function OverviewClient({
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            {/* Store performance */}
+            {/* Store performance — click a row to filter by that store */}
             <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5">
-              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4">Store Performance</h3>
+              <div className="flex items-baseline justify-between mb-4">
+                <h3 className="text-sm font-semibold text-[#FEF2E3]">Store Performance</h3>
+                <span className="text-[10px] text-[#b8a89a]">click to filter</span>
+              </div>
               <div className="space-y-4">
                 {sortedStores.map((s) => {
                   const maxRev = sortedStores[0].revenue
                   const pct = (s.revenue / maxRev) * 100
+                  const storeId = storeIdByName.get(s.store)
+                  const active = !!storeId && activeStores.includes(storeId)
+                  const clickable = !!storeId
                   return (
-                    <div key={s.store}>
+                    <button
+                      key={s.store}
+                      disabled={!clickable}
+                      onClick={() => storeId && togglePatch('stores', storeId)}
+                      className={`w-full text-left block transition-opacity ${
+                        clickable ? 'cursor-pointer hover:opacity-90' : 'cursor-default opacity-60'
+                      } ${active ? 'ring-1 ring-[#B8922A]/50 rounded-lg p-1 -m-1' : ''}`}
+                    >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs text-[#b8a89a]">{s.store}</span>
+                        <span className={`text-xs ${active ? 'text-[#B8922A]' : 'text-[#b8a89a]'}`}>
+                          {active ? '● ' : ''}{s.store}
+                        </span>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-semibold text-[#FEF2E3]">{formatRupiah(s.revenue)}</span>
                           <span className={`text-[10px] font-semibold ${s.growth >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -366,7 +386,7 @@ export default function OverviewClient({
                       <div className="h-2 bg-[#3d1825] rounded-full overflow-hidden">
                         <div className="h-full rounded-full bg-gradient-to-r from-[#650A30] to-[#8B1A45] transition-all duration-700" style={{ width: `${pct}%` }} />
                       </div>
-                    </div>
+                    </button>
                   )
                 })}
               </div>
@@ -377,19 +397,39 @@ export default function OverviewClient({
         {/* ── Section 2: Customer Intelligence ── */}
         <Section title="Customer Intelligence">
           <div className="grid lg:grid-cols-2 gap-4">
-            {/* Tier revenue */}
+            {/* Tier revenue — click a bar to filter */}
             <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5">
-              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4">Revenue by Tier</h3>
+              <div className="flex items-baseline justify-between mb-4">
+                <h3 className="text-sm font-semibold text-[#FEF2E3]">Revenue by Tier</h3>
+                <span className="text-[10px] text-[#b8a89a]">click bar to filter</span>
+              </div>
               <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={segments} layout="vertical">
+                <BarChart
+                  data={segments}
+                  layout="vertical"
+                  onClick={(e) => {
+                    const label = (e as { activeLabel?: string })?.activeLabel
+                    if (!label) return
+                    togglePatch('tiers', label.toLowerCase())
+                  }}
+                >
                   <CartesianGrid stroke={COLORS.gridLine} strokeDasharray="3 3" horizontal={false} />
                   <XAxis type="number" tick={{ fill: COLORS.textSecondary, fontSize: 10 }} tickFormatter={(v: number) => v === 0 ? '0' : v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}jt` : `${(v / 1_000).toFixed(0)}rb`} />
                   <YAxis type="category" dataKey="tier" tick={{ fill: COLORS.textSecondary, fontSize: 11 }} width={70} />
                   <Tooltip content={<DarkTooltip />} />
-                  <Bar dataKey="revenue" radius={[0, 6, 6, 0]} name="Revenue">
-                    {segments.map((s) => (
-                      <Cell key={s.tier} fill={tierColors[s.tier] ?? COLORS.gold} />
-                    ))}
+                  <Bar dataKey="revenue" radius={[0, 6, 6, 0]} name="Revenue" cursor="pointer">
+                    {segments.map((s) => {
+                      const isActive = activeTiers.includes(s.tier.toLowerCase())
+                      return (
+                        <Cell
+                          key={s.tier}
+                          fill={tierColors[s.tier] ?? COLORS.gold}
+                          fillOpacity={activeTiers.length === 0 || isActive ? 1 : 0.35}
+                          stroke={isActive ? COLORS.gold : 'none'}
+                          strokeWidth={isActive ? 2 : 0}
+                        />
+                      )
+                    })}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -509,9 +549,30 @@ export default function OverviewClient({
         {/* ── Section 4: Operations ── */}
         <Section title="Operations">
           <div className="grid lg:grid-cols-2 gap-4">
-            {/* Orders by hour */}
+            {/* Orders by hour — channel legend is clickable */}
             <div className="bg-[#2A0F1C] border border-[#3d1825] rounded-2xl p-5">
-              <h3 className="text-sm font-semibold text-[#FEF2E3] mb-4">Orders by Hour</h3>
+              <div className="flex items-baseline justify-between mb-4">
+                <h3 className="text-sm font-semibold text-[#FEF2E3]">Orders by Hour</h3>
+                <div className="flex items-center gap-2">
+                  {(['pickup', 'delivery', 'dinein'] as const).map((c) => {
+                    const active = activeChannels.includes(c)
+                    const dim = activeChannels.length > 0 && !active
+                    const color = c === 'pickup' ? COLORS.burgundyLight : c === 'delivery' ? COLORS.gold : COLORS.textSecondary
+                    return (
+                      <button
+                        key={c}
+                        onClick={() => togglePatch('channels', c)}
+                        className={`flex items-center gap-1 text-[10px] transition-opacity ${dim ? 'opacity-40' : ''} ${active ? 'font-semibold' : ''}`}
+                      >
+                        <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: color }} />
+                        <span className={active ? 'text-[#FEF2E3]' : 'text-[#b8a89a]'}>
+                          {c === 'dinein' ? 'Dine-in' : c.charAt(0).toUpperCase() + c.slice(1)}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={ordersByHour}>
                   <CartesianGrid stroke={COLORS.gridLine} strokeDasharray="3 3" />
