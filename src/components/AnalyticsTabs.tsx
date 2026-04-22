@@ -8,6 +8,7 @@ const tabs = [
   { href: '/analytics/gift', label: 'Gifting', num: '02' },
   { href: '/analytics/transactional', label: 'Transactional', num: '03' },
   { href: '/analytics/rfm', label: 'RFM', num: '04' },
+  { href: '/analytics/campaigns', label: 'Campaigns', num: '05' },
 ]
 
 export default function AnalyticsTabs() {
@@ -15,7 +16,9 @@ export default function AnalyticsTabs() {
   return (
     <nav className="flex items-end gap-8 overflow-x-auto">
       {tabs.map((t) => {
-        const active = pathname === t.href
+        const active = t.href === '/analytics'
+          ? pathname === '/analytics'
+          : pathname === t.href || pathname.startsWith(t.href + '/')
         return (
           <Link
             key={t.href}

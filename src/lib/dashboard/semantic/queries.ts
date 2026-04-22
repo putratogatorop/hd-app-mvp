@@ -4,6 +4,16 @@ import type {
   EnrichedOrder,
   EnrichedOrderItem,
   CustomerRFMRow,
+  Campaign,
+  CampaignOutcome,
+  SegmentBaseline,
+  MenuItemMargin,
+  CustomerTopPair,
+  CategoryMix,
+  RedemptionPropensity,
+  TradeSpendPacing,
+  Incrementality,
+  CampaignTarget,
 } from './types'
 
 type Supa = Awaited<ReturnType<typeof createClient>>
@@ -91,6 +101,217 @@ export async function fetchStoresForFilter(
   return ((data ?? []) as Array<{ id: string; name: string }>).map((s) => ({
     id: s.id, name: s.name,
   }))
+}
+
+// ─── Campaigns / promotional investment queries ─────────────────────
+
+async function admin(): Promise<{ from: (t: string) => AnyBuilder }> {
+  const { createAdminClient } = await import('@/lib/supabase/admin')
+  return createAdminClient() as unknown as { from: (t: string) => AnyBuilder }
+}
+
+function warnMissing<T>(err: { message?: string; code?: string } | null, view: string, fallback: T): T | null {
+  if (!err) return null
+  if (isMissingView(err, view)) {
+    console.warn(`[semantic] ${view} missing — run migration-v4-campaigns.sql`)
+    return fallback
+  }
+  return null
+}
+
+export async function fetchCampaigns(): Promise<Campaign[]> {
+  try {
+    const db = await admin()
+    const { data, error } = await db
+      .from('campaigns')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (error) {
+      const fb = warnMissing<Campaign[]>(error, 'campaigns', [])
+      if (fb !== null) return fb
+      throw error
+    }
+    return (data ?? []) as Campaign[]
+  } catch (e) {
+    console.warn('[semantic] fetchCampaigns failed:', e)
+    return []
+  }
+}
+
+export async function fetchCampaign(id: string): Promise<Campaign | null> {
+  try {
+    const db = await admin()
+    const { data, error } = await db.from('campaigns').select('*').eq('id', id).maybeSingle()
+    if (error) {
+      const fb = warnMissing<Campaign | null>(error, 'campaigns', null)
+      if (fb !== null) return fb
+      throw error
+    }
+    return (data ?? null) as Campaign | null
+  } catch (e) {
+    console.warn('[semantic] fetchCampaign failed:', e)
+    return null
+  }
+}
+
+export async function fetchCampaignOutcomes(): Promise<CampaignOutcome[]> {
+  try {
+    const db = await admin()
+    const { data, error } = await db
+      .from('v_campaign_outcomes')
+      .select('*')
+      .order('start_at', { ascending: false })
+    if (error) {
+      const fb = warnMissing<CampaignOutcome[]>(error, 'v_campaign_outcomes', [])
+      if (fb !== null) return fb
+      throw error
+    }
+    return (data ?? []) as CampaignOutcome[]
+  } catch (e) {
+    console.warn('[semantic] fetchCampaignOutcomes failed:', e)
+    return []
+  }
+}
+
+export async function fetchCampaignIncrementality(campaignId?: string): Promise<Incrementality[]> {
+  try {
+    const db = await admin()
+    let q = db.from('v_campaign_incrementality').select('*')
+    if (campaignId) q = q.eq('campaign_id', campaignId)
+    const { data, error } = await q
+    if (error) {
+      const fb = warnMissing<Incrementality[]>(error, 'v_campaign_incrementality', [])
+      if (fb !== null) return fb
+      throw error
+    }
+    return (data ?? []) as Incrementality[]
+  } catch (e) {
+    console.warn('[semantic] fetchCampaignIncrementality failed:', e)
+    return []
+  }
+}
+
+export async function fetchCampaignTargets(campaignId: string): Promise<CampaignTarget[]> {
+  try {
+    const db = await admin()
+    const { data, error } = await db
+      .from('campaign_targets')
+      .select('*')
+      .eq('campaign_id', campaignId)
+    if (error) {
+      const fb = warnMissing<CampaignTarget[]>(error, 'campaign_targets', [])
+      if (fb !== null) return fb
+      throw error
+    }
+    return (data ?? []) as CampaignTarget[]
+  } catch (e) {
+    console.warn('[semantic] fetchCampaignTargets failed:', e)
+    return []
+  }
+}
+
+export async function fetchMenuItemMargins(): Promise<MenuItemMargin[]> {
+  try {
+    const db = await admin()
+    const { data, error } = await db.from('v_menu_item_margins').select('*').order('name')
+    if (error) {
+      const fb = warnMissing<MenuItemMargin[]>(error, 'v_menu_item_margins', [])
+      if (fb !== null) return fb
+      throw error
+    }
+    return (data ?? []) as MenuItemMargin[]
+  } catch (e) {
+    console.warn('[semantic] fetchMenuItemMargins failed:', e)
+    return []
+  }
+}
+
+export async function fetchSegmentBaselines(): Promise<SegmentBaseline[]> {
+  try {
+    const db = await admin()
+    const { data, error } = await db.from('v_segment_baselines').select('*')
+    if (error) {
+      const fb = warnMissing<SegmentBaseline[]>(error, 'v_segment_baselines', [])
+      if (fb !== null) return fb
+      throw error
+    }
+    return (data ?? []) as SegmentBaseline[]
+  } catch (e) {
+    console.warn('[semantic] fetchSegmentBaselines failed:', e)
+    return []
+  }
+}
+
+export async function fetchCustomerTopPairs(userIds: string[]): Promise<CustomerTopPair[]> {
+  if (userIds.length === 0) return []
+  try {
+    const db = await admin()
+    const { data, error } = await db
+      .from('v_customer_top_pairs')
+      .select('*')
+      .in('user_id', userIds)
+      .eq('rank', 1)
+    if (error) {
+      const fb = warnMissing<CustomerTopPair[]>(error, 'v_customer_top_pairs', [])
+      if (fb !== null) return fb
+      throw error
+    }
+    return (data ?? []) as CustomerTopPair[]
+  } catch (e) {
+    console.warn('[semantic] fetchCustomerTopPairs failed:', e)
+    return []
+  }
+}
+
+export async function fetchCategoryMix(): Promise<CategoryMix[]> {
+  try {
+    const db = await admin()
+    const { data, error } = await db.from('v_customer_category_mix').select('*')
+    if (error) {
+      const fb = warnMissing<CategoryMix[]>(error, 'v_customer_category_mix', [])
+      if (fb !== null) return fb
+      throw error
+    }
+    return (data ?? []) as CategoryMix[]
+  } catch (e) {
+    console.warn('[semantic] fetchCategoryMix failed:', e)
+    return []
+  }
+}
+
+export async function fetchRedemptionPropensity(): Promise<RedemptionPropensity[]> {
+  try {
+    const db = await admin()
+    const { data, error } = await db.from('v_customer_redemption_propensity').select('*')
+    if (error) {
+      const fb = warnMissing<RedemptionPropensity[]>(error, 'v_customer_redemption_propensity', [])
+      if (fb !== null) return fb
+      throw error
+    }
+    return (data ?? []) as RedemptionPropensity[]
+  } catch (e) {
+    console.warn('[semantic] fetchRedemptionPropensity failed:', e)
+    return []
+  }
+}
+
+export async function fetchTradeSpendPacing(): Promise<TradeSpendPacing[]> {
+  try {
+    const db = await admin()
+    const { data, error } = await db
+      .from('v_trade_spend_pacing')
+      .select('*')
+      .order('month', { ascending: false })
+    if (error) {
+      const fb = warnMissing<TradeSpendPacing[]>(error, 'v_trade_spend_pacing', [])
+      if (fb !== null) return fb
+      throw error
+    }
+    return (data ?? []) as TradeSpendPacing[]
+  } catch (e) {
+    console.warn('[semantic] fetchTradeSpendPacing failed:', e)
+    return []
+  }
 }
 
 /** Fetch per-customer RFM aggregates.
