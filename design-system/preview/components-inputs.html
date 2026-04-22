@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--hd-cream);}
+  .card{padding:24px;box-sizing:border-box;width:700px;display:flex;flex-direction:column;gap:14px;}
+  .field{border-bottom:1px solid rgba(26,20,20,.3);padding:10px 0;display:flex;align-items:center;gap:10px;transition:border-color 300ms;}
+  .field:focus-within{border-color:var(--hd-ink);}
+  .field .lbl{font-family:var(--font-sans);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--fg-tertiary);width:96px;}
+  .field input{border:0;outline:0;background:transparent;flex:1;font-family:var(--font-sans);font-size:15px;color:var(--fg-primary);}
+  .chip{display:inline-flex;align-items:center;border:1px solid rgba(26,20,20,.2);padding:0;background:var(--hd-paper);}
+  .chip .ico{padding:0 14px;height:44px;display:flex;align-items:center;border-right:1px solid rgba(26,20,20,.2);color:var(--accent);}
+  .chip input{border:0;background:transparent;outline:0;height:44px;padding:0 14px;width:260px;font-family:var(--font-display);font-style:italic;color:var(--fg-primary);font-size:14px;}
+  .chip button{border:0;background:var(--hd-burgundy);color:var(--hd-cream);height:44px;padding:0 20px;font-family:var(--font-sans);font-size:11px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;}
+  .pill-row{display:flex;gap:20px;align-items:baseline;}
+  .tab{position:relative;padding-bottom:6px;font-family:var(--font-sans);font-size:12.8px;letter-spacing:.02em;color:var(--fg-tertiary);cursor:pointer;}
+  .tab.active{color:var(--accent);}
+  .tab.active::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1.5px;background:var(--accent);}
+</style></head>
+<body>
+<div class="card">
+  <div class="field"><span class="lbl">Email</span><input placeholder="name@email.com" value=""></div>
+  <div class="field"><span class="lbl">Password</span><input type="password" placeholder="••••••••"></div>
+  <div class="chip">
+    <span class="ico">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m2 9 3-3 3 3"/><path d="M13 18H7a2 2 0 0 1-2-2V6"/><path d="m22 15-3 3-3-3"/><path d="M11 6h6a2 2 0 0 1 2 2v10"/></svg>
+    </span>
+    <input placeholder="Have a code? Enter here">
+    <button>Apply</button>
+  </div>
+  <div class="pill-row" style="margin-top:4px;">
+    <div class="tab active">All</div>
+    <div class="tab">Discount</div>
+    <div class="tab">Cashback</div>
+    <div class="tab">Delivery</div>
+  </div>
+</div>
+</body></html>

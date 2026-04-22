@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html,body{margin:0;padding:0;background:var(--hd-cream);}
+  .card{padding:24px;box-sizing:border-box;width:700px;}
+  .row{display:flex;gap:0;flex-wrap:wrap;border:1px solid var(--rule-soft);}
+  .row > div{flex:1;min-width:140px;padding:14px 16px;}
+  .row > div + div{border-left:1px solid var(--rule-soft);}
+  .k{font-family:var(--font-mono);font-size:10px;color:var(--fg-quaternary);letter-spacing:.06em;text-transform:uppercase;}
+  .v{font-family:var(--font-mono);font-size:11px;color:var(--fg-primary);margin-top:4px;}
+  .preview{margin-top:8px;height:24px;border:1px solid var(--rule-soft);}
+  .sample{display:inline-block;padding:2px 6px;font-size:12px;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="row">
+    <div>
+      <div class="k">fg / primary</div><div class="v">ink · #1A1414</div>
+      <div class="sample" style="background:var(--bg-page);color:var(--fg-primary);margin-top:6px;">Ice Cream, perfected.</div>
+    </div>
+    <div>
+      <div class="k">fg / secondary</div><div class="v">ink @ 70%</div>
+      <div class="sample" style="background:var(--bg-page);color:var(--fg-secondary);margin-top:6px;">Measured in spoonfuls.</div>
+    </div>
+    <div>
+      <div class="k">fg / tertiary</div><div class="v">ink @ 55%</div>
+      <div class="sample" style="background:var(--bg-page);color:var(--fg-tertiary);margin-top:6px;">Valid until 30 Apr</div>
+    </div>
+    <div>
+      <div class="k">accent</div><div class="v">burgundy · #650A30</div>
+      <div class="sample" style="background:var(--bg-page);color:var(--accent);margin-top:6px;">Enter →</div>
+    </div>
+    <div>
+      <div class="k">fg / on-dark</div><div class="v">cream on burgundy</div>
+      <div class="sample" style="background:var(--bg-inverse);color:var(--fg-onDark);margin-top:6px;">Welcome back.</div>
+    </div>
+  </div>
+</div>
+</body></html>

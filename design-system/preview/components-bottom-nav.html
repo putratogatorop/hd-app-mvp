@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--hd-cream);}
+  .card{padding:20px;box-sizing:border-box;width:700px;}
+  .nav{max-width:420px;margin:0 auto;background:rgba(254,242,227,.95);backdrop-filter:blur(10px);border-top:1px solid rgba(26,20,20,.1);display:grid;grid-template-columns:repeat(5,1fr);}
+  .tab{position:relative;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;}
+  .tab span{font-family:var(--font-display);font-size:15px;color:var(--hd-ink);line-height:1;}
+  .tab.active span{color:var(--hd-burgundy);font-style:italic;font-weight:500;}
+  .tab.active::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:40px;height:2px;background:var(--hd-burgundy);}
+  .badge{position:absolute;top:4px;right:6px;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--hd-burgundy);color:var(--hd-cream);font-family:var(--font-mono);font-size:10.4px;display:inline-flex;align-items:center;justify-content:center;}
+  .meta{font-family:var(--font-mono);font-size:10px;color:var(--fg-tertiary);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;text-align:center;}
+</style></head>
+<body>
+<div class="card">
+  <div class="meta">Bottom nav · Indonesian labels · active = burgundy italic + top rule</div>
+  <div class="nav">
+    <div class="tab"><span>Beranda</span></div>
+    <div class="tab active"><span>Menu</span><span class="badge">3</span></div>
+    <div class="tab"><span>Pesanan</span></div>
+    <div class="tab"><span>Hadiah</span></div>
+    <div class="tab"><span>Akun</span></div>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--hd-cream);}
+  .card{padding:20px;box-sizing:border-box;width:700px;}
+  .row{display:flex;gap:16px;align-items:center;}
+  .plaque{background:var(--hd-cream);padding:18px 22px;border:1px solid var(--rule-soft);}
+  .plaque img{display:block;height:52px;width:auto;}
+  .dark{background:var(--hd-burgundy-dark);padding:18px 22px;position:relative;overflow:hidden;}
+  .dark::before{content:"";position:absolute;inset:0;opacity:.35;mix-blend-mode:multiply;background-image:url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.08 0 0 0 0.35 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");background-size:180px 180px;pointer-events:none;}
+  .dark img{display:block;height:42px;width:auto;filter:brightness(0) invert(1) sepia(.4) saturate(.3);position:relative;z-index:1;}
+  .meta{font-family:var(--font-mono);font-size:10px;color:var(--fg-tertiary);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;}
+</style></head>
+<body>
+<div class="card">
+  <div class="meta">Logo · the plaque mark — always burgundy on cream, or cream on burgundy-dark</div>
+  <div class="row">
+    <div class="plaque"><img src="../assets/logos/haagen-dazs-logo-transparent.png" alt="Häagen-Dazs"></div>
+    <div class="dark"><img src="../assets/logos/haagen-dazs-logo-transparent.png" alt="Häagen-Dazs"></div>
+  </div>
+</div>
+</body></html>

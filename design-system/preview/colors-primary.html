@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html,body{margin:0;padding:0;background:var(--hd-cream);}
+  .card{ padding:24px; box-sizing:border-box; width:700px; }
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;}
+  .swatch{width:120px;}
+  .swatch .chip{height:72px;border:1px solid var(--rule-soft);}
+  .swatch .meta{margin-top:6px;display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .swatch .name{font-size:11px;font-weight:500;color:var(--fg-primary);letter-spacing:.02em;}
+  .swatch .hex{font-family:var(--font-mono);font-size:10px;color:var(--fg-tertiary);}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="row">
+    <div class="swatch"><div class="chip" style="background:#650A30"></div><div class="meta"><span class="name">Burgundy</span><span class="hex">#650A30</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#40061E"></div><div class="meta"><span class="name">Burgundy / Dark</span><span class="hex">#40061E</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#801237"></div><div class="meta"><span class="name">Burgundy / Light</span><span class="hex">#801237</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#B8922A"></div><div class="meta"><span class="name">Gold</span><span class="hex">#B8922A</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#F5E6C8"></div><div class="meta"><span class="name">Gold / Light</span><span class="hex">#F5E6C8</span></div></div>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--hd-cream);}
+  .card{padding:24px;box-sizing:border-box;width:700px;display:flex;flex-direction:column;gap:18px;}
+  .row{display:flex;align-items:center;gap:20px;}
+  .sample{width:120px;height:70px;background:var(--hd-paper);border:1px solid var(--rule-soft);}
+  .a{box-shadow:0 1px 2px rgba(26,20,20,.06), 0 12px 32px -16px rgba(26,20,20,.18);}
+  .b{box-shadow:0 1px 0 rgba(26,20,20,.08), 0 24px 48px -24px rgba(64,6,30,.25);}
+  .c{box-shadow:inset 0 -1px 0 rgba(26,20,20,.12);}
+  .meta{font-family:var(--font-mono);font-size:11px;color:var(--fg-primary);}
+  .sub{font-family:var(--font-sans);font-size:12px;color:var(--fg-tertiary);font-style:italic;font-family:var(--font-display);margin-top:2px;}
+</style></head>
+<body>
+<div class="card">
+  <div class="row"><div class="sample a"></div><div><div class="meta">shadow / paper</div><div class="sub">default card lift</div></div></div>
+  <div class="row"><div class="sample b"></div><div><div class="meta">shadow / editorial</div><div class="sub">hero card lift · burgundy tint</div></div></div>
+  <div class="row"><div class="sample c"></div><div><div class="meta">shadow / inset-rule</div><div class="sub">sticky header separator</div></div></div>
+</div>
+</body></html>

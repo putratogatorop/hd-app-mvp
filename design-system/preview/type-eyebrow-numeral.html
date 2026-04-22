@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--hd-cream);}
+  .card{padding:24px;box-sizing:border-box;width:700px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+  .spec .meta{font-family:var(--font-mono);font-size:10px;color:var(--fg-quaternary);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;}
+  .eyebrow-row{display:inline-flex;align-items:center;gap:12px;}
+  .eyebrow-row .num{font-family:var(--font-mono);font-size:11px;color:var(--fg-tertiary);}
+  .eyebrow-row .rule{height:1px;width:24px;background:rgba(101,10,48,.6);}
+  .eyebrow-row .lbl{font-family:var(--font-sans);font-size:11px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);}
+  .num-big{font-family:var(--font-mono);font-size:36px;line-height:1;letter-spacing:-.02em;color:var(--fg-primary);font-feature-settings:"tnum","ss02";}
+  .num-mid{font-family:var(--font-mono);font-size:20px;color:var(--fg-primary);font-feature-settings:"tnum";}
+  .num-sm{font-family:var(--font-mono);font-size:11px;color:var(--fg-tertiary);letter-spacing:.06em;}
+  .roman{font-family:var(--font-mono);font-size:14px;color:var(--fg-quaternary);letter-spacing:.2em;}
+</style></head>
+<body>
+<div class="card">
+  <div class="grid">
+    <div class="spec">
+      <div class="meta">eyebrow — 11px / 0.22em tracking</div>
+      <div class="eyebrow-row"><span class="num">01</span><span class="rule"></span><span class="lbl">The Selection</span></div>
+      <div style="height:12px"></div>
+      <div class="eyebrow-row"><span class="num">04</span><span class="rule"></span><span class="lbl">Rewards</span></div>
+    </div>
+    <div class="spec">
+      <div class="meta">numeral — JetBrains Mono, tabular</div>
+      <div class="num-big">1,250</div>
+      <div class="num-mid" style="margin-top:6px;">Rp 49.000</div>
+      <div class="num-sm" style="margin-top:6px;">22 APR 2026</div>
+      <div class="roman" style="margin-top:6px;">I · II · III</div>
+    </div>
+  </div>
+</div>
+</body></html>

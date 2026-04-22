@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--hd-cream);}
+  .card{padding:0;box-sizing:border-box;width:700px;height:300px;position:relative;overflow:hidden;background:var(--hd-burgundy-dark);color:var(--hd-cream);}
+  .card::before{content:"";position:absolute;inset:0;opacity:.35;mix-blend-mode:multiply;background-image:url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.08 0 0 0 0.35 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");background-size:180px 180px;}
+  .glow{position:absolute;inset:0;opacity:.6;background:radial-gradient(ellipse 80% 60% at 80% 0%, rgba(184,146,42,.25), transparent 60%), radial-gradient(ellipse 60% 40% at 10% 100%, rgba(128,18,55,.5), transparent 70%);}
+  .content{position:relative;padding:32px 36px;z-index:1;}
+  .top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(254,242,227,.25);padding-bottom:12px;}
+  .top img{height:30px;width:auto;filter:brightness(0) invert(1) sepia(.4) saturate(.3);}
+  .date{font-family:var(--font-mono);font-size:10px;letter-spacing:.15em;opacity:.7;}
+  .eye{font-family:var(--font-sans);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#F5E6C8;margin-top:28px;display:block;}
+  h1{font-family:var(--font-display);font-size:64px;line-height:.9;letter-spacing:-.02em;margin:12px 0 0;}
+  h1 i{font-weight:400;}
+</style></head>
+<body>
+<div class="card">
+  <div class="glow"></div>
+  <div class="content">
+    <div class="top"><img src="../assets/logos/haagen-dazs-logo-transparent.png"><span class="date">22 APR 2026</span></div>
+    <span class="eye">Selamat siang, Putra</span>
+    <h1>Ice Cream,<br><i>perfected.</i></h1>
+  </div>
+</div>
+</body></html>
