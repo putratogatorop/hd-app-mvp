@@ -483,13 +483,13 @@ export interface RFMData {
   computedAt: string
 }
 
-const SEGMENT_COLORS: Record<RFMSegment, string> = {
+export const SEGMENT_COLORS: Record<RFMSegment, string> = {
   'Champions': '#B8922A', 'Loyal': '#D4AC3A', 'Potential Loyalists': '#801237',
   'New Customers': '#4ECDC4', 'Promising': '#5BA3A0', 'Needs Attention': '#9B7653',
   'At Risk': '#C0392B', 'Cannot Lose': '#E74C3C', 'Hibernating': '#5C4A3A', 'Lost': '#3D2A20',
 }
 
-function assignSegment(r: number, f: number, m: number): RFMSegment {
+export function assignSegment(r: number, f: number, m: number): RFMSegment {
   if (r >= 4 && f >= 4 && m >= 4) return 'Champions'
   if (r >= 2 && f >= 3 && m >= 3) return 'Loyal'
   if (r <= 1 && f >= 4)           return 'Cannot Lose'
@@ -513,7 +513,7 @@ function getScoreRanges(values: number[], scores: number[]): ScoreBand {
   return result
 }
 
-function quintileScores(values: number[], higherIsBetter: boolean): number[] {
+export function quintileScores(values: number[], higherIsBetter: boolean): number[] {
   if (values.length === 0) return []
   const indexed = values.map((v, i) => ({ v, i }))
   const sorted = [...indexed].sort((a, b) => higherIsBetter ? a.v - b.v : b.v - a.v)
