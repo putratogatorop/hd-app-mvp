@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useMemo } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from 'recharts'
@@ -13,6 +14,34 @@ import type {
 } from '@/lib/dashboard/semantic/types'
 import { recipeFor } from '@/lib/dashboard/campaigns/playbook'
 import type { RFMSegment } from '@/lib/dashboard/real-metrics'
+import { InfoTip, HowToRead } from './InfoTip'
+
+type WindowPreset = '7d' | '30d' | '90d' | '180d' | 'all'
+const WINDOW_OPTIONS: { value: WindowPreset; label: string }[] = [
+  { value: '7d',   label: '7 days' },
+  { value: '30d',  label: '30 days' },
+  { value: '90d',  label: '90 days' },
+  { value: '180d', label: '180 days' },
+  { value: 'all',  label: 'All time' },
+]
+
+function windowToSince(w: WindowPreset): Date | null {
+  if (w === 'all') return null
+  const days = w === '7d' ? 7 : w === '30d' ? 30 : w === '90d' ? 90 : 180
+  return new Date(Date.now() - days * 24 * 3600 * 1000)
+}
+
+function campaignOverlapsWindow(o: CampaignOutcome, since: Date | null): boolean {
+  if (!since) return true
+  // "active during window" — either started after `since`, or ended after `since`,
+  // or still active (end_at null or future).
+  const start = o.start_at ? new Date(o.start_at) : null
+  const end = o.end_at ? new Date(o.end_at) : null
+  if (start && start >= since) return true
+  if (end && end >= since) return true
+  if (!end && start && start < since) return true   // still active, started before
+  return false
+}
 
 const COLORS = {
   bg: '#1C0810',
@@ -65,18 +94,36 @@ const ALL_SEGMENTS: RFMSegment[] = [
 ]
 
 export default function CampaignsClient({
-  outcomes, baselines, pacing, rfmBySegment,
+  outcomes: allOutcomes, baselines, pacing, rfmBySegment, windowPreset,
 }: {
   outcomes: CampaignOutcome[]
   baselines: SegmentBaseline[]
   pacing: TradeSpendPacing[]
   rfmBySegment: Record<string, number>
+  windowPreset: WindowPreset
 }) {
+  const router = useRouter()
+  const sp = useSearchParams()
+
   const baselineBySegment = useMemo(() => {
     const m = new Map<string, SegmentBaseline>()
     for (const b of baselines) m.set(b.segment_key, b)
     return m
   }, [baselines])
+
+  // ── Filter outcomes by window ──────────────────────────────
+  const since = windowToSince(windowPreset)
+  const outcomes = useMemo(
+    () => allOutcomes.filter((o) => campaignOverlapsWindow(o, since)),
+    [allOutcomes, since],
+  )
+
+  const onWindowChange = (w: WindowPreset) => {
+    const params = new URLSearchParams(sp.toString())
+    if (w === '90d') params.delete('w')
+    else params.set('w', w)
+    router.push(`/analytics/campaigns${params.toString() ? '?' + params.toString() : ''}`)
+  }
 
   // ── Exec KPIs ───────────────────────────────────────────────
   const activeCampaigns = outcomes.filter((o) => o.status === 'active').length
@@ -154,7 +201,66 @@ export default function CampaignsClient({
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+        {/* How to read this page */}
+        <HowToRead title="How to read this page">
+          <ol className="list-decimal list-inside space-y-2 text-[13px]">
+            <li>
+              <strong>Pick a time frame</strong> below (default: last 90 days). All the campaign list and rollup
+              metrics filter to campaigns active in that window.
+            </li>
+            <li>
+              The <strong>Exec command center</strong> shows the six numbers a COO would ask for in 30 seconds:
+              how many active campaigns, how much we&apos;ve spent on promos this month vs budget, how much revenue
+              was actually <em>incremental</em> (not would-have-happened-anyway), blended mROI across completed
+              campaigns, outstanding voucher liability, and average cannibalization.
+            </li>
+            <li>
+              Hover the <span className="inline-flex items-center justify-center w-3.5 h-3.5 text-[9px] font-semibold rounded-full"
+                style={{ border: '1px solid rgba(184,146,42,0.35)', color: 'rgba(254,242,227,0.55)' }}>?</span>
+              next to any term for a plain-language explanation.
+            </li>
+            <li>
+              The <strong>Campaigns table</strong> shows every campaign in your window. Click a name to drill in —
+              that&apos;s where the real story lives (treatment vs holdout, lessons learned, etc.).
+            </li>
+            <li>
+              The <strong>Segment health grid</strong> at the bottom is your commercial playbook: for each RFM
+              segment it shows the current customer count, baseline order value, the max discount the segment&apos;s
+              economics can sustain, and (if we&apos;ve run campaigns there before) historical mROI.
+            </li>
+            <li>
+              Click <strong>+ New Campaign</strong> to go to the simulator — picks a segment, pre-loads the
+              recommended offer, and lets you project the economics before issuing.
+            </li>
+          </ol>
+        </HowToRead>
+
+        {/* Window picker */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="eyebrow" style={{ color: COLORS.textSecondary }}>Showing campaigns active in:</span>
+          {WINDOW_OPTIONS.map((opt) => {
+            const active = opt.value === windowPreset
+            return (
+              <button
+                key={opt.value}
+                onClick={() => onWindowChange(opt.value)}
+                className="text-[11px] tracking-wider uppercase px-3 py-1.5 transition-colors"
+                style={{
+                  color: active ? COLORS.bg : COLORS.textPrimary,
+                  backgroundColor: active ? COLORS.gold : 'transparent',
+                  border: `1px solid ${active ? COLORS.gold : COLORS.cardBorder}`,
+                }}
+              >
+                {opt.label}
+              </button>
+            )
+          })}
+          <span className="text-[11px] ml-auto" style={{ color: COLORS.textMuted }}>
+            {outcomes.length} of {allOutcomes.length} campaigns in view
+          </span>
+        </div>
 
         {/* Exec KPI strip */}
         <section>
@@ -163,19 +269,22 @@ export default function CampaignsClient({
             <KPI label="Active campaigns" value={activeCampaigns.toString()} />
             <KPI
               label="MTD trade spend"
+              tip="trade_spend"
               value={formatRupiah(mtdSpend)}
               sub={`${formatPct(mtdPacePct, 0)} of ${formatRupiah(mtdBudget)}`}
               subColor={mtdPacePct > 0.9 ? COLORS.red : mtdPacePct > 0.6 ? COLORS.gold : COLORS.emerald}
             />
-            <KPI label="Incremental revenue" value={formatRupiah(mtdIncrementalRevenue)} />
+            <KPI label="Incremental revenue" tip="incremental_revenue" value={formatRupiah(mtdIncrementalRevenue)} />
             <KPI
               label="Blended mROI"
+              tip="mroi"
               value={`${blendedMroi.toFixed(2)}×`}
               subColor={blendedMroi >= 1.5 ? COLORS.emerald : blendedMroi >= 1.0 ? COLORS.gold : COLORS.red}
             />
-            <KPI label="Redemption liability" value={formatRupiah(totalLiability)} />
+            <KPI label="Redemption liability" tip="redemption_liability" value={formatRupiah(totalLiability)} />
             <KPI
               label="Avg cannibalization"
+              tip="cannibalization"
               value={formatPct(avgCanni)}
               subColor={avgCanni > 0.6 ? COLORS.red : avgCanni > 0.4 ? COLORS.gold : COLORS.emerald}
             />
@@ -214,10 +323,16 @@ export default function CampaignsClient({
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${COLORS.cardBorder}` }}>
-                    <Th>Name</Th><Th>Segment</Th><Th>Status</Th><Th align="right">Issued</Th>
-                    <Th align="right">Redeemed</Th><Th align="right">Redemption</Th>
-                    <Th align="right">Trade spend</Th><Th align="right">Incremental CM</Th>
-                    <Th align="right">mROI</Th><Th align="right">Canni</Th>
+                    <Th>Name</Th>
+                    <Th tip="segment">Segment</Th>
+                    <Th>Status</Th>
+                    <Th align="right">Issued</Th>
+                    <Th align="right" tip="redemption_rate">Redeemed</Th>
+                    <Th align="right" tip="redemption_rate">Redemption</Th>
+                    <Th align="right" tip="trade_spend">Trade spend</Th>
+                    <Th align="right" tip="incremental_cm">Incremental CM</Th>
+                    <Th align="right" tip="mroi">mROI</Th>
+                    <Th align="right" tip="cannibalization">Canni</Th>
                   </tr>
                 </thead>
                 <tbody>
@@ -293,10 +408,16 @@ export default function CampaignsClient({
   )
 }
 
-function KPI({ label, value, sub, subColor }: { label: string; value: string; sub?: string; subColor?: string }) {
+function KPI({ label, value, sub, subColor, tip }: {
+  label: string; value: string; sub?: string; subColor?: string;
+  tip?: keyof typeof import('./glossary').GLOSSARY
+}) {
   return (
     <div className="p-4" style={{ backgroundColor: COLORS.card, border: `1px solid ${COLORS.cardBorder}` }}>
-      <p className="eyebrow mb-2" style={{ color: '#b8a89a' }}>{label}</p>
+      <div className="flex items-center gap-1.5 mb-2">
+        <p className="eyebrow" style={{ color: '#b8a89a' }}>{label}</p>
+        {tip && <InfoTip term={tip} />}
+      </div>
       <p className="numeral text-[1.4rem] text-[#FEF2E3] leading-none">{value}</p>
       {sub && (
         <p className="text-[10px] mt-1.5" style={{ color: subColor ?? COLORS.textSecondary }}>{sub}</p>
@@ -305,10 +426,15 @@ function KPI({ label, value, sub, subColor }: { label: string; value: string; su
   )
 }
 
-function Th({ children, align }: { children: React.ReactNode; align?: 'right' | 'left' }) {
+function Th({ children, align, tip }: {
+  children: React.ReactNode; align?: 'right' | 'left';
+  tip?: keyof typeof import('./glossary').GLOSSARY
+}) {
   return (
     <th className={`text-[10px] font-semibold tracking-wider uppercase px-2 py-2 ${align === 'right' ? 'text-right' : 'text-left'}`} style={{ color: COLORS.textMuted }}>
-      {children}
+      <span className={`inline-flex items-center gap-1 ${align === 'right' ? 'flex-row-reverse' : ''}`}>
+        {children}{tip && <InfoTip term={tip} />}
+      </span>
     </th>
   )
 }

@@ -20,6 +20,7 @@ import {
 import { recipeFor, type OfferRecipe } from '@/lib/dashboard/campaigns/playbook'
 import type { RFMSegment } from '@/lib/dashboard/real-metrics'
 import { saveDraftAction, issueAction } from '../actions'
+import { InfoTip, HowToRead } from '../InfoTip'
 
 const COLORS = {
   bg: '#1C0810', card: '#2A0F1C', cardBorder: 'rgba(184, 146, 42, 0.18)',
@@ -240,7 +241,38 @@ export default function SimulatorClient({
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+        <HowToRead title="How to design a campaign">
+          <ol className="list-decimal list-inside space-y-2 text-[13px]">
+            <li>
+              <strong>Pick a segment</strong> (left). The playbook pre-loads the commercially-recommended offer —
+              the <em>intent</em> is different for Champions vs At Risk vs Lost. Tweak if you have a reason.
+            </li>
+            <li>
+              <strong>Configure the offer</strong>: type, discount value, min-order, scope. Scope matters:
+              &quot;Personalized bundle&quot; gives each customer a voucher tied to <em>their</em> top co-purchase pair —
+              much higher relevance than &quot;all items&quot;.
+            </li>
+            <li>
+              <strong>Set governance</strong>: holdout % (random control group — the only honest way to measure lift),
+              mROI hurdle (the minimum return your CFO would accept), CM floor (minimum per-order margin).
+            </li>
+            <li>
+              Watch the <strong>Projected economics</strong> panel (right) update live. Above the break-even red line
+              on the discount slider = projection fails; below = passes.
+            </li>
+            <li>
+              The <strong>Approval gates</strong> panel shows three checks. If any fail, you can still issue — but
+              the override requires a written justification and gets logged.
+            </li>
+            <li>
+              <strong>Save Draft</strong> to review later, or <strong>Issue Campaign</strong> to create vouchers now.
+              The holdout group is assigned at issuance and never gets the voucher.
+            </li>
+          </ol>
+        </HowToRead>
+
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
           {/* ── Configurator (left) ── */}
@@ -419,20 +451,20 @@ export default function SimulatorClient({
             <Card highlight>
               <H3>Projected economics</H3>
               <KV k="Eligible" v={projection.eligibleCustomers.toString()} />
-              <KV k="Treatment" v={projection.treatmentSize.toString()} hint={`holdout ${projection.holdoutSize}`} />
-              <KV k="Expected redeemers" v={projection.expectedRedeemers.toFixed(1)} />
+              <KV k="Treatment" v={projection.treatmentSize.toString()} hint={`holdout ${projection.holdoutSize}`} tip="holdout" />
+              <KV k="Expected redeemers" v={projection.expectedRedeemers.toFixed(1)} tip="redemption_rate" />
               <Hr />
               <KV k="Gross revenue" v={formatRupiah(projection.expectedRevenue)} />
-              <KV k="Trade spend" v={formatRupiah(projection.expectedTradeSpend)} tone="dim" />
+              <KV k="Trade spend" v={formatRupiah(projection.expectedTradeSpend)} tone="dim" tip="trade_spend" />
               <KV k="COGS" v={formatRupiah(projection.expectedCogs)} tone="dim" />
               <KV k="Delivery subsidy" v={formatRupiah(projection.expectedDeliverySubsidy)} tone="dim" />
               <Hr />
-              <KV k="Contribution margin" v={formatRupiah(projection.expectedCm)} highlight />
-              <KV k="mROI" v={`${projection.expectedMroi.toFixed(2)}×`} tone={projection.expectedMroi >= mroiHurdle ? 'good' : 'bad'} />
+              <KV k="Contribution margin" v={formatRupiah(projection.expectedCm)} highlight tip="cm" />
+              <KV k="mROI" v={`${projection.expectedMroi.toFixed(2)}×`} tone={projection.expectedMroi >= mroiHurdle ? 'good' : 'bad'} tip="mroi" />
               {recipe.cltv_aware && projection.cltvUplift > 0 && (
                 <>
                   <Hr />
-                  <KV k="CLTV uplift (90d)" v={formatRupiah(projection.cltvUplift)} hint={`payback ${projection.paybackWeeks}w`} />
+                  <KV k="CLTV uplift (90d)" v={formatRupiah(projection.cltvUplift)} hint={`payback ${projection.paybackWeeks}w`} tip="cltv_uplift" />
                 </>
               )}
             </Card>
@@ -497,13 +529,16 @@ function Row({ children }: { children: React.ReactNode }) {
 function Label({ children }: { children: React.ReactNode }) {
   return <span className="text-[11px] tracking-wider uppercase w-20" style={{ color: COLORS.textSecondary }}>{children}</span>
 }
-function KV({ k, v, hint, tone, highlight }: {
+function KV({ k, v, hint, tone, highlight, tip }: {
   k: string; v: string; hint?: string; tone?: 'dim' | 'good' | 'bad'; highlight?: boolean
+  tip?: keyof typeof import('../glossary').GLOSSARY
 }) {
   const color = tone === 'good' ? COLORS.emerald : tone === 'bad' ? COLORS.red : tone === 'dim' ? COLORS.textSecondary : COLORS.textPrimary
   return (
     <div className="flex items-baseline justify-between py-1">
-      <span className="text-[11px]" style={{ color: COLORS.textSecondary }}>{k}</span>
+      <span className="text-[11px] inline-flex items-center gap-1" style={{ color: COLORS.textSecondary }}>
+        {k}{tip && <InfoTip term={tip} />}
+      </span>
       <span className={`numeral ${highlight ? 'text-[1.1rem]' : 'text-sm'}`} style={{ color }}>
         {v} {hint && <span className="text-[10px] ml-2" style={{ color: COLORS.textMuted }}>{hint}</span>}
       </span>
