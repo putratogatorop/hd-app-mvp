@@ -14,6 +14,7 @@ import type {
   Incrementality,
 } from '@/lib/dashboard/semantic/types'
 import { completeAction, issueAction } from '../actions'
+import { InfoTip, HowToRead } from '../InfoTip'
 
 const COLORS = {
   bg: '#1C0810', card: '#2A0F1C', cardBorder: 'rgba(184, 146, 42, 0.18)',
@@ -173,16 +174,64 @@ export default function CampaignDetailClient({
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
+        <HowToRead title="How to read this campaign">
+          <ol className="list-decimal list-inside space-y-2 text-[13px]">
+            <li>
+              The <strong>header KPIs</strong> are the four numbers that matter: incremental mROI, incremental
+              revenue, redemption rate, cannibalization. Click the <span className="inline-flex items-center justify-center w-3.5 h-3.5 text-[9px] font-semibold rounded-full"
+                style={{ border: '1px solid rgba(184,146,42,0.35)', color: 'rgba(254,242,227,0.55)' }}>?</span>
+              next to each for a definition.
+            </li>
+            <li>
+              The <strong>Treatment vs Holdout</strong> chart is the honest view: our targeted customers&apos; order rate
+              minus the random-holdout group&apos;s order rate = true causal lift. If they&apos;re the same, the campaign
+              didn&apos;t cause anything.
+            </li>
+            <li>
+              <strong>Projected vs Actual</strong> tells you how well we sized the opportunity at design time.
+              Big gaps = our baselines or lift-factor assumptions need tuning before the next campaign.
+            </li>
+            <li>
+              <strong>Lessons learned</strong> is auto-generated from the numbers above — read it first if you&apos;re
+              in a hurry.
+            </li>
+          </ol>
+        </HowToRead>
+
+        {/* Campaign window */}
+        <div className="flex items-center gap-4 flex-wrap text-xs" style={{ color: COLORS.textSecondary }}>
+          <span className="eyebrow">Campaign window</span>
+          <span style={{ color: COLORS.textPrimary }}>
+            {campaign.start_at ? new Date(campaign.start_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+            {'  →  '}
+            {campaign.end_at ? new Date(campaign.end_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'open-ended'}
+          </span>
+          {campaign.start_at && campaign.end_at && (
+            <span style={{ color: COLORS.textMuted }}>
+              ({Math.max(1, Math.round((new Date(campaign.end_at).getTime() - new Date(campaign.start_at).getTime()) / (24 * 3600 * 1000)))} days)
+            </span>
+          )}
+          <span style={{ color: COLORS.textMuted }}>·</span>
+          <span style={{ color: COLORS.textSecondary }}>
+            Scope: {campaign.product_scope.replace('_', ' ')}
+          </span>
+          <span style={{ color: COLORS.textMuted }}>·</span>
+          <span style={{ color: COLORS.textSecondary }}>
+            Offer: {campaign.offer_type.replace('_', ' ')} {campaign.offer_value}
+            {campaign.offer_type.includes('fixed') ? ' IDR' : '%'}
+          </span>
+        </div>
+
         {/* KPI header */}
         <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <KPI label="mROI (incremental)" value={`${mroi.toFixed(2)}×`}
+          <KPI label="mROI (incremental)" tip="mroi" value={`${mroi.toFixed(2)}×`}
                sub={`hurdle ${campaign.mroi_hurdle}× · projected ${Number(outcome?.projected_mroi ?? 0).toFixed(2)}×`}
                tone={mroi >= campaign.mroi_hurdle ? 'good' : mroi >= 1.0 ? 'neutral' : 'bad'} />
-          <KPI label="Incremental revenue" value={formatRupiah(incRevenue)}
+          <KPI label="Incremental revenue" tip="incremental_revenue" value={formatRupiah(incRevenue)}
                sub={`gross ${formatRupiah(Number(outcome?.actual_revenue ?? 0))}`} />
-          <KPI label="Redemption" value={formatPct(redRate)}
+          <KPI label="Redemption" tip="redemption_rate" value={formatPct(redRate)}
                sub={`${outcome?.redeemed ?? 0} of ${outcome?.issued ?? 0}`} />
-          <KPI label="Cannibalization" value={formatPct(canni)}
+          <KPI label="Cannibalization" tip="cannibalization" value={formatPct(canni)}
                tone={canni > 0.6 ? 'bad' : canni > 0.4 ? 'neutral' : 'good'}
                sub={canni > 0.6 ? 'high — most sales would have happened anyway' : ''} />
         </section>
@@ -332,11 +381,17 @@ export default function CampaignDetailClient({
   )
 }
 
-function KPI({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: 'good' | 'bad' | 'neutral' }) {
+function KPI({ label, value, sub, tone, tip }: {
+  label: string; value: string; sub?: string; tone?: 'good' | 'bad' | 'neutral';
+  tip?: keyof typeof import('../glossary').GLOSSARY
+}) {
   const color = tone === 'good' ? COLORS.emerald : tone === 'bad' ? COLORS.red : COLORS.textPrimary
   return (
     <div className="p-4" style={{ backgroundColor: COLORS.card, border: `1px solid ${COLORS.cardBorder}` }}>
-      <p className="eyebrow mb-2" style={{ color: '#b8a89a' }}>{label}</p>
+      <div className="flex items-center gap-1.5 mb-2">
+        <p className="eyebrow" style={{ color: '#b8a89a' }}>{label}</p>
+        {tip && <InfoTip term={tip} />}
+      </div>
       <p className="numeral text-[1.5rem] leading-none" style={{ color }}>{value}</p>
       {sub && <p className="text-[10px] mt-1.5" style={{ color: COLORS.textSecondary }}>{sub}</p>}
     </div>
