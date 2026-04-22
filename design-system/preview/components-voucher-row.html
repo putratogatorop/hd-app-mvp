@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--hd-cream);}
+  .card{padding:22px;box-sizing:border-box;width:700px;display:flex;flex-direction:column;gap:16px;}
+  .row{padding:14px 0;display:flex;align-items:flex-start;gap:14px;border-bottom:1px solid rgba(26,20,20,.1);}
+  .num{font-family:var(--font-mono);font-size:11px;color:rgba(26,20,20,.4);letter-spacing:.1em;width:28px;margin-top:2px;}
+  .disc{min-width:62px;}
+  .disc .v{font-family:var(--font-mono);font-size:26px;line-height:1;color:var(--hd-burgundy);font-weight:500;}
+  .disc .l{font-family:var(--font-sans);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(26,20,20,.45);margin-top:4px;}
+  .info{flex:1;min-width:0;}
+  .info .t{font-family:var(--font-display);font-size:16px;letter-spacing:-.02em;line-height:1.2;}
+  .info .d{font-family:var(--font-display);font-style:italic;font-size:12px;color:rgba(26,20,20,.6);margin-top:4px;}
+  .info .meta{font-family:var(--font-mono);font-size:11px;color:rgba(26,20,20,.5);margin-top:6px;}
+  .apply{font-family:var(--font-sans);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--hd-burgundy);border-bottom:1px solid var(--hd-burgundy);padding-bottom:2px;align-self:flex-start;margin-top:2px;display:inline-flex;gap:6px;align-items:center;cursor:pointer;}
+</style></head>
+<body>
+<div class="card">
+  <div class="row">
+    <span class="num">01</span>
+    <div class="disc"><div class="v">20%</div><div class="l">Off</div></div>
+    <div class="info">
+      <div class="t">A scoop, on us</div>
+      <div class="d">Take 20% off any single cup, at any store.</div>
+      <div class="meta">Valid until 30 Apr 2026 · Min. Rp 50.000</div>
+    </div>
+    <a class="apply">Apply ↗</a>
+  </div>
+  <div class="row" style="border-bottom:0">
+    <span class="num">02</span>
+    <div class="disc"><div class="v">10K</div><div class="l">Cut</div></div>
+    <div class="info">
+      <div class="t">A small kindness for delivery</div>
+      <div class="d">Rp 10K off your next doorstep order.</div>
+      <div class="meta">Valid until 15 May 2026 · Delivery only</div>
+    </div>
+    <a class="apply">Apply ↗</a>
+  </div>
+</div>
+</body></html>

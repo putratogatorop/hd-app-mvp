@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--hd-cream);}
+  .card{padding:24px;box-sizing:border-box;width:700px;display:flex;flex-direction:column;gap:14px;}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font-sans);text-transform:uppercase;font-size:11px;letter-spacing:.08em;font-weight:500;transition:all 500ms var(--ease-editorial);border:1px solid transparent;height:48px;padding:0 24px;cursor:pointer;}
+  .btn.sm{height:36px;padding:0 16px;}
+  .btn.lg{height:56px;padding:0 32px;font-size:12px;}
+  .btn.primary{background:var(--hd-burgundy);color:var(--hd-cream);border-color:var(--hd-burgundy);}
+  .btn.primary:hover{background:var(--hd-burgundy-dark);}
+  .btn.ink{background:var(--hd-ink);color:var(--hd-cream);border-color:var(--hd-ink);}
+  .btn.ghost{background:transparent;color:var(--hd-ink);border-color:rgba(26,20,20,.3);}
+  .btn.ghost:hover{border-color:var(--hd-ink);background:rgba(26,20,20,.05);}
+  .btn.gold{background:var(--hd-gold);color:var(--hd-ink);border-color:var(--hd-gold);}
+  .meta{font-family:var(--font-mono);font-size:10px;color:var(--fg-tertiary);letter-spacing:.06em;text-transform:uppercase;margin-top:2px;}
+</style></head>
+<body>
+<div class="card">
+  <div class="meta">Variants</div>
+  <div class="row">
+    <button class="btn primary">Enter →</button>
+    <button class="btn ink">Apply</button>
+    <button class="btn ghost">Cancel</button>
+    <button class="btn gold">Redeem</button>
+  </div>
+  <div class="meta" style="margin-top:10px">Sizes · sm / md / lg</div>
+  <div class="row">
+    <button class="btn primary sm">Add</button>
+    <button class="btn primary">Subscribe now</button>
+    <button class="btn primary lg">Place order</button>
+  </div>
+</div>
+</body></html>

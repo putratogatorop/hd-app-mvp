@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--hd-cream);}
+  .card{padding:24px;box-sizing:border-box;width:700px;display:flex;gap:18px;}
+  .tile{flex:1;background:var(--hd-paper);border:1px solid rgba(26,20,20,.1);padding:16px;display:flex;flex-direction:column;gap:8px;}
+  .tile.ink{background:var(--hd-ink);color:var(--hd-cream);border-color:var(--hd-ink);}
+  .tile.cream{background:var(--hd-cream-deep);}
+  .tile.bare{background:transparent;border:1px solid rgba(26,20,20,.15);}
+  .num{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:inherit;opacity:.5;}
+  .title{font-family:var(--font-display);font-size:18px;line-height:1.1;letter-spacing:-.02em;}
+  .sub{font-family:var(--font-display);font-style:italic;font-size:12px;opacity:.6;}
+</style></head>
+<body>
+<div class="card">
+  <div class="tile"><span class="num">01</span><span class="title">Paper</span><span class="sub">default card</span></div>
+  <div class="tile cream"><span class="num">02</span><span class="title">Cream / deep</span><span class="sub">image placeholder</span></div>
+  <div class="tile ink"><span class="num">03</span><span class="title">Ink</span><span class="sub">inverse tile</span></div>
+  <div class="tile bare"><span class="num">04</span><span class="title">Bare</span><span class="sub">outline only</span></div>
+</div>
+</body></html>

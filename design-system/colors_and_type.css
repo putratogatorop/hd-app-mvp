@@ -1,0 +1,226 @@
+/* ──────────────────────────────────────────────────────────────
+ * Häagen-Dazs Indonesia — Design Tokens
+ * Palette sourced from haagendazs.co.id (live site, 2026-04-04)
+ * Extracted from: putratogatorop/hd-app-mvp (tailwind.config.ts, globals.css)
+ * ────────────────────────────────────────────────────────────── */
+
+/* ── 1. Fonts — Free Google Fonts chosen to match Häagen-Dazs brand DNA.
+       - Display: Cormorant Garamond — classic high-contrast serif, close in feel
+         to the brand's custom "Dazs" serif (elegant, European, luxurious).
+       - Body:    Jost — geometric humanist sans, upscale + clean pairing.
+       - Mono:    JetBrains Mono — tabular numerals for prices/points/dates.
+       The official "Dazs" custom font is proprietary (General Mills + Chase
+       Design Group) and not publicly licensed. These are the closest free
+       substitutes that ship the right tonal palette. */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Jost:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400..700&display=swap');
+
+:root {
+  /* ── PRIMARY · BURGUNDY ── */
+  --hd-burgundy:       #650A30; /* wine — primary brand, buttons, active state, links */
+  --hd-burgundy-dark:  #40061E; /* deep wine — mastheads, footers, dark sections */
+  --hd-burgundy-light: #801237; /* medium wine — hover, gradient mid-tone */
+
+  /* ── ACCENT · GOLD ── */
+  --hd-gold:           #B8922A; /* gold — loyalty, tier accents, star icons */
+  --hd-gold-light:     #F5E6C8; /* pale gold — tier badges, subtle highlights */
+
+  /* ── NEUTRALS · CREAM + INK ── */
+  --hd-cream:          #FEF2E3; /* page bg — warm cream */
+  --hd-cream-deep:     #F4E3CA; /* tile bg — slightly deeper cream */
+  --hd-paper:          #FBF6EC; /* card bg — newsprint paper */
+  --hd-ink:            #1A1414; /* text — near-black with warm tint */
+  --hd-dark:           #2B2B2B; /* charcoal — body alt */
+
+  /* ── SEMANTIC · foreground/background ── */
+  --fg-primary:   var(--hd-ink);
+  --fg-secondary: rgba(26, 20, 20, 0.70);
+  --fg-tertiary:  rgba(26, 20, 20, 0.55);
+  --fg-quaternary:rgba(26, 20, 20, 0.40);
+  --fg-onDark:    var(--hd-cream);
+
+  --bg-page:    var(--hd-cream);
+  --bg-paper:   var(--hd-paper);
+  --bg-deep:    var(--hd-cream-deep);
+  --bg-inverse: var(--hd-burgundy-dark);
+
+  --accent:        var(--hd-burgundy);
+  --accent-hover:  var(--hd-burgundy-dark);
+  --accent-gold:   var(--hd-gold);
+
+  /* ── RULES & DIVIDERS ── */
+  --rule:       rgba(26, 20, 20, 0.15);
+  --rule-soft:  rgba(26, 20, 20, 0.10);
+  --rule-thick: var(--hd-ink);
+
+  /* ── TYPE FAMILIES ── */
+  --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-sans:    'Jost', ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, 'Menlo', monospace;
+
+  /* ── TYPE SCALE (follows tailwind.config) ── */
+  --fs-display-xl: clamp(3.5rem, 10vw, 6.5rem);  /* masthead hero */
+  --fs-display-lg: clamp(2.5rem, 7vw, 4.5rem);   /* screen h1 */
+  --fs-display-md: clamp(2rem, 5vw, 3rem);       /* section h2 */
+  --fs-display-sm: 1.5rem;                       /* inline section */
+  --fs-body-lg:    1rem;
+  --fs-body:       0.95rem;
+  --fs-body-sm:    0.85rem;
+  --fs-caption:    0.75rem;
+  --fs-eyebrow:    0.6875rem;                    /* uppercase label */
+  --fs-micro:      0.6rem;
+
+  --lh-tight:   0.92;
+  --lh-snug:    1.02;
+  --lh-body:    1.5;
+
+  --tracking-editorial:      -0.02em;
+  --tracking-wide-editorial: 0.22em;
+
+  /* ── SPACING (4px grid) ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* ── RADII ── */
+  /* The brand is OVERWHELMINGLY sharp-cornered / editorial. Radii are reserved. */
+  --radius-none: 0px;
+  --radius-sm:   2px;   /* input chip */
+  --radius-pill: 999px; /* badge counters */
+
+  /* ── SHADOWS ── */
+  --shadow-editorial:  0 1px 0 rgba(26,20,20,0.08), 0 24px 48px -24px rgba(64,6,30,0.25);
+  --shadow-paper:      0 1px 2px rgba(26,20,20,0.06), 0 12px 32px -16px rgba(26,20,20,0.18);
+  --shadow-inset-rule: inset 0 -1px 0 rgba(26,20,20,0.12);
+
+  /* ── MOTION ── */
+  --ease-editorial: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-curtain:   cubic-bezier(0.76, 0, 0.24, 1);
+  --dur-fast:   250ms;
+  --dur-base:   500ms;
+  --dur-slow:   900ms;
+
+  color-scheme: light;
+}
+
+/* ──────────────────────────────────────────────────────────────
+ * Base element styles
+ * ────────────────────────────────────────────────────────────── */
+html, body {
+  background: var(--bg-page);
+  color: var(--fg-primary);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01", "ss02", "cv11";
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-variation-settings: "opsz" 144, "SOFT" 50, "WONK" 0;
+  color: var(--fg-primary);
+  letter-spacing: var(--tracking-editorial);
+  line-height: var(--lh-snug);
+  margin: 0;
+}
+
+h1 { font-size: var(--fs-display-lg); line-height: var(--lh-tight); }
+h2 { font-size: var(--fs-display-md); }
+h3 { font-size: var(--fs-display-sm); }
+h4 { font-size: 1.15rem; }
+
+p  { margin: 0; }
+a  { color: var(--accent); text-decoration: none; }
+
+/* ──────────────────────────────────────────────────────────────
+ * Semantic utility classes
+ * ────────────────────────────────────────────────────────────── */
+
+/* eyebrow — small uppercase label, often with a rule + numeral */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: var(--tracking-wide-editorial);
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+/* numeral — tabular, for counts, prices, timestamps */
+.numeral {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum", "ss02";
+  letter-spacing: -0.02em;
+}
+
+/* italic display accent — the brand's signature "perfected." flourish */
+.display-italic {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* editorial hairline rules */
+.rule-editorial       { border: 0; border-top: 1px solid var(--rule); margin: 0; }
+.rule-editorial-thick { border: 0; border-top: 2px solid var(--rule-thick); margin: 0; }
+
+/* paper texture — subtle dotted newsprint */
+.texture-paper {
+  background-color: var(--hd-paper);
+  background-image:
+    radial-gradient(rgba(64, 6, 30, 0.04) 1px, transparent 1px),
+    radial-gradient(rgba(64, 6, 30, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px, 6px 6px;
+  background-position: 0 0, 12px 12px;
+}
+
+/* grain — multiply-blended SVG fractalNoise, layered over dark panes */
+.texture-grain { position: relative; }
+.texture-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.08 0 0 0 0.35 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+
+/* link with growing-underline reveal */
+.link-editorial {
+  position: relative;
+  color: var(--accent);
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  transition: background-size var(--dur-base) var(--ease-editorial);
+}
+.link-editorial:hover { background-size: 100% 2px; }
+
+/* stagger-reveal child animation */
+.stagger > * { animation: revealUp 0.8s var(--ease-editorial) both; }
+.stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger > *:nth-child(2) { animation-delay: 0.15s; }
+.stagger > *:nth-child(3) { animation-delay: 0.25s; }
+.stagger > *:nth-child(4) { animation-delay: 0.35s; }
+.stagger > *:nth-child(5) { animation-delay: 0.45s; }
+
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

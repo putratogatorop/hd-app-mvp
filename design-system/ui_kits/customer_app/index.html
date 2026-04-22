@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Häagen-Dazs ID · Customer App UI Kit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Jost:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  html, body { margin: 0; padding: 0; background: #2a1a18; min-height: 100vh; font-family: 'Jost', sans-serif; color: #1A1414; }
+  .stage { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 48px 24px; gap: 32px; }
+  .crumbs { color: #FEF2E3; font-family: 'Jost', sans-serif; text-align: center; max-width: 640px; }
+  .crumbs .eye { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; opacity: 0.7; }
+  .crumbs h1 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 40px; line-height: 1; letter-spacing: -0.02em; margin: 16px 0 10px; font-weight: 500; }
+  .crumbs h1 i { font-weight: 400; }
+  .crumbs p { opacity: 0.65; font-size: 14px; margin: 0; line-height: 1.5; }
+  .tabs { display: flex; gap: 0; background: rgba(254,242,227,0.08); border: 1px solid rgba(254,242,227,0.15); }
+  .tabs button { background: transparent; border: none; color: rgba(254,242,227,0.7); padding: 10px 18px; font-family: 'Jost', sans-serif; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; cursor: pointer; transition: all 300ms; }
+  .tabs button.active { background: #FEF2E3; color: #650A30; }
+  .tabs button + button { border-left: 1px solid rgba(254,242,227,0.15); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .phone-wrap { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+  .foot { color: rgba(254,242,227,0.4); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="atoms.jsx"></script>
+<script type="text/babel" src="screens.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+// IOSFrame is from starter — exposed as window.IOSFrame
+const Frame = ({ children }) => React.createElement(window.IOSDevice, { width: 390, height: 820 }, children);
+
+const FEATURED = [
+  { id: 1, name: 'The ice cream library', price: 'From Rp 65.000', image: '../../assets/imagery/menu-ice-cream-flavors.jpg' },
+  { id: 2, name: 'Love the Mix — the range', price: 'From Rp 78.000', image: '../../assets/imagery/menu-love-the-mix.jpg' },
+  { id: 3, name: 'Tea, all afternoon', price: 'From Rp 42.000', image: '../../assets/imagery/menu-drinks-tea.jpg' },
+  { id: 4, name: 'A coffee moment', price: 'From Rp 38.000', image: '../../assets/imagery/menu-coffee-time.jpg' },
+];
+
+const SECTIONS = [
+  { num: '01', title: 'Send a Gift', tagline: 'Sealed, with a note', mark: 'Nouveau' },
+  { num: '02', title: 'Catering', tagline: 'For the occasion' },
+  { num: '03', title: 'MyHD Plan', tagline: 'A standing subscription' },
+  { num: '04', title: 'Share the Sip', tagline: 'Invitation, with reward' },
+];
+
+// ───── HOME SCREEN ─────
+function HomeScreen({ onTab, cart, onAdd, onChangeTab }) {
+  const [mode, setMode] = useState('delivery');
+  return (
+    <div style={{ minHeight:'100%', background:'#FEF2E3', paddingBottom: 92 }}>
+      <Masthead />
+      <MemberStrip points={1250} tier="Gold" target={2000} next="Platinum" />
+      <OrderModes mode={mode} onSelect={setMode} />
+      <Shortlist items={FEATURED} onAdd={onAdd} />
+
+      {/* Of note — grid */}
+      {/* Of note — editorial index, full-width rows */}
+      <section style={{ padding:'56px 0 0' }}>
+        <div style={{ padding:'0 20px' }}>
+          <SectionHeader number={3} title="Of" titleItalic="note" />
+        </div>
+        <div style={{ marginTop:20, borderTop:'1px solid #1A1414' }}>
+          {SECTIONS.map((s, i) => (
+            <a key={s.title} style={{
+              display:'grid', gridTemplateColumns:'56px 1fr auto', alignItems:'baseline',
+              gap:16, padding:'22px 20px',
+              borderBottom: i === SECTIONS.length-1 ? '1px solid #1A1414' : '1px solid rgba(26,20,20,0.12)',
+              cursor:'pointer', textDecoration:'none', color:'inherit',
+            }}>
+              <span style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:40, lineHeight:1, letterSpacing:'-0.04em', color:'#650A30', fontWeight:400 }}>
+                {s.num}
+              </span>
+              <div style={{ minWidth:0 }}>
+                <div style={{ display:'flex', alignItems:'baseline', gap:10, flexWrap:'wrap' }}>
+                  <span style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:22, letterSpacing:'-0.02em', lineHeight:1 }}>{s.title}</span>
+                  {s.mark && (
+                    <span style={{
+                      fontFamily:"'Jost', sans-serif", fontSize:9, letterSpacing:'0.22em', textTransform:'uppercase',
+                      color:'#B8922A', borderLeft:'1px solid rgba(184,146,42,0.5)', paddingLeft:8,
+                    }}>{s.mark}</span>
+                  )}
+                </div>
+                <div style={{
+                  marginTop:6, fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic',
+                  fontSize:13, color:'rgba(26,20,20,0.6)', lineHeight:1.3,
+                }}>{s.tagline}.</div>
+              </div>
+              <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:4 }}>
+                <span style={{ fontFamily:"'Jost', sans-serif", fontSize:9, letterSpacing:'0.22em', textTransform:'uppercase', color:'rgba(26,20,20,0.45)' }}>Read</span>
+                <IconArrow size={14} color="#1A1414" />
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      {/* Rewards unclaimed */}
+      <section style={{ padding:'48px 20px 0' }}>
+        <SectionHeader number={4} title="Rewards, unclaimed" />
+        <div style={{ marginTop:24, display:'flex', alignItems:'baseline', gap:16 }}>
+          <Numeral size={56} weight={500} color="#650A30">03</Numeral>
+          <span style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic', fontSize:16, color:'rgba(26,20,20,0.7)' }}>vouchers await collection.</span>
+        </div>
+      </section>
+
+      {/* Enquiries */}
+      <section style={{ padding:'56px 20px 40px' }}>
+        <div style={{ borderTop:'1px solid #1A1414', paddingTop:24 }}>
+          <Eyebrow small color="rgba(26,20,20,0.6)">Enquiries</Eyebrow>
+          <div style={{ marginTop:12, display:'flex', alignItems:'baseline', justifyContent:'space-between' }}>
+            <Numeral size={20}>0812 1111 8456</Numeral>
+            <span style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic', fontSize:13, color:'rgba(26,20,20,0.55)' }}>by chat, always</span>
+          </div>
+        </div>
+        <p style={{ marginTop:40, fontSize:10, letterSpacing:'.2em', textTransform:'uppercase', color:'rgba(26,20,20,0.3)', textAlign:'center' }}>© Häagen-Dazs Indonesia · Savour the moment</p>
+      </section>
+    </div>
+  );
+}
+
+// ───── MENU SCREEN ─────
+const MENU_CATS = [
+  { key:'ice', label:'Ice Cream', img:'../../assets/imagery/menu-ice-cream-flavors.jpg', items:[
+    { id:1, name:'Vanilla Caramel Brownie', price:'Rp 65.000' },
+    { id:2, name:'Belgian Chocolate', price:'Rp 62.000' },
+    { id:3, name:'Salted Caramel', price:'Rp 65.000' },
+  ]},
+  { key:'mix', label:'The Mix', img:'../../assets/imagery/menu-love-the-mix.jpg', items:[
+    { id:4, name:'Strawberry Shortcake', price:'Rp 95.000' },
+    { id:5, name:'Tiramisu Affogato', price:'Rp 88.000' },
+  ]},
+  { key:'coffee', label:'Coffee', img:'../../assets/imagery/menu-coffee-time.jpg', items:[
+    { id:6, name:'Espresso, doubled', price:'Rp 38.000' },
+    { id:7, name:'Flat White', price:'Rp 48.000' },
+  ]},
+  { key:'tea', label:'Tea', img:'../../assets/imagery/menu-drinks-tea.jpg', items:[
+    { id:8, name:'Iced Matcha Latte', price:'Rp 42.000' },
+    { id:9, name:'Earl Grey Float', price:'Rp 55.000' },
+  ]},
+];
+
+function MenuScreen({ onAdd }) {
+  const [cat, setCat] = useState('ice');
+  const current = MENU_CATS.find(c => c.key === cat);
+  return (
+    <div style={{ minHeight:'100%', background:'#FEF2E3', paddingBottom:92 }}>
+      {/* Header */}
+      <header style={{ padding:'24px 20px 16px', borderBottom:'1px solid rgba(26,20,20,0.15)' }}>
+        <Eyebrow small color="rgba(26,20,20,0.5)">Menu · Spring 2026</Eyebrow>
+        <h1 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:40, lineHeight:.95, letterSpacing:'-0.02em', margin:'12px 0 0', fontWeight:500 }}>
+          The catalogue, <i style={{ fontWeight:400 }}>assembled</i>.
+        </h1>
+      </header>
+      {/* Category strip */}
+      <div className="no-scrollbar" style={{ display:'flex', gap:0, overflowX:'auto', borderBottom:'1px solid rgba(26,20,20,0.15)' }}>
+        {MENU_CATS.map((c, i) => (
+          <button key={c.key} onClick={() => setCat(c.key)} style={{
+            background:'transparent', border:'none', padding:'16px 20px', cursor:'pointer', whiteSpace:'nowrap',
+            fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:16, fontStyle: cat===c.key ? 'italic':'normal',
+            color: cat===c.key ? '#650A30':'rgba(26,20,20,0.5)', borderRight: i<MENU_CATS.length-1 ? '1px solid rgba(26,20,20,0.1)':'none',
+            position:'relative', letterSpacing:'-0.02em',
+          }}>
+            {c.label}
+            {cat===c.key && <span style={{ position:'absolute', bottom:-1, left:20, right:20, height:2, background:'#650A30' }} />}
+          </button>
+        ))}
+      </div>
+      {/* Hero image for cat — portrait crop to suit vertical source photography */}
+      <div style={{ position:'relative', aspectRatio:'4/5', overflow:'hidden', background:'#F4E3CA' }}>
+        <img src={current.img} style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'center' }} />
+        <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top, rgba(26,20,20,0.55) 0%, rgba(26,20,20,0) 45%)' }} />
+        <div style={{ position:'absolute', bottom:20, left:20, right:20, color:'#FEF2E3', display:'flex', alignItems:'flex-end', justifyContent:'space-between', gap:16 }}>
+          <div>
+            <span style={{ fontFamily:"'Jost', sans-serif", fontSize:10, letterSpacing:'0.22em', textTransform:'uppercase', color:'rgba(254,242,227,0.85)', fontWeight:500 }}>
+              {String(MENU_CATS.findIndex(c=>c.key===cat)+1).padStart(2,'0')} of {String(MENU_CATS.length).padStart(2,'0')}
+            </span>
+            <div style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:36, letterSpacing:'-0.02em', marginTop:6, lineHeight:1, textShadow:'0 1px 20px rgba(0,0,0,0.35)' }}>
+              {current.label}
+            </div>
+          </div>
+          <span style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic', fontSize:13, color:'rgba(254,242,227,0.85)', whiteSpace:'nowrap', paddingBottom:4 }}>
+            {current.items.length} selections
+          </span>
+        </div>
+      </div>
+      {/* Items */}
+      <div style={{ padding:'8px 20px' }}>
+        {current.items.map((it, i) => (
+          <div key={it.id} style={{ display:'flex', gap:16, alignItems:'center', padding:'18px 0', borderBottom: i<current.items.length-1 ? '1px solid rgba(26,20,20,0.1)':'none' }}>
+            <Numeral size={11} color="rgba(26,20,20,0.4)">{String(i+1).padStart(2,'0')}</Numeral>
+            <div style={{ flex:1 }}>
+              <div style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:18, letterSpacing:'-0.02em' }}>{it.name}</div>
+              <div style={{ marginTop:4, fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic', fontSize:12, color:'rgba(26,20,20,0.55)' }}>Measured in spoonfuls.</div>
+            </div>
+            <Numeral size={13}>{it.price}</Numeral>
+            <button onClick={() => onAdd(it)} style={{ width:36, height:36, border:'1px solid rgba(26,20,20,0.3)', background:'transparent', cursor:'pointer', fontFamily:"'JetBrains Mono', monospace", fontSize:16 }}>+</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ───── REWARDS SCREEN ─────
+function RewardsScreen() {
+  const vouchers = [
+    { num:'01', v:'20%', l:'Off', t:'A scoop, on us', d:'Take 20% off any single cup, at any store.', meta:'Valid until 30 Apr 2026 · Min. Rp 50.000' },
+    { num:'02', v:'10K', l:'Cut', t:'A small kindness for delivery', d:'Rp 10K off your next doorstep order.', meta:'Valid until 15 May 2026 · Delivery only' },
+    { num:'03', v:'1+1', l:'Gift', t:'Buy one, gift one', d:'Share a scoop this weekend.', meta:'Sat–Sun only · Pick-up' },
+  ];
+  return (
+    <div style={{ minHeight:'100%', background:'#FEF2E3', paddingBottom:92 }}>
+      <header style={{ padding:'32px 20px 20px', borderBottom:'1px solid rgba(26,20,20,0.15)', background:'#FBF6EC' }}>
+        <Eyebrow small color="rgba(26,20,20,0.5)">Rewards · Gold member</Eyebrow>
+        <h1 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:40, margin:'12px 0 0', letterSpacing:'-0.02em', fontWeight:500, lineHeight:.95 }}>
+          Vouchers, <i style={{ fontWeight:400 }}>unclaimed</i>.
+        </h1>
+        <div style={{ marginTop:20, display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
+          <div><Numeral size={48} color="#650A30" weight={500}>03</Numeral></div>
+          <div style={{ textAlign:'right' }}>
+            <Numeral size={28} weight={500}>1,250</Numeral>
+            <div style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic', fontSize:12, color:'rgba(26,20,20,0.6)' }}>points to spend</div>
+          </div>
+        </div>
+      </header>
+      <div style={{ padding:'20px' }}>
+        <Eyebrow small color="rgba(26,20,20,0.5)">Your vouchers</Eyebrow>
+        <div style={{ marginTop:16 }}>
+          {vouchers.map((v, i) => (
+            <div key={v.num} style={{ display:'flex', gap:16, padding:'18px 0', borderBottom: i<vouchers.length-1 ? '1px solid rgba(26,20,20,0.1)':'none' }}>
+              <Numeral size={11} color="rgba(26,20,20,0.4)">{v.num}</Numeral>
+              <div style={{ minWidth:62 }}>
+                <div style={{ fontFamily:"'JetBrains Mono', monospace", fontSize:26, color:'#650A30', fontWeight:500, lineHeight:1 }}>{v.v}</div>
+                <div style={{ marginTop:4, ...hdAtomStyles.eyebrow, fontSize:10, color:'rgba(26,20,20,0.45)' }}>{v.l}</div>
+              </div>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:16, letterSpacing:'-0.02em', lineHeight:1.2 }}>{v.t}</div>
+                <div style={{ marginTop:4, fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic', fontSize:12, color:'rgba(26,20,20,0.6)' }}>{v.d}</div>
+                <div style={{ marginTop:6, fontFamily:"'JetBrains Mono', monospace", fontSize:10.4, color:'rgba(26,20,20,0.5)' }}>{v.meta}</div>
+              </div>
+              <a style={{ ...hdAtomStyles.eyebrow, fontSize:10, color:'#650A30', borderBottom:'1px solid #650A30', paddingBottom:2, alignSelf:'flex-start', cursor:'pointer', display:'inline-flex', gap:4, alignItems:'center' }}>Apply <IconArrow size={10} /></a>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ───── ACCOUNT SCREEN ─────
+function AccountScreen() {
+  const [open, setOpen] = useState(null); // which detail row is open
+  const rootRef = React.useRef(null);
+  const [portalHost, setPortalHost] = React.useState(null);
+  React.useEffect(() => {
+    // find nearest scroll-hiding phone frame root (any ancestor with overflow:hidden)
+    let el = rootRef.current;
+    while (el) {
+      const cs = getComputedStyle(el);
+      if (cs.overflow === 'hidden' || cs.overflowX === 'hidden' || cs.overflowY === 'hidden') {
+        if (cs.position === 'static') el.style.position = 'relative';
+        setPortalHost(el);
+        return;
+      }
+      el = el.parentElement;
+    }
+    setPortalHost(document.body);
+  }, []);
+
+  const tierGoal = 2000;
+  const points = 1250;
+  const toGo = tierGoal - points;
+  const pct = Math.min(100, (points / tierGoal) * 100);
+
+  const rows = [
+    { n:'01', t:'Order history', d:'Every spoonful, on record',
+      detail:'17 orders since March 2024 · 3 in the last 30 days. Tap any order to reorder with one touch.' },
+    { n:'02', t:'Addresses', d:'Where we deliver',
+      detail:'Home · Jl. Kemang Raya 12C, Jakarta Selatan\nOffice · Menara BCA 32F, SCBD' },
+    { n:'03', t:'Payment methods', d:'Saved, for the hurry',
+      detail:'Visa · ending 4182 (default)\nGoPay · 0812 1111 8456\nOVO · linked' },
+    { n:'04', t:'Preferences', d:'Flavours you favour',
+      detail:'Most-ordered · Belgian Chocolate, Vanilla Caramel Brownie.\nNotifications · New flavours, monthly drops.' },
+    { n:'05', t:'Help & enquiries', d:'By chat, always',
+      detail:'Reach us at 0812 1111 8456 — typical reply under 2 minutes, every day from 9 AM to 10 PM WIB.' },
+  ];
+
+  return (
+    <div ref={rootRef} style={{ minHeight:'100%', background:'#FEF2E3', paddingBottom:92, position:'relative' }}>
+      <header style={{ padding:'32px 20px 24px', background:'#40061E', color:'#FEF2E3', position:'relative', overflow:'hidden' }}>
+        <div style={{ position:'absolute', inset:0, opacity:0.3, mixBlendMode:'multiply', pointerEvents:'none',
+          backgroundImage:"url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.08 0 0 0 0.35 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")",
+          backgroundSize:'180px 180px' }} />
+        <div style={{ position:'relative' }}>
+          <Eyebrow small color="#F5E6C8">Member · Gold</Eyebrow>
+          <h1 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:32, margin:'12px 0 6px', letterSpacing:'-0.02em', fontWeight:500, color:'#FEF2E3' }}>Putra Tog<i style={{ fontWeight:400 }}>atorop</i></h1>
+          <div style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic', fontSize:13, opacity:0.75 }}>Member since March 2024</div>
+          <div style={{ marginTop:20, display:'flex', gap:24, paddingTop:16, borderTop:'1px solid rgba(254,242,227,0.25)' }}>
+            <div><Numeral size={22} color="#FEF2E3" weight={500}>1,250</Numeral><div style={{ ...hdAtomStyles.eyebrow, color:'rgba(254,242,227,0.6)', fontSize:9.5 }}>points</div></div>
+            <div><Numeral size={22} color="#FEF2E3" weight={500}>17</Numeral><div style={{ ...hdAtomStyles.eyebrow, color:'rgba(254,242,227,0.6)', fontSize:9.5 }}>orders</div></div>
+            <div><Numeral size={22} color="#FEF2E3" weight={500}>03</Numeral><div style={{ ...hdAtomStyles.eyebrow, color:'rgba(254,242,227,0.6)', fontSize:9.5 }}>vouchers</div></div>
+          </div>
+        </div>
+      </header>
+
+      {/* ── TIER UPSELL ── */}
+      <section style={{ padding:'24px 20px 0' }}>
+        <div style={{ background:'#FBF6EC', border:'1px solid rgba(184,146,42,0.4)', position:'relative', overflow:'hidden' }}>
+          {/* gold radial accent */}
+          <div style={{ position:'absolute', top:-60, right:-60, width:180, height:180, borderRadius:'50%',
+            background:'radial-gradient(circle, rgba(184,146,42,0.18) 0%, rgba(184,146,42,0) 70%)', pointerEvents:'none' }} />
+          <div style={{ padding:'20px 20px 0', position:'relative' }}>
+            <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between' }}>
+              <Eyebrow small color="#B8922A">The Platinum invitation</Eyebrow>
+              <span style={{ fontFamily:"'JetBrains Mono', monospace", fontSize:10, color:'rgba(184,146,42,0.9)', letterSpacing:'0.05em' }}>
+                GOLD → PLATINUM
+              </span>
+            </div>
+            <div style={{ marginTop:10, fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:22, letterSpacing:'-0.02em', lineHeight:1.25 }}>
+              <Numeral size={22} weight={500} color="#1A1414">{toGo.toLocaleString('en-US')}</Numeral>{' '}
+              <span style={{ fontStyle:'italic' }}>more points, and the door opens.</span>
+            </div>
+            <div style={{ marginTop:14, fontSize:12.5, color:'rgba(26,20,20,0.65)', lineHeight:1.55 }}>
+              Double-point weekends · complimentary birthday cake · priority catering slots · early access to seasonal flavours.
+            </div>
+          </div>
+          {/* progress */}
+          <div style={{ padding:'16px 20px 14px', position:'relative' }}>
+            <div style={{ height:2, background:'rgba(184,146,42,0.18)', position:'relative' }}>
+              <div style={{ position:'absolute', inset:0, width:`${pct}%`, background:'#B8922A', transition:'width 900ms' }} />
+              {/* gold→platinum tick marks */}
+              <div style={{ position:'absolute', left:0, top:-3, width:1, height:8, background:'#B8922A' }} />
+              <div style={{ position:'absolute', right:0, top:-3, width:1, height:8, background:'rgba(184,146,42,0.5)' }} />
+            </div>
+            <div style={{ marginTop:8, display:'flex', justifyContent:'space-between' }}>
+              <div>
+                <Numeral size={11} color="rgba(26,20,20,0.7)">{points.toLocaleString('en-US')}</Numeral>
+                <span style={{ fontSize:10, letterSpacing:'0.18em', textTransform:'uppercase', color:'rgba(26,20,20,0.5)', marginLeft:6 }}>Gold</span>
+              </div>
+              <div style={{ textAlign:'right' }}>
+                <Numeral size={11} color="rgba(184,146,42,0.9)">{tierGoal.toLocaleString('en-US')}</Numeral>
+                <span style={{ fontSize:10, letterSpacing:'0.18em', textTransform:'uppercase', color:'rgba(184,146,42,0.9)', marginLeft:6 }}>Platinum</span>
+              </div>
+            </div>
+          </div>
+          {/* cta row */}
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', borderTop:'1px solid rgba(184,146,42,0.25)' }}>
+            <button style={{ background:'transparent', border:'none', borderRight:'1px solid rgba(184,146,42,0.25)', padding:'14px 12px', fontFamily:"'Jost', sans-serif", fontSize:11, letterSpacing:'0.22em', textTransform:'uppercase', cursor:'pointer', color:'#1A1414' }}>
+              How it works
+            </button>
+            <button style={{ background:'#1A1414', color:'#F5E6C8', border:'none', padding:'14px 12px', fontFamily:"'Jost', sans-serif", fontSize:11, letterSpacing:'0.22em', textTransform:'uppercase', cursor:'pointer' }}>
+              Earn ×2 today →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* account rows */}
+      <div style={{ padding:'32px 20px 20px' }}>
+        {rows.map((r, i) => (
+          <button key={r.n} onClick={() => setOpen(r)} style={{
+            display:'flex', alignItems:'center', gap:16, padding:'18px 0',
+            borderBottom: i<rows.length-1 ? '1px solid rgba(26,20,20,0.1)':'none',
+            cursor:'pointer', background:'transparent', border:'none', width:'100%',
+            textAlign:'left', fontFamily:'inherit',
+          }}>
+            <Numeral size={11} color="rgba(26,20,20,0.4)">{r.n}</Numeral>
+            <div style={{ flex:1 }}>
+              <div style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:17, letterSpacing:'-0.02em' }}>{r.t}</div>
+              <div style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic', fontSize:12, color:'rgba(26,20,20,0.55)', marginTop:2 }}>{r.d}</div>
+            </div>
+            <IconArrow size={16} color="rgba(26,20,20,0.5)" />
+          </button>
+        ))}
+        <div style={{ marginTop:40, textAlign:'center' }}>
+          <Button variant="ghost" size="md">Sign out</Button>
+        </div>
+      </div>
+
+      {/* detail sheet — portal'd to the nearest scrolling frame root so it overlays the visible screen, not the scroll content */}
+      {open && portalHost && ReactDOM.createPortal(
+        <div onClick={() => setOpen(null)} style={{
+          position:'absolute', inset:0, background:'rgba(26,20,20,0.55)',
+          zIndex:60, display:'flex', alignItems:'flex-end',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            width:'100%', background:'#FEF2E3', padding:'24px 22px 32px',
+            borderTop:'2px solid #1A1414', animation:'revealUp 400ms var(--ease-editorial)',
+          }}>
+            <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between' }}>
+              <div>
+                <Eyebrow small color="#650A30">Section {open.n}</Eyebrow>
+                <h2 style={{ marginTop:6, fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:28, letterSpacing:'-0.02em', fontWeight:500, color:'#1A1414' }}>
+                  {open.t}
+                </h2>
+              </div>
+              <button onClick={() => setOpen(null)} style={{
+                background:'transparent', border:'none', cursor:'pointer', padding:4,
+                fontFamily:"'Jost', sans-serif", fontSize:11, letterSpacing:'0.22em', textTransform:'uppercase', color:'rgba(26,20,20,0.6)',
+              }}>Close</button>
+            </div>
+            <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(26,20,20,0.15)',
+              fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic', fontSize:15,
+              color:'rgba(26,20,20,0.75)', whiteSpace:'pre-line', lineHeight:1.5,
+            }}>{open.detail}</div>
+          </div>
+        </div>,
+        portalHost
+      )}
+    </div>
+  );
+}
+
+// ───── ORDERS SCREEN (Pesanan) ─────
+function OrdersScreen() {
+  // In-progress order — courier dispatched, step 2 of 4
+  const steps = [
+    { key:'received', label:'Order received', time:'14:32', done:true },
+    { key:'prepared', label:'Prepared & packed', time:'14:41', done:true },
+    { key:'courier',  label:'Courier en route', time:'14:48', done:true, current:true },
+    { key:'arrived',  label:'At your door', time:'~ 15:05', done:false },
+  ];
+  const currentIdx = steps.findIndex(s => s.current);
+
+  const active = {
+    id: 'HD-2026-04-00871',
+    placed: 'Today, 14:32',
+    store: 'Plaza Senayan · Level 2',
+    courier: 'Grab · Budi S.',
+    eta: '15:05',
+    items: [
+      { n:1, name:'Belgian Chocolate · pint', qty:1, price:'Rp 162.000' },
+      { n:2, name:'Vanilla Caramel Brownie · pint', qty:1, price:'Rp 162.000' },
+      { n:3, name:'Love the Mix — Strawberry', qty:2, price:'Rp 156.000' },
+    ],
+    subtotal:'Rp 480.000', delivery:'Rp 18.000', total:'Rp 498.000',
+  };
+
+  const history = [
+    { id:'HD-2026-03-00654', date:'28 Mar 2026', items:'3 items · Ice cream', total:'Rp 312.000', status:'Delivered' },
+    { id:'HD-2026-03-00412', date:'14 Mar 2026', items:'1 cake · Dulce de Leche', total:'Rp 485.000', status:'Delivered' },
+    { id:'HD-2026-02-00198', date:'22 Feb 2026', items:'5 items · Love the Mix', total:'Rp 390.000', status:'Delivered' },
+  ];
+
+  return (
+    <div style={{ minHeight:'100%', background:'#FEF2E3', paddingBottom:92 }}>
+      {/* Header */}
+      <header style={{ padding:'24px 20px 16px', borderBottom:'1px solid rgba(26,20,20,0.15)' }}>
+        <Eyebrow small color="rgba(26,20,20,0.5)">Pesanan · Order №{active.id.slice(-5)}</Eyebrow>
+        <h1 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:40, lineHeight:.95, letterSpacing:'-0.02em', margin:'12px 0 0', fontWeight:500 }}>
+          In <i style={{ fontWeight:400 }}>transit</i>.
+        </h1>
+      </header>
+
+      {/* Active order card */}
+      <section style={{ padding:'28px 20px 0' }}>
+        <div style={{ background:'#FBF6EC', border:'1px solid rgba(26,20,20,0.12)', padding:20 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
+            <Eyebrow small color="#650A30">Arriving by</Eyebrow>
+            <span style={{ fontFamily:"'JetBrains Mono', monospace", fontSize:10, color:'rgba(26,20,20,0.45)', letterSpacing:'0.05em' }}>{active.id}</span>
+          </div>
+          <div style={{ marginTop:6, display:'flex', alignItems:'baseline', gap:10 }}>
+            <Numeral size={38} weight={500} color="#1A1414">{active.eta}</Numeral>
+            <span style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic', fontSize:14, color:'rgba(26,20,20,0.6)' }}>in about 17 minutes</span>
+          </div>
+          <div style={{ marginTop:4, fontSize:12, color:'rgba(26,20,20,0.6)' }}>
+            {active.courier} · from {active.store}
+          </div>
+
+          {/* Stepper */}
+          <div style={{ marginTop:22, position:'relative' }}>
+            {/* connecting line */}
+            <div style={{ position:'absolute', left:8, top:8, bottom:8, width:1, background:'rgba(26,20,20,0.15)' }} />
+            <div style={{ position:'absolute', left:8, top:8, width:1, height:`${(currentIdx/(steps.length-1))*100}%`, background:'#650A30', transition:'height 900ms' }} />
+            {steps.map((s, i) => (
+              <div key={s.key} style={{ display:'grid', gridTemplateColumns:'20px 1fr auto', gap:12, padding:'8px 0', alignItems:'center', position:'relative' }}>
+                <span style={{
+                  width:15, height:15, marginLeft:1,
+                  border: s.done ? '2px solid #650A30' : '1px solid rgba(26,20,20,0.3)',
+                  background: s.current ? '#650A30' : (s.done ? '#FBF6EC' : 'transparent'),
+                  borderRadius:'50%', boxSizing:'border-box',
+                }} />
+                <span style={{
+                  fontFamily:"'Cormorant Garamond', Georgia, serif",
+                  fontSize:15, fontStyle: s.current ? 'italic' : 'normal',
+                  color: s.done ? '#1A1414' : 'rgba(26,20,20,0.45)',
+                  letterSpacing:'-0.01em',
+                }}>{s.label}</span>
+                <span style={{ ...hdAtomStyles.numeral, fontSize:10, color: s.done ? '#650A30' : 'rgba(26,20,20,0.4)' }}>
+                  {s.time}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop:16, display:'grid', gridTemplateColumns:'1fr 1fr', gap:1, background:'rgba(26,20,20,0.12)', border:'1px solid rgba(26,20,20,0.12)' }}>
+            <button style={{ background:'#FBF6EC', border:'none', padding:'12px 16px', fontFamily:"'Jost', sans-serif", fontSize:11, letterSpacing:'0.22em', textTransform:'uppercase', cursor:'pointer', color:'#1A1414' }}>Track live</button>
+            <button style={{ background:'#650A30', color:'#FEF2E3', border:'none', padding:'12px 16px', fontFamily:"'Jost', sans-serif", fontSize:11, letterSpacing:'0.22em', textTransform:'uppercase', cursor:'pointer' }}>Message Budi</button>
+          </div>
+        </div>
+      </section>
+
+      {/* Order contents */}
+      <section style={{ padding:'32px 20px 0' }}>
+        <SectionHeader number={2} title="In the" titleItalic="bag" />
+        <div style={{ marginTop:16 }}>
+          {active.items.map((it, i) => (
+            <div key={it.n} style={{ display:'grid', gridTemplateColumns:'28px 1fr auto', alignItems:'baseline', gap:14, padding:'14px 0', borderBottom: i<active.items.length-1 ? '1px solid rgba(26,20,20,0.1)':'none' }}>
+              <Numeral size={11} color="rgba(26,20,20,0.4)">{String(it.n).padStart(2,'0')}</Numeral>
+              <div>
+                <div style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:16, letterSpacing:'-0.02em' }}>{it.name}</div>
+                <div style={{ marginTop:3, fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic', fontSize:12, color:'rgba(26,20,20,0.55)' }}>Quantity · {it.qty}</div>
+              </div>
+              <Numeral size={13}>{it.price}</Numeral>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop:14, paddingTop:14, borderTop:'1px solid #1A1414' }}>
+          {[['Subtotal', active.subtotal], ['Delivery', active.delivery]].map(([k,v]) => (
+            <div key={k} style={{ display:'flex', justifyContent:'space-between', padding:'4px 0' }}>
+              <span style={{ fontSize:12, color:'rgba(26,20,20,0.65)' }}>{k}</span>
+              <Numeral size={12} color="rgba(26,20,20,0.75)">{v}</Numeral>
+            </div>
+          ))}
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginTop:8, paddingTop:10, borderTop:'1px solid rgba(26,20,20,0.15)' }}>
+            <span style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic', fontSize:16 }}>Total</span>
+            <Numeral size={20} weight={500} color="#650A30">{active.total}</Numeral>
+          </div>
+        </div>
+      </section>
+
+      {/* History */}
+      <section style={{ padding:'40px 20px 0' }}>
+        <SectionHeader number={3} title="Previously" titleItalic="yours" />
+        <div style={{ marginTop:12, borderTop:'1px solid #1A1414' }}>
+          {history.map(h => (
+            <a key={h.id} style={{
+              display:'grid', gridTemplateColumns:'1fr auto', gap:16, padding:'16px 0',
+              borderBottom:'1px solid rgba(26,20,20,0.1)', alignItems:'baseline', cursor:'pointer',
+              textDecoration:'none', color:'inherit',
+            }}>
+              <div>
+                <div style={{ display:'flex', alignItems:'baseline', gap:10 }}>
+                  <span style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:16, letterSpacing:'-0.01em' }}>{h.items}</span>
+                </div>
+                <div style={{ marginTop:3, fontFamily:"'JetBrains Mono', monospace", fontSize:10.5, color:'rgba(26,20,20,0.5)', letterSpacing:'0.03em' }}>
+                  {h.date} · {h.id}
+                </div>
+              </div>
+              <div style={{ textAlign:'right' }}>
+                <Numeral size={13}>{h.total}</Numeral>
+                <div style={{ marginTop:3, fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic', fontSize:11, color:'#650A30' }}>{h.status}</div>
+              </div>
+            </a>
+          ))}
+        </div>
+        <div style={{ marginTop:18, textAlign:'center' }}>
+          <a style={{ fontFamily:"'Jost', sans-serif", fontSize:11, letterSpacing:'0.22em', textTransform:'uppercase', color:'#650A30', cursor:'pointer' }}>
+            All orders →
+          </a>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ───── APP SHELL (interactive) ─────
+function AppShell() {
+  const [tab, setTab] = useState('beranda');
+  const [cart, setCart] = useState([]);
+  const add = (item) => setCart(c => [...c, item]);
+
+  const Screen = {
+    beranda: <HomeScreen onAdd={add} />,
+    menu: <MenuScreen onAdd={add} />,
+    pesanan: <OrdersScreen />,
+    hadiah: <RewardsScreen />,
+    akun: <AccountScreen />,
+  }[tab];
+
+  return (
+    <div style={{ width:'100%', height:'100%', position:'relative', overflow:'hidden' }}>
+      <div style={{ height:'100%', overflowY:'auto' }} className="no-scrollbar">
+        {Screen}
+      </div>
+      {cart.length > 0 && tab !== 'beranda' && (
+        <button onClick={() => setTab('pesanan')} style={{
+          position:'absolute', bottom:72, left:16, right:16,
+          background:'#1A1414', color:'#FEF2E3', padding:'14px 18px',
+          display:'flex', alignItems:'center', justifyContent:'space-between',
+          zIndex:40, border:'none', cursor:'pointer', textAlign:'left',
+          fontFamily:'inherit',
+        }}>
+          <div>
+            <Eyebrow small color="#F5E6C8">{cart.length} items in bag</Eyebrow>
+            <div style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic', fontSize:13, marginTop:2 }}>Review, then order</div>
+          </div>
+          <IconArrow size={16} color="#FEF2E3" />
+        </button>
+      )}
+      <BottomNav active={tab} onSelect={setTab} />
+    </div>
+  );
+}
+
+// ───── MULTI-SCREEN DISPLAY ─────
+function Kit() {
+  const [which, setWhich] = useState('interactive');
+
+  const frames = which === 'interactive'
+    ? [{ label:'Live prototype · tap through', screen: <AppShell /> }]
+    : [
+        { label:'Beranda / Home', screen: <div style={{ height:'100%', overflow:'auto', position:'relative' }} className="no-scrollbar"><HomeScreen onAdd={()=>{}} /><BottomNav active="beranda" onSelect={()=>{}} /></div> },
+        { label:'Menu', screen: <div style={{ height:'100%', overflow:'auto', position:'relative' }} className="no-scrollbar"><MenuScreen onAdd={()=>{}} /><BottomNav active="menu" onSelect={()=>{}} /></div> },
+        { label:'Hadiah / Rewards', screen: <div style={{ height:'100%', overflow:'auto', position:'relative' }} className="no-scrollbar"><RewardsScreen /><BottomNav active="hadiah" onSelect={()=>{}} /></div> },
+        { label:'Akun / Account', screen: <div style={{ height:'100%', overflow:'auto', position:'relative' }} className="no-scrollbar"><AccountScreen /><BottomNav active="akun" onSelect={()=>{}} /></div> },
+      ];
+
+  return (
+    <div className="stage">
+      <div className="crumbs">
+        <div className="eye">Häagen-Dazs Indonesia</div>
+        <h1>Customer App <i>UI Kit</i></h1>
+        <p>A quiet mobile loyalty & order app, rendered in burgundy, cream and gold.<br/>All screens below are composed from the same atoms.</p>
+      </div>
+
+      <div className="tabs">
+        <button className={which==='interactive'?'active':''} onClick={()=>setWhich('interactive')}>Interactive</button>
+        <button className={which==='gallery'?'active':''} onClick={()=>setWhich('gallery')}>Gallery · 4 screens</button>
+      </div>
+
+      <div className="phone-wrap">
+        {frames.map((f, i) => (
+          <div key={i} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
+            <Frame>{f.screen}</Frame>
+            <div className="foot">{f.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="foot">© Häagen-Dazs ID — UI Kit v1</div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Kit />);
+</script>
+</body>
+</html>

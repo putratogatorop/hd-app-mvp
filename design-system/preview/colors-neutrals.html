@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html,body{margin:0;padding:0;background:var(--hd-cream);}
+  .card{ padding:24px; box-sizing:border-box; width:700px; }
+  .row{display:flex;gap:12px;flex-wrap:wrap;}
+  .swatch{width:120px;}
+  .swatch .chip{height:72px;border:1px solid var(--rule-soft);}
+  .swatch .meta{margin-top:6px;display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .swatch .name{font-size:11px;font-weight:500;color:var(--fg-primary);}
+  .swatch .hex{font-family:var(--font-mono);font-size:10px;color:var(--fg-tertiary);}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="row">
+    <div class="swatch"><div class="chip" style="background:#FEF2E3"></div><div class="meta"><span class="name">Cream</span><span class="hex">#FEF2E3</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#F4E3CA"></div><div class="meta"><span class="name">Cream / Deep</span><span class="hex">#F4E3CA</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#FBF6EC"></div><div class="meta"><span class="name">Paper</span><span class="hex">#FBF6EC</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#2B2B2B"></div><div class="meta"><span class="name">Dark</span><span class="hex">#2B2B2B</span></div></div>
+    <div class="swatch"><div class="chip" style="background:#1A1414"></div><div class="meta"><span class="name">Ink</span><span class="hex">#1A1414</span></div></div>
+  </div>
+</div>
+</body></html>

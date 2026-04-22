@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--hd-cream);}
+  .card{padding:24px;box-sizing:border-box;width:700px;display:flex;flex-direction:column;gap:16px;}
+  .demo{display:flex;align-items:center;gap:16px;}
+  hr{all:unset;display:block;width:180px;height:1px;background:var(--rule);}
+  hr.thick{height:2px;background:var(--hd-ink);}
+  .box{width:100px;height:44px;border:1px solid rgba(26,20,20,.1);background:var(--hd-paper);}
+  .box.sharp{border-radius:0;}
+  .box.sm{border-radius:2px;}
+  .pill{height:22px;min-width:22px;padding:0 8px;border-radius:999px;background:var(--hd-burgundy);color:var(--hd-cream);display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;}
+  .meta{font-family:var(--font-mono);font-size:10px;color:var(--fg-tertiary);letter-spacing:.06em;text-transform:uppercase;}
+</style></head>
+<body>
+<div class="card">
+  <div class="demo"><hr><span class="meta">rule · 1px ink @ 15%</span></div>
+  <div class="demo"><hr class="thick"><span class="meta">rule thick · 2px ink</span></div>
+  <div class="demo"><div class="box sharp"></div><span class="meta">radius 0 — the default</span></div>
+  <div class="demo"><div class="box sm"></div><span class="meta">radius 2px — input chip only</span></div>
+  <div class="demo"><span class="pill">3</span><span class="pill">9+</span><span class="meta">pill — counters only</span></div>
+</div>
+</body></html>
