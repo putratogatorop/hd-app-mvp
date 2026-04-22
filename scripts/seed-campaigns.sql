@@ -59,7 +59,7 @@ DECLARE
   voucher_c UUID;
   r RECORD;
   target_count INT;
-  holdout_every INT := 10;  -- ~10% holdout
+  holdout_every INT := 3;   -- every 3rd target is a holdout (~33%, demo-scale)
   idx INT;
 BEGIN
   -- --- Campaign A: At Risk win-back (45 days ago, 14-day window) ---
