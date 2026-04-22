@@ -1,16 +1,17 @@
 -- ============================================
--- v3 refinement: manufacture the "Champions cannibalization" story.
+-- Rollback: v3 swap of Champions holdouts was too aggressive.
+-- The 3 active-holdout users ordered more in the window than
+-- treatment, which inverted incrementality (negative mROI,
+-- >100% cannibalization) and dragged blended KPIs deep negative.
 --
--- The previous fix made all three campaigns look like mild winners
--- (all mROI > 1, all cannibalization = 0%) because every holdout was
--- zero-activity by construction. This hides the most valuable demo
--- moment: a campaign that failed the mROI gate AND shows high
--- cannibalization — proving the system catches overspending.
+-- This script restores zero-activity holdouts for Champions —
+-- back to the clean state where all three campaigns are mild winners.
 --
--- This script swaps the Champions campaign's holdouts for users with
--- ORGANIC order activity in the campaign window. Their natural
--- order rate approaches treatment's → incremental collapses → mROI
--- drops toward 1 or below → cannibalization spikes.
+-- Tell the cannibalization story INTERACTIVELY in the simulator:
+--   drag the discount slider past the break-even red line →
+--   mROI projection flips from green to red → gate fails →
+--   justification field appears. That's a stronger demo moment
+--   than a static "this one failed" KPI anyway.
 --
 -- Idempotent.
 -- ============================================
@@ -19,26 +20,25 @@ DO $$
 DECLARE
   c RECORD;
   u RECORD;
-  swapped INT;
+  added INT;
 BEGIN
   FOR c IN
     SELECT id, name, start_at, end_at
     FROM public.campaigns
     WHERE segment_key = 'Champions' AND status = 'completed'
   LOOP
-    -- Remove any existing holdouts on this campaign
+    -- Strip the active-user holdouts added by v3
     DELETE FROM public.campaign_targets
     WHERE campaign_id = c.id AND is_holdout = TRUE;
 
-    swapped := 0;
-    -- Find seed users with organic orders in the campaign window
-    -- (not already treatment targets, but active naturally)
+    -- Re-add zero-activity holdouts (seed users with no orders in window)
+    added := 0;
     FOR u IN
       SELECT p.id AS user_id
       FROM public.profiles p
       WHERE p.email LIKE 'seed%@hd.test'
         AND p.id NOT IN (SELECT user_id FROM public.campaign_targets WHERE campaign_id = c.id)
-        AND EXISTS (
+        AND NOT EXISTS (
           SELECT 1 FROM public.orders o
           WHERE o.user_id = p.id
             AND o.status <> 'cancelled'
@@ -51,15 +51,14 @@ BEGIN
       INSERT INTO public.campaign_targets (campaign_id, user_id, is_holdout, voucher_id)
       VALUES (c.id, u.user_id, TRUE, NULL)
       ON CONFLICT (campaign_id, user_id) DO NOTHING;
-      swapped := swapped + 1;
+      added := added + 1;
     END LOOP;
 
-    RAISE NOTICE 'Campaign "%": swapped in % ACTIVE holdouts (cannibalization story)', c.name, swapped;
+    RAISE NOTICE 'Champions "%": restored % zero-activity holdouts', c.name, added;
   END LOOP;
 END $$;
 
--- Verify: Champions should now show lower mROI and higher cannibalization
--- than the other two campaigns
+-- Verify: all three campaigns should now show positive mROI again
 SELECT c.name, c.segment_key,
        inc.treatment_size, inc.holdout_size,
        ROUND(inc.treatment_order_rate, 3) AS t_rate,
