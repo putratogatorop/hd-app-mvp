@@ -26,16 +26,16 @@
 
   /* ── NEUTRALS · CREAM + INK ── */
   --hd-cream:          #FEF2E3; /* page bg — warm cream */
-  --hd-cream-deep:     #F5E6C8; /* tile bg — re-pointed to hd-gold-light per brand spec */
-  --hd-paper:          #FEF2E3; /* card bg — re-pointed to hd-cream per brand spec */
-  --hd-ink:            #2B2B2B; /* text — charcoal; only approved dark per CLAUDE.md */
+  --hd-cream-deep:     #F4E3CA; /* tile bg — slightly deeper cream */
+  --hd-paper:          #FBF6EC; /* card bg — newsprint paper */
+  --hd-ink:            #1A1414; /* text — near-black with warm tint */
   --hd-dark:           #2B2B2B; /* charcoal — body alt */
 
   /* ── SEMANTIC · foreground/background ── */
   --fg-primary:   var(--hd-ink);
-  --fg-secondary: rgba(43, 43, 43, 0.70);
-  --fg-tertiary:  rgba(43, 43, 43, 0.55);
-  --fg-quaternary:rgba(43, 43, 43, 0.40);
+  --fg-secondary: rgba(26, 20, 20, 0.70);
+  --fg-tertiary:  rgba(26, 20, 20, 0.55);
+  --fg-quaternary:rgba(26, 20, 20, 0.40);
   --fg-onDark:    var(--hd-cream);
 
   --bg-page:    var(--hd-cream);
@@ -48,8 +48,8 @@
   --accent-gold:   var(--hd-gold);
 
   /* ── RULES & DIVIDERS ── */
-  --rule:       rgba(43, 43, 43, 0.15);
-  --rule-soft:  rgba(43, 43, 43, 0.10);
+  --rule:       rgba(26, 20, 20, 0.15);
+  --rule-soft:  rgba(26, 20, 20, 0.10);
   --rule-thick: var(--hd-ink);
 
   /* ── TYPE FAMILIES ── */
@@ -96,9 +96,9 @@
   --radius-pill: 999px; /* badge counters */
 
   /* ── SHADOWS ── */
-  --shadow-editorial:  0 1px 0 rgba(43,43,43,0.08), 0 24px 48px -24px rgba(64,6,30,0.25);
-  --shadow-paper:      0 1px 2px rgba(43,43,43,0.06), 0 12px 32px -16px rgba(43,43,43,0.18);
-  --shadow-inset-rule: inset 0 -1px 0 rgba(43,43,43,0.12);
+  --shadow-editorial:  0 1px 0 rgba(26,20,20,0.08), 0 24px 48px -24px rgba(64,6,30,0.25);
+  --shadow-paper:      0 1px 2px rgba(26,20,20,0.06), 0 12px 32px -16px rgba(26,20,20,0.18);
+  --shadow-inset-rule: inset 0 -1px 0 rgba(26,20,20,0.12);
 
   /* ── MOTION ── */
   --ease-editorial: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -224,16 +224,3 @@ a  { color: var(--accent); text-decoration: none; }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* ──────────────────────────────────────────────────────────────
- * Interaction affordances — keyboard focus + touch pressed state
- * ────────────────────────────────────────────────────────────── */
-:focus-visible {
-  outline: 2px solid var(--hd-burgundy);
-  outline-offset: 2px;
-}
-button:active,
-[role="button"]:active {
-  opacity: 0.7;
-  transition: opacity 80ms linear;
-}
