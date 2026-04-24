@@ -66,11 +66,125 @@ const FEATURED = [
   { id: 4, name: 'A coffee moment', price: 'From Rp 38.000', image: '../../assets/imagery/menu-coffee-time.jpg' },
 ];
 
-const SECTIONS = [
-  { num: '01', title: 'Send a Gift', tagline: 'Sealed, with a note', mark: 'Nouveau' },
-  { num: '02', title: 'Catering', tagline: 'For the occasion' },
-  { num: '03', title: 'MyHD Plan', tagline: 'A standing subscription' },
-  { num: '04', title: 'Share the Sip', tagline: 'Invitation, with reward' },
+// New-this-week flavours — surfaced in the horizontal "Baru minggu ini" row
+const NEW_THIS_WEEK = [
+  { id:'n1', name:'Black Sesame Salted Caramel', price:'Rp 68.000', image:'../../assets/imagery/menu-ice-cream-flavors.jpg', badge:'Baru' },
+  { id:'n2', name:'Matcha Yuzu Sorbet',           price:'Rp 72.000', image:'../../assets/imagery/menu-drinks-tea.jpg',        badge:'Baru' },
+  { id:'n3', name:'Dulce de Leche, reworked',     price:'Rp 78.000', image:'../../assets/imagery/menu-love-the-mix.jpg',      badge:'Saison' },
+  { id:'n4', name:'Earl Grey Float',              price:'Rp 55.000', image:'../../assets/imagery/menu-refresh-me.jpg',        badge:'Baru' },
+];
+
+// Hero carousel slides — auto-advance every 5.5s, dot-navigable
+const HERO_SLIDES = [
+  { img:'../../assets/imagery/promo-popup-banner.jpg', tag:'Nouveau',     title:'Black Sesame',  titleItalic:'Salted Caramel', caption:'A new flavour, carefully composed.' },
+  { img:'../../assets/imagery/promo-buy1get1.jpg',     tag:'Le weekend',  title:'Two scoops,',   titleItalic:'one price',      caption:'Saturday and Sunday, every store.' },
+  { img:'../../assets/imagery/promo-prosperity.jpg',   tag:'Kirim hadiah',title:'Sealed,',       titleItalic:'with a note',    caption:'Send a pint the way a letter is sent.' },
+];
+
+function HeroCarousel({ onOpenSlide }) {
+  const [i, setI] = React.useState(0);
+  const len = HERO_SLIDES.length;
+  React.useEffect(() => {
+    const t = window.setInterval(() => setI(p => (p + 1) % len), 5500);
+    return () => window.clearInterval(t);
+  }, [len]);
+  const active = HERO_SLIDES[i];
+  return (
+    <section aria-label="Featured promotions" style={{ padding:'20px 16px 0', background:'#FEF2E3' }}>
+      <div role="region" aria-roledescription="carousel" aria-live="polite"
+        style={{ position:'relative', aspectRatio:'16/10', overflow:'hidden', background:'#40061E' }}>
+        {HERO_SLIDES.map((s, idx) => (
+          <div key={idx} aria-hidden={idx !== i}
+            style={{ position:'absolute', inset:0, opacity: idx === i ? 1 : 0,
+              transition:'opacity 700ms var(--ease-editorial)',
+              pointerEvents: idx === i ? 'auto' : 'none' }}>
+            <img src={s.img} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+            <div aria-hidden="true" style={{ position:'absolute', inset:0,
+              background:'linear-gradient(to bottom, rgba(64,6,30,0.15) 0%, rgba(64,6,30,0) 35%, rgba(64,6,30,0.5) 78%, rgba(64,6,30,0.78) 100%)' }} />
+            <div style={{ position:'absolute', left:20, right:20, bottom:20, color:'#FEF2E3' }}>
+              <span style={{ display:'inline-block', fontFamily:"'Jost', sans-serif", fontSize:10, letterSpacing:'0.22em', textTransform:'uppercase', color:'#F5E6C8', border:'1px solid rgba(245,230,200,0.6)', padding:'3px 8px' }}>{s.tag}</span>
+              <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:30, lineHeight:0.98, letterSpacing:'-0.02em', margin:'10px 0 0', fontWeight:500, color:'#FEF2E3' }}>
+                {s.title} <span style={{ fontStyle:'italic', fontWeight:400 }}>{s.titleItalic}</span>
+              </h2>
+              <div style={{ marginTop:6, fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic', fontSize:13, color:'rgba(254,242,227,0.9)' }}>{s.caption}</div>
+            </div>
+          </div>
+        ))}
+        <button type="button" className="tap"
+          onClick={() => onOpenSlide && onOpenSlide(active, i)}
+          aria-label={`Open promotion: ${active.tag} — ${active.title} ${active.titleItalic}`}
+          style={{ position:'absolute', inset:0, background:'transparent', border:'none', cursor:'pointer', padding:0 }} />
+      </div>
+      {/* dots + counter */}
+      <div style={{ marginTop:10, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 4px' }}>
+        <div style={{ display:'flex', gap:2 }}>
+          {HERO_SLIDES.map((_, idx) => (
+            <button key={idx} type="button"
+              onClick={() => setI(idx)}
+              aria-label={`Slide ${idx + 1} of ${len}`} aria-current={idx === i ? 'true' : undefined}
+              style={{ width:44, height:44, minWidth:44, minHeight:44,
+                display:'inline-flex', alignItems:'center', justifyContent:'center',
+                background:'transparent', border:'none', padding:0, cursor:'pointer' }}>
+              <span aria-hidden="true" style={{
+                display:'block', width: idx === i ? 20 : 6, height:2,
+                background: idx === i ? '#650A30' : 'rgba(43,43,43,0.25)',
+                transition:'width 300ms var(--ease-editorial), background 300ms',
+              }} />
+            </button>
+          ))}
+        </div>
+        <span style={{ ...hdAtomStyles.numeral, fontSize:10, color:'rgba(43,43,43,0.6)' }}>
+          {String(i + 1).padStart(2, '0')} / {String(len).padStart(2, '0')}
+        </span>
+      </div>
+    </section>
+  );
+}
+
+// Feature grid pen-line illustrations
+function HDIconGift() { return (
+  <svg width="44" height="44" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+    <rect x="7" y="19" width="34" height="22" stroke="#650A30" strokeWidth="1.4" />
+    <rect x="5" y="14" width="38" height="7" stroke="#650A30" strokeWidth="1.4" />
+    <path d="M24 14V41" stroke="#650A30" strokeWidth="1.4" />
+    <path d="M24 14c-3-4-10-4-10 0s4 4 10 0Z" stroke="#650A30" strokeWidth="1.4" />
+    <path d="M24 14c3-4 10-4 10 0s-4 4-10 0Z" stroke="#650A30" strokeWidth="1.4" />
+  </svg>
+); }
+function HDIconCatering() { return (
+  <svg width="44" height="44" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+    <path d="M8 31c0-5 7-9 16-9s16 4 16 9H8Z" stroke="#650A30" strokeWidth="1.4" />
+    <rect x="6" y="31" width="36" height="6" stroke="#650A30" strokeWidth="1.4" />
+    <path d="M19 22l5-5 5 5" stroke="#650A30" strokeWidth="1.4" />
+    <path d="M16 41h16" stroke="#650A30" strokeWidth="1.4" />
+    <circle cx="18" cy="27" r="1.2" fill="#650A30" />
+    <circle cx="24" cy="25" r="1.2" fill="#650A30" />
+    <circle cx="30" cy="27" r="1.2" fill="#650A30" />
+  </svg>
+); }
+function HDIconShare() { return (
+  <svg width="44" height="44" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+    <circle cx="14" cy="17" r="5" stroke="#650A30" strokeWidth="1.4" />
+    <circle cx="34" cy="13" r="4" stroke="#650A30" strokeWidth="1.4" />
+    <circle cx="34" cy="33" r="4" stroke="#650A30" strokeWidth="1.4" />
+    <path d="M19 17l11-3" stroke="#650A30" strokeWidth="1.4" />
+    <path d="M19 19l11 11" stroke="#650A30" strokeWidth="1.4" />
+  </svg>
+); }
+function HDIconPlan() { return (
+  <svg width="44" height="44" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+    <path d="M24 8 12 16v20h24V16L24 8Z" stroke="#650A30" strokeWidth="1.4" strokeLinejoin="round" />
+    <path d="M12 24h24" stroke="#650A30" strokeWidth="1.4" />
+    <path d="M12 30h24" stroke="#650A30" strokeWidth="1.4" />
+    <path d="M18 36V22" stroke="#650A30" strokeWidth="1.4" />
+  </svg>
+); }
+
+const FEATURES = [
+  { key:'gift',     title:'Kirim',    italic:'hadiah',  tag:'Nouveau', caption:'Sealed, with a note.',          Icon: HDIconGift,     to:'hadiah' },
+  { key:'catering', title:'Catering', italic:null,      tag:null,      caption:'For the occasion.',             Icon: HDIconCatering, to:'menu' },
+  { key:'share',    title:'Share',    italic:'the sip', tag:null,      caption:'Invite a friend, earn points.', Icon: HDIconShare,    to:'akun' },
+  { key:'plan',     title:'MyHD',     italic:'Plan',    tag:'Baru',    caption:'A standing subscription.',      Icon: HDIconPlan,     to:'akun' },
 ];
 
 // ───── HOME SCREEN ─────
@@ -80,59 +194,102 @@ function HomeScreen({ onAdd, onChangeTab }) {
   return (
     <div style={{ minHeight:'100%', background:'#FEF2E3', paddingBottom: 'calc(96px + env(safe-area-inset-bottom))' }}>
       <Masthead />
+      <HeroCarousel onOpenSlide={(s) => console.log('Open promo', s.tag)} />
       <MemberStrip points={1250} tier="Gold" target={2000} next="Platinum" onRewards={() => goto('hadiah')} />
       <OrderModes mode={mode} onSelect={setMode} />
       <Shortlist items={FEATURED} onAdd={onAdd} onAllClick={() => goto('menu')} />
 
-      {/* Of note — editorial index, full-width rows */}
+      {/* Baru minggu ini — horizontal scroll with Baru / Saison badges */}
       <section style={{ padding:'40px 0 0' }}>
         <div style={{ padding:'0 20px' }}>
-          <SectionHeader number={3} title="Of" titleItalic="note" />
+          <SectionHeader
+            number={3} title="Baru" titleItalic="minggu ini"
+            action={
+              <button
+                type="button" className="tap"
+                onClick={() => goto('menu')}
+                aria-label="See all new items"
+                style={{ ...hdAtomStyles.eyebrow, fontSize:11, display:'inline-flex', gap:8, alignItems:'center',
+                  cursor:'pointer', background:'transparent', border:'none', padding:'12px 8px',
+                  minHeight:44, minWidth:44, font:'inherit' }}
+              >See all <IconArrow size={12} /></button>
+            }
+          />
         </div>
-        <div style={{ marginTop:20, borderTop:'1px solid #2B2B2B' }}>
-          {SECTIONS.map((s, i) => (
+        <div style={{ display:'flex', gap:12, overflowX:'auto', padding:'20px 20px 8px' }} className="no-scrollbar">
+          {NEW_THIS_WEEK.map(it => (
             <button
-              type="button" key={s.title} className="tap"
-              onClick={() => console.log('Open section', s.num, s.title)}
-              aria-label={`Read about ${s.title}`}
-              style={{
-                display:'grid', gridTemplateColumns:'48px 1fr 20px', alignItems:'baseline',
-                gap:12, padding:'22px 20px', width:'100%', minHeight:44,
-                borderTop:'none', borderLeft:'none', borderRight:'none',
-                borderBottom: i === SECTIONS.length-1 ? '1px solid #2B2B2B' : '1px solid rgba(43,43,43,0.12)',
-                background:'transparent', textAlign:'left', color:'inherit', font:'inherit',
-                cursor:'pointer',
-              }}
+              key={it.id} type="button" className="tap"
+              onClick={() => onAdd(it)}
+              aria-label={`Add ${it.name}, ${it.price}, ${it.badge}`}
+              style={{ flexShrink:0, width:140, textAlign:'left', background:'transparent',
+                border:'none', padding:0, cursor:'pointer' }}
             >
-              <span style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:36, lineHeight:1, letterSpacing:'-0.04em', color:'#650A30', fontWeight:400 }}>
-                {s.num}
-              </span>
-              <div style={{ minWidth:0 }}>
-                <div style={{ display:'flex', alignItems:'baseline', gap:10, flexWrap:'wrap' }}>
-                  <span style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:22, letterSpacing:'-0.02em', lineHeight:1.1 }}>{s.title}</span>
-                  {s.mark && (
-                    <span style={{
-                      fontFamily:"'Jost', sans-serif", fontSize:10, letterSpacing:'0.22em', textTransform:'uppercase',
-                      color:'#650A30', borderLeft:'1px solid rgba(101,10,48,0.35)', paddingLeft:8,
-                    }}>{s.mark}</span>
-                  )}
-                </div>
-                <div style={{
-                  marginTop:6, fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic',
-                  fontSize:13, color:'rgba(43,43,43,0.75)', lineHeight:1.3,
-                }}>{s.tagline}.</div>
+              <div style={{ position:'relative', aspectRatio:'1/1', background:'#F5E6C8', overflow:'hidden' }}>
+                <img src={it.image} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                <span style={{
+                  position:'absolute', top:8, left:8,
+                  fontFamily:"'Jost', sans-serif", fontSize:9, letterSpacing:'0.2em',
+                  textTransform:'uppercase', color:'#FEF2E3',
+                  background:'#650A30', padding:'3px 7px', fontWeight:500,
+                }}>{it.badge}</span>
               </div>
-              <span aria-hidden="true" style={{ display:'inline-flex', alignItems:'center' }}>
-                <IconArrow size={14} color="#2B2B2B" />
-              </span>
+              <div style={{ marginTop:10 }}>
+                <div style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:14,
+                  lineHeight:1.2, letterSpacing:'-0.01em' }}>{it.name}</div>
+                <div style={{ marginTop:4, fontFamily:"'JetBrains Mono', monospace",
+                  fontSize:11, color:'#650A30', letterSpacing:'-0.01em' }}>{it.price}</div>
+              </div>
             </button>
           ))}
         </div>
       </section>
 
+      {/* Of note — 2×2 feature grid with pen-line illustrations (replaces list) */}
+      <section style={{ padding:'40px 20px 0' }}>
+        <SectionHeader number={4} title="Of" titleItalic="note" />
+        <div style={{ marginTop:20, display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+          {FEATURES.map(f => {
+            const Icon = f.Icon;
+            return (
+              <button
+                key={f.key} type="button" className="tap"
+                onClick={() => goto(f.to)}
+                aria-label={`${f.title}${f.italic ? ' ' + f.italic : ''} — ${f.caption}`}
+                style={{
+                  display:'flex', flexDirection:'column', alignItems:'flex-start',
+                  padding:'18px 16px 20px', minHeight:156,
+                  background:'rgba(184,146,42,0.08)',
+                  border:'1px solid rgba(43,43,43,0.12)',
+                  textAlign:'left', cursor:'pointer',
+                  font:'inherit', color:'inherit',
+                  position:'relative',
+                }}
+              >
+                {f.tag && (
+                  <span style={{
+                    position:'absolute', top:10, right:10,
+                    fontFamily:"'Jost', sans-serif", fontSize:9, letterSpacing:'0.2em',
+                    textTransform:'uppercase', color:'#650A30',
+                    border:'1px solid rgba(101,10,48,0.4)', padding:'2px 6px', fontWeight:500,
+                  }}>{f.tag}</span>
+                )}
+                <Icon />
+                <div style={{ marginTop:14, fontFamily:"'Cormorant Garamond', Georgia, serif",
+                  fontSize:22, lineHeight:1.05, letterSpacing:'-0.02em', fontWeight:500 }}>
+                  {f.title}{f.italic && (<> <span style={{ fontStyle:'italic', fontWeight:400 }}>{f.italic}</span></>)}
+                </div>
+                <div style={{ marginTop:6, fontFamily:"'Cormorant Garamond', Georgia, serif",
+                  fontStyle:'italic', fontSize:12, color:'rgba(43,43,43,0.75)' }}>{f.caption}</div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
       {/* Rewards unclaimed — tappable */}
       <section style={{ padding:'40px 20px 0' }}>
-        <SectionHeader number={4} title="Rewards, unclaimed" />
+        <SectionHeader number={5} title="Rewards, unclaimed" />
         <button
           type="button" className="tap" onClick={() => goto('hadiah')}
           aria-label="Open rewards — 3 vouchers await collection"
@@ -701,30 +858,36 @@ function OrdersScreen() {
         <SectionHeader number={3} title="Previously" titleItalic="yours" />
         <div style={{ marginTop:12, borderTop:'1px solid #2B2B2B' }}>
           {history.map(h => (
-            <button
-              type="button" key={h.id} className="tap"
-              onClick={() => console.log('Reorder', h.id)}
-              aria-label={`Reorder from ${h.date}, ${h.items}, total ${h.total}, ${h.status}`}
+            <div
+              key={h.id}
               style={{
-                display:'grid', gridTemplateColumns:'1fr auto', gap:16, padding:'16px 0', width:'100%', minHeight:44,
-                borderTop:'none', borderLeft:'none', borderRight:'none',
-                borderBottom:'1px solid rgba(43,43,43,0.12)', alignItems:'baseline', cursor:'pointer',
-                background:'transparent', color:'inherit', font:'inherit', textAlign:'left',
+                display:'grid', gridTemplateColumns:'1fr auto', gap:14,
+                padding:'16px 0', borderBottom:'1px solid rgba(43,43,43,0.12)', alignItems:'center',
               }}
             >
-              <div>
-                <div style={{ display:'flex', alignItems:'baseline', gap:10 }}>
-                  <span style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:16, letterSpacing:'-0.01em' }}>{h.items}</span>
-                </div>
+              <div style={{ minWidth:0 }}>
+                <div style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:16, letterSpacing:'-0.01em' }}>{h.items}</div>
                 <div style={{ marginTop:3, fontFamily:"'JetBrains Mono', monospace", fontSize:10.5, color:'rgba(43,43,43,0.75)', letterSpacing:'0.03em' }}>
                   {h.date} · {h.id}
                 </div>
+                <div style={{ marginTop:4, display:'flex', alignItems:'baseline', gap:10 }}>
+                  <Numeral size={12}>{h.total}</Numeral>
+                  <span style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic', fontSize:11, color:'#650A30' }}>{h.status}</span>
+                </div>
               </div>
-              <div style={{ textAlign:'right' }}>
-                <Numeral size={13}>{h.total}</Numeral>
-                <div style={{ marginTop:3, fontFamily:"'Cormorant Garamond', Georgia, serif", fontStyle:'italic', fontSize:11, color:'#650A30' }}>{h.status}</div>
-              </div>
-            </button>
+              <button
+                type="button" className="tap"
+                onClick={() => console.log('Reorder', h.id)}
+                aria-label={`Pesan lagi — reorder ${h.items} from ${h.date}, total ${h.total}`}
+                style={{
+                  background:'#650A30', color:'#FEF2E3', border:'none',
+                  padding:'0 14px', minHeight:44, cursor:'pointer', whiteSpace:'nowrap',
+                  fontFamily:"'Jost', sans-serif", fontSize:10, letterSpacing:'0.22em',
+                  textTransform:'uppercase', fontWeight:500,
+                  display:'inline-flex', alignItems:'center', gap:6,
+                }}
+              >Pesan lagi <IconArrow size={10} color="#FEF2E3" /></button>
+            </div>
           ))}
         </div>
         <div style={{ marginTop:18, textAlign:'center' }}>
