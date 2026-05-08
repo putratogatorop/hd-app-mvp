@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Häagen-Dazs — Begin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<script src="i18n.js" defer></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --hd-burgundy:       #650A30;
+  --hd-burgundy-dark:  #40061E;
+  --hd-burgundy-light: #801237;
+  --hd-gold:           #B8922A;
+  --hd-gold-light:     #F5E6C8;
+  --hd-cream:          #FEF2E3;
+  --hd-cream-deep:     #F5E6C8;
+  --hd-paper:          #FEF2E3;
+  --hd-ink:            #2B2B2B;
+  --rule:              rgba(43,43,43,0.12);
+  --rule-soft:         rgba(43,43,43,0.08);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans:    'Jost', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+  --ease-ed: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html, body {
+  background: #16030b;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px 60px;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.global-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+
+.phone-shell {
+  width: 390px;
+  min-width: 390px;
+  background: var(--hd-burgundy-dark);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 40px 120px -20px rgba(0,0,0,0.85),
+    0 80px 200px -40px rgba(64,6,30,0.5);
+  position: relative;
+  overflow: hidden;
+  min-height: 844px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── GRAIN INSIDE SHELL ── */
+.shell-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+
+/* ── HERO IMAGE ── */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.hero-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+/* v3 native_app_view: gradient from top-burgundy to full-black-burgundy at bottom */
+.hero-bg-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(66,0,28,0.25) 0%,
+    rgba(66,0,28,0.70) 55%,
+    rgba(66,0,28,0.95) 100%
+  );
+}
+
+/* ── AMBIENT GLOW ── */
+.ambient-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse 60% 40% at 80% 15%, rgba(184,146,42,0.10), transparent 60%),
+    radial-gradient(ellipse 50% 60% at 10% 85%, rgba(128,18,55,0.30), transparent 70%);
+}
+
+/* ── STATUS BAR ── */
+.status-bar {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  height: 44px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: rgba(254,242,227,0.65);
+}
+
+/* ── TOP NAV (v3: wordmark left, SIGN IN right) ── */
+.top-nav {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 24px 0;
+}
+/* v3 native_app_view: stacked two-line wordmark */
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 28px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--hd-cream);
+  line-height: 0.92;
+}
+.signin-link {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(254,242,227,0.55);
+  text-decoration: none;
+  /* v3: underlined, top-right */
+  border-bottom: 1px solid rgba(254,242,227,0.25);
+  padding-bottom: 1px;
+  margin-top: 4px;
+  transition: color 250ms;
+}
+.signin-link:hover { color: var(--hd-gold-light); }
+
+/* ── HERO COPY (v3: "01 / INTRODUCTION" + "Begin.") ── */
+.hero-body {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 24px 28px;
+}
+/* v3 native_app_view: short hairline + "01 / INTRODUCTION" label */
+.intro-marker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.intro-marker-rule {
+  width: 32px;
+  height: 1px;
+  background: rgba(254,242,227,0.20);
+  flex-shrink: 0;
+}
+.intro-marker-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(254,242,227,0.50);
+}
+
+.splash-headline {
+  font-family: var(--font-display);
+  font-size: 96px;
+  font-weight: 300;
+  font-style: italic;
+  line-height: 0.90;
+  letter-spacing: -0.03em;
+  color: var(--hd-cream);
+  margin-bottom: 24px;
+  animation: revealUp 0.9s var(--ease-ed) 0.1s both;
+}
+
+.splash-sub {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.65;
+  color: rgba(254,242,227,0.65);
+  max-width: 280px;
+  animation: revealUp 0.9s var(--ease-ed) 0.25s both;
+}
+
+/* ── CTA BLOCK (v3 native_app_view: EST. 1960 + hairline + CONTINUE + tagline + dot) ── */
+.cta-block {
+  position: relative;
+  z-index: 10;
+  padding: 0 24px 40px;
+}
+/* v3: "EST. 1960" + hairline divider row */
+.cta-est-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.cta-est-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgba(254,242,227,0.40);
+  flex-shrink: 0;
+}
+.cta-est-rule {
+  flex: 1;
+  height: 1px;
+  background: rgba(254,242,227,0.10);
+}
+
+/* v3: full-width cream button, no arrow icon — just text */
+.cta-btn {
+  display: block;
+  width: 100%;
+  background: var(--hd-cream);
+  color: var(--hd-burgundy-dark);
+  padding: 22px 28px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.30em;
+  font-weight: 600;
+  text-transform: uppercase;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+  transition: background 250ms var(--ease-ed);
+  animation: revealUp 0.9s var(--ease-ed) 0.4s both;
+}
+.cta-btn:hover { background: var(--hd-gold-light); }
+
+/* v3: "THE ART OF INDULGENCE" + dot below */
+.cta-tagline-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+.cta-tagline {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(254,242,227,0.45);
+}
+.cta-dot {
+  width: 4px;
+  height: 4px;
+  background: rgba(254,242,227,0.30);
+}
+
+/* ── EDGE PROTECTION (v3) ── */
+.edge-left {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 100%;
+  background: rgba(254,242,227,0.05);
+  z-index: 50;
+  pointer-events: none;
+}
+.edge-right {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 100%;
+  background: rgba(254,242,227,0.05);
+  z-index: 50;
+  pointer-events: none;
+}
+
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<div class="global-grain"></div>
+<div class="edge-left"></div>
+<div class="edge-right"></div>
+
+<div class="phone-shell">
+
+  <!-- Layers -->
+  <div class="hero-bg">
+    <img src="photos/DVhvEZck3Z9.jpg" alt="Häagen-Dazs artisanal ice cream — chocolate swirl" />
+    <div class="hero-bg-scrim"></div>
+  </div>
+  <div class="ambient-glow"></div>
+  <div class="shell-grain"></div>
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>5G &nbsp; 100%</span>
+  </div>
+
+  <!-- Top nav: stacked wordmark + SIGN IN (v3 native_app_view) -->
+  <nav class="top-nav">
+    <!-- v3: wordmark breaks across two lines -->
+    <div class="wordmark">Häagen-<br>Dazs</div>
+    <a href="#" class="signin-link" data-i18n="splash.signin">Sign In</a>
+  </nav>
+
+  <!-- Hero copy: "01 / INTRODUCTION" → "Begin." (v3) -->
+  <div class="hero-body">
+    <div class="intro-marker">
+      <div class="intro-marker-rule"></div>
+      <span class="intro-marker-label" data-i18n="splash.intro_label">01 / Introduction</span>
+    </div>
+
+    <h1 class="splash-headline" data-i18n="splash.headline">Begin.</h1>
+
+    <p class="splash-sub" data-i18n="splash.sub">
+      Enter a world of curated excellence where every scoop is a masterpiece of artisanal heritage.
+    </p>
+  </div>
+
+  <!-- CTA: EST. 1960 + hairline + CONTINUE + tagline + dot (v3) -->
+  <div class="cta-block">
+    <div class="cta-est-row">
+      <span class="cta-est-text" data-i18n="splash.est">Est. 1960</span>
+      <div class="cta-est-rule"></div>
+    </div>
+    <button class="cta-btn" data-i18n="onboarding.continue">Continue</button>
+    <div class="cta-tagline-wrap">
+      <span class="cta-tagline" data-i18n="splash.art_tagline">The Art of Indulgence</span>
+      <div class="cta-dot"></div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

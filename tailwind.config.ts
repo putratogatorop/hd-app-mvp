@@ -21,8 +21,8 @@ const config: Config = {
         "hd-paper": "#FBF6EC",
       },
       fontFamily: {
-        display: ["var(--font-display)", "Fraunces", "Georgia", "serif"],
-        sans: ["var(--font-sans)", "Instrument Sans", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "Cormorant Garamond", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "Jost", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "JetBrains Mono", "ui-monospace", "monospace"],
       },
       fontSize: {

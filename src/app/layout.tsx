@@ -1,23 +1,27 @@
 import type { Metadata, Viewport } from 'next'
-import { Fraunces, Instrument_Sans, JetBrains_Mono } from 'next/font/google'
+import { Cormorant_Garamond, Jost, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
+import { LanguageCurrencyProvider } from '@/components/LanguageCurrencySwitcher'
 
-const fraunces = Fraunces({
+const cormorantGaramond = Cormorant_Garamond({
   subsets: ['latin'],
   variable: '--font-display',
-  axes: ['opsz', 'SOFT', 'WONK'],
+  weight: ['300', '400', '500', '600'],
+  style: ['normal', 'italic'],
   display: 'swap',
 })
 
-const instrumentSans = Instrument_Sans({
+const jost = Jost({
   subsets: ['latin'],
   variable: '--font-sans',
+  weight: ['400', '500', '600'],
   display: 'swap',
 })
 
 const mono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
+  weight: ['400', '500'],
   display: 'swap',
 })
 
@@ -47,10 +51,12 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`light ${fraunces.variable} ${instrumentSans.variable} ${mono.variable}`}
+      className={`light ${cormorantGaramond.variable} ${jost.variable} ${mono.variable}`}
       style={{ colorScheme: 'light' }}
     >
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <LanguageCurrencyProvider>{children}</LanguageCurrencyProvider>
+      </body>
     </html>
   )
 }

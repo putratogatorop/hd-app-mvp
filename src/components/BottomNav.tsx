@@ -8,7 +8,7 @@ const navItems = [
   { href: '/home', label: 'Beranda' },
   { href: '/menu', label: 'Menu' },
   { href: '/orders', label: 'Pesanan' },
-  { href: '/voucher', label: 'Hadiah' },
+  { href: '/lounge', label: 'Hadiah' },
   { href: '/account', label: 'Akun' },
 ]
 

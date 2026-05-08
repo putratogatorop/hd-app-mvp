@@ -1,0 +1,823 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HD App — Cart · For Me</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<script src="i18n.js" defer></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --hd-burgundy:       #650A30;
+  --hd-burgundy-dark:  #40061E;
+  --hd-burgundy-light: #801237;
+  --hd-gold:           #B8922A;
+  --hd-gold-light:     #F5E6C8;
+  --hd-cream:          #FEF2E3;
+  --hd-cream-deep:     #F5E6C8;
+  --hd-paper:          #FEF2E3;
+  --hd-ink:            #2B2B2B;
+  --surface-container: #F8ECDD;
+  --rule:              rgba(136,113,118,0.20);
+  --rule-soft:         rgba(136,113,118,0.10);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans:    'Jost', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+  --ease-ed: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html, body {
+  background: #16030b;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px 60px;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.phone-shell {
+  width: 390px;
+  min-width: 390px;
+  background: var(--hd-cream);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 40px 120px -20px rgba(0,0,0,0.85),
+    0 80px 200px -40px rgba(64,6,30,0.5);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Paper grain overlay */
+.global-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+
+/* ── STATUS BAR ── */
+.status-bar {
+  background: var(--hd-burgundy-dark);
+  color: rgba(254,242,227,0.75);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+/* ── TOP APP BAR (v3 native) ── */
+.top-bar {
+  background: var(--hd-cream);
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  height: 56px;
+  flex-shrink: 0;
+}
+.top-bar-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--hd-burgundy);
+}
+.top-bar-icon svg { display: block; }
+.top-bar-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 17px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hd-burgundy);
+}
+
+/* ── SCROLL AREA ── */
+/* Room for top-bar (56px) + sticky-CTA (56px) + bottom-nav (60px) */
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  background: var(--hd-cream);
+  /* max visible height matching phone-shell */
+  max-height: calc(844px - 44px - 56px - 56px - 60px);
+}
+.scroll-area::-webkit-scrollbar { display: none; }
+.scroll-area { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── EYEBROW UTILITIES ── */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  line-height: 1;
+}
+.numeral {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum","ss02";
+}
+.hairline { border: 0; border-top: 1px solid var(--rule); }
+
+/* ── SECTION HEADER (v3 native style) ── */
+/* "01 / ORDER MODE" — numeral left, rule line, label right */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  margin-bottom: 20px;
+}
+.section-head-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(43,43,43,0.30);
+  letter-spacing: 0.04em;
+}
+.section-head-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+.section-head-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.50);
+}
+
+/* ── MODE TOGGLE (v3: segmented box) ── */
+.mode-toggle {
+  padding: 16px 20px;
+}
+.mode-toggle-inner {
+  display: flex;
+  border: 1px solid var(--rule);
+  padding: 4px;
+  gap: 0;
+}
+.toggle-btn {
+  flex: 1;
+  padding: 12px 0;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.45);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 200ms, background 200ms;
+}
+.toggle-btn.active {
+  background: var(--hd-burgundy);
+  color: var(--hd-cream);
+}
+
+/* ── ORDER MODE SECTION (v3: 3-col grid, editorial labels) ── */
+.order-mode-section {
+  padding: 0 20px 32px;
+}
+.order-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border: 1px solid var(--rule);
+}
+.order-mode-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 0 16px;
+  background: var(--hd-cream);
+  border: none;
+  cursor: pointer;
+  border-right: 1px solid var(--rule);
+  transition: background 200ms;
+  gap: 6px;
+}
+.order-mode-cell:last-child { border-right: none; }
+.order-mode-cell.active {
+  background: var(--hd-burgundy);
+}
+.order-mode-cell.active .order-mode-label { color: rgba(254,242,227,0.80); }
+/* Icon-free: we use a mono numeral instead */
+.order-mode-icon {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: rgba(43,43,43,0.30);
+  line-height: 1;
+}
+.order-mode-cell.active .order-mode-icon { color: rgba(254,242,227,0.50); }
+.order-mode-label {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.50);
+  line-height: 1;
+}
+
+/* ── ITEMS SECTION ── */
+.items-section {
+  padding: 0 20px 32px;
+}
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+/* v3: larger 96x96 image, Cormorant name, inline × remove, border-bottom per item */
+.item-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.item-row:last-child { border-bottom: none; }
+.item-img {
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--surface-container);
+}
+.item-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(0.2);
+}
+.item-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 96px;
+  padding: 4px 0;
+  min-width: 0;
+}
+.item-body-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.item-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--hd-ink);
+  line-height: 1.15;
+}
+.item-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(43,43,43,0.35);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 0 0 0 8px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.item-body-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+/* Qty stepper: hairline border box, mono buttons */
+.item-qty {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--rule);
+  height: 28px;
+}
+.item-qty button {
+  background: none;
+  border: none;
+  width: 28px;
+  height: 100%;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: rgba(43,43,43,0.50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 150ms, background 150ms;
+}
+.item-qty button:hover { color: var(--hd-burgundy); background: var(--hd-cream-deep); }
+.item-qty-num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--hd-ink);
+  padding: 0 10px;
+  border-left: 1px solid var(--rule-soft);
+  border-right: 1px solid var(--rule-soft);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  min-width: 32px;
+  justify-content: center;
+  letter-spacing: 0.04em;
+}
+.item-price {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--hd-burgundy);
+  letter-spacing: -0.02em;
+}
+
+/* ── SUMMARY SECTION ── */
+.summary-section {
+  padding: 0 20px 24px;
+}
+.summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.summary-row:last-child { border-bottom: none; }
+.summary-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.45);
+}
+.summary-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--hd-ink);
+  letter-spacing: -0.02em;
+}
+/* Total row — v3: eyebrow label uppercase bold, large Cormorant numeral */
+.summary-row.total {
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+  border-bottom: none;
+}
+.summary-row.total .summary-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--hd-burgundy);
+}
+.summary-row.total .summary-value {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  color: var(--hd-burgundy);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+/* Voucher & notes rows */
+.aux-section {
+  padding: 0 20px 24px;
+}
+.aux-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--rule-soft);
+  cursor: pointer;
+  transition: border-color 200ms;
+}
+.aux-row:hover { border-bottom-color: var(--hd-burgundy); }
+.aux-label {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--hd-burgundy);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(101,10,48,0.35);
+  letter-spacing: 0.06em;
+}
+.aux-arrow { color: rgba(43,43,43,0.35); font-size: 14px; }
+
+/* Notes textarea */
+.notes-textarea {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  padding: 0 0 12px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--hd-ink);
+  resize: none;
+  outline: none;
+  transition: border-color 300ms;
+  min-height: 48px;
+}
+.notes-textarea::placeholder { color: rgba(43,43,43,0.28); font-style: italic; }
+.notes-textarea:focus { border-bottom-color: var(--hd-burgundy); }
+
+/* ── STICKY CTA (v3: fixed bottom above bottom-nav, h-14) ── */
+/* In mockup we use normal flow after scroll-area. Positioned via flex on phone-shell. */
+.sticky-cta-wrap {
+  flex-shrink: 0;
+  background: rgba(254,242,227,0.95);
+  border-top: 1px solid var(--rule-soft);
+  padding: 12px 20px 0;
+}
+.sticky-cta {
+  height: 56px;
+  background: var(--hd-burgundy);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  transition: background 200ms;
+}
+.sticky-cta:hover { background: var(--hd-burgundy-light); }
+.sticky-cta-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--hd-cream);
+}
+.sticky-cta-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sticky-cta-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(254,242,227,0.30);
+}
+.sticky-cta-price {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--hd-cream);
+  letter-spacing: -0.02em;
+  font-weight: 500;
+}
+.sticky-cta-arrow {
+  font-size: 16px;
+  color: rgba(254,242,227,0.60);
+  line-height: 1;
+}
+
+/* ── BOTTOM NAV (v3 native) ── */
+.bottom-nav {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 8px 12px;
+  background: var(--hd-cream);
+  border-top: 1px solid var(--rule);
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: rgba(43,43,43,0.45);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 200ms;
+}
+.nav-item.active { color: var(--hd-burgundy); }
+.nav-item:hover { color: var(--hd-burgundy); }
+.nav-icon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.nav-icon svg { display: block; }
+.nav-label {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  line-height: 1;
+}
+
+</style>
+</head>
+<body>
+
+<div class="global-grain"></div>
+
+<div class="phone-shell">
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>5G &nbsp; 100%</span>
+  </div>
+
+  <!-- TOP APP BAR (v3 native: hamburger · "YOUR BASKET" · bag) -->
+  <div class="top-bar">
+    <button class="top-bar-icon" aria-label="Menu">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+        <line x1="0" y1="1" x2="18" y2="1" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="0" y1="6" x2="18" y2="6" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="0" y1="11" x2="18" y2="11" stroke="currentColor" stroke-width="1.5"/>
+      </svg>
+    </button>
+    <span class="top-bar-title" data-i18n="cart.your_basket">Your Basket</span>
+    <button class="top-bar-icon" aria-label="Bag">
+      <svg width="18" height="20" viewBox="0 0 18 20" fill="none">
+        <path d="M1 6h16l-1.5 13H2.5L1 6Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M5.5 6V4.5a3.5 3.5 0 0 1 7 0V6" stroke="currentColor" stroke-width="1.2"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- SCROLL AREA -->
+  <div class="scroll-area" id="scrollArea">
+
+    <!-- MODE TOGGLE (v3: segmented box "For Me" filled / "As a Gift" empty) -->
+    <div class="mode-toggle">
+      <div class="mode-toggle-inner" id="modeToggle">
+        <button class="toggle-btn active" data-toggle="forme" data-i18n="cart.for_me">For Me</button>
+        <button class="toggle-btn" data-toggle="gift" data-i18n="cart.as_a_gift">As a Gift</button>
+      </div>
+    </div>
+
+    <!-- 01 / ORDER MODE -->
+    <section class="order-mode-section">
+      <div class="section-head">
+        <span class="section-head-num eyebrow" style="color:rgba(43,43,43,0.30)">01</span>
+        <div class="section-head-rule"></div>
+        <span class="section-head-label" data-i18n="section.order_mode">Order Mode</span>
+      </div>
+      <div class="order-mode-grid" id="orderModeGrid">
+        <button class="order-mode-cell" data-mode="delivery">
+          <span class="order-mode-icon">↑</span>
+          <span class="order-mode-label" data-i18n="delivery.delivery">Delivery</span>
+        </button>
+        <button class="order-mode-cell active" data-mode="pickup">
+          <span class="order-mode-icon">◫</span>
+          <span class="order-mode-label" data-i18n="delivery.pickup">Pickup</span>
+        </button>
+        <button class="order-mode-cell" data-mode="dinein">
+          <span class="order-mode-icon">⌖</span>
+          <span class="order-mode-label" data-i18n="delivery.dinein">Dine-In</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 02 / ITEMS -->
+    <section class="items-section">
+      <div class="section-head">
+        <span class="section-head-num eyebrow" style="color:rgba(43,43,43,0.30)">02</span>
+        <div class="section-head-rule"></div>
+        <span class="section-head-label" data-i18n="section.items">Items</span>
+      </div>
+      <div class="items-list">
+
+        <div class="item-row">
+          <div class="item-img">
+            <img src="photos/DWizLL8k3Vq.jpg" alt="Vanilla" loading="lazy" />
+          </div>
+          <div class="item-body">
+            <div class="item-body-top">
+              <span class="item-name">Vanilla Bean<br>Single Scoop</span>
+              <button class="item-remove" aria-label="Remove">×</button>
+            </div>
+            <div class="item-body-bottom">
+              <div class="item-qty" id="qty-vanilla">
+                <button onclick="adjustQty('qty-vanilla', -1)">−</button>
+                <span class="item-qty-num" id="qty-vanilla-num">01</span>
+                <button onclick="adjustQty('qty-vanilla', 1)">+</button>
+              </div>
+              <span class="item-price" data-price-idr="90000">Rp 90.000</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="item-row">
+          <div class="item-img">
+            <img src="photos/DWffta7k4Ei.jpg" alt="Belgian Chocolate Pint" loading="lazy" />
+          </div>
+          <div class="item-body">
+            <div class="item-body-top">
+              <span class="item-name">Belgian<br>Chocolate Pint</span>
+              <button class="item-remove" aria-label="Remove">×</button>
+            </div>
+            <div class="item-body-bottom">
+              <div class="item-qty" id="qty-choc">
+                <button onclick="adjustQty('qty-choc', -1)">−</button>
+                <span class="item-qty-num" id="qty-choc-num">01</span>
+                <button onclick="adjustQty('qty-choc', 1)">+</button>
+              </div>
+              <span class="item-price" data-price-idr="125000">Rp 125.000</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 03 / VOUCHER -->
+    <section class="aux-section">
+      <div class="section-head">
+        <span class="section-head-num eyebrow" style="color:rgba(43,43,43,0.30)">03</span>
+        <div class="section-head-rule"></div>
+        <span class="section-head-label" data-i18n="section.voucher">Voucher</span>
+      </div>
+      <div class="aux-row">
+        <span class="aux-label" data-i18n="cart.voucher_add">Add a code</span>
+        <span class="aux-arrow">↗</span>
+      </div>
+    </section>
+
+    <!-- 04 / NOTES -->
+    <section class="aux-section">
+      <div class="section-head">
+        <span class="section-head-num eyebrow" style="color:rgba(43,43,43,0.30)">04</span>
+        <div class="section-head-rule"></div>
+        <span class="section-head-label" data-i18n="section.notes">Notes</span>
+      </div>
+      <textarea
+        class="notes-textarea"
+        rows="2"
+        data-i18n-placeholder="cart.notes_placeholder"
+        placeholder="A note for our kitchen…"
+        aria-label="Order notes"
+      ></textarea>
+    </section>
+
+    <!-- ORDER SUMMARY -->
+    <section style="padding: 0 20px 32px;">
+      <div class="summary-rows">
+        <div class="summary-row">
+          <span class="summary-label" data-i18n="cart.subtotal">Subtotal</span>
+          <span class="summary-value" data-price-idr="215000">Rp 215.000</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label" data-i18n="cart.delivery_fee">Delivery Fee</span>
+          <span class="summary-value" data-price-idr="15000">Rp 15.000</span>
+        </div>
+        <div class="summary-row total">
+          <span class="summary-label" data-i18n="cart.total_estimate">Total Estimate</span>
+          <span class="summary-value" data-price-idr="230000">Rp 230.000</span>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- end scroll-area -->
+
+  <!-- STICKY CTA (v3 native: above bottom-nav, full-width, h-14, price + arrow inline) -->
+  <div class="sticky-cta-wrap">
+    <button class="sticky-cta">
+      <span class="sticky-cta-label">Place Order</span>
+      <div class="sticky-cta-right">
+        <div class="sticky-cta-divider"></div>
+        <span class="sticky-cta-price" data-price-idr="230000">Rp 230.000</span>
+        <span class="sticky-cta-arrow">→</span>
+      </div>
+    </button>
+  </div>
+
+  <!-- BOTTOM NAV (v3 native: 5 tabs, "Orders" active) -->
+  <nav class="bottom-nav">
+    <button class="nav-item">
+      <div class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M3 8l7-5 7 5v9H12v-4H8v4H3V8Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="nav-label" data-i18n="nav.home">Home</span>
+    </button>
+    <button class="nav-item">
+      <div class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <rect x="3" y="2" width="14" height="16" rx="0" stroke="currentColor" stroke-width="1.2"/>
+          <line x1="6" y1="7" x2="14" y2="7" stroke="currentColor" stroke-width="1"/>
+          <line x1="6" y1="10" x2="14" y2="10" stroke="currentColor" stroke-width="1"/>
+          <line x1="6" y1="13" x2="10" y2="13" stroke="currentColor" stroke-width="1"/>
+        </svg>
+      </div>
+      <span class="nav-label" data-i18n="nav.menu">Menu</span>
+    </button>
+    <button class="nav-item active">
+      <div class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <rect x="3" y="3" width="14" height="14" rx="0" stroke="currentColor" stroke-width="1.2"/>
+          <line x1="7" y1="8" x2="13" y2="8" stroke="currentColor" stroke-width="1"/>
+          <line x1="7" y1="11" x2="13" y2="11" stroke="currentColor" stroke-width="1"/>
+          <line x1="7" y1="14" x2="10" y2="14" stroke="currentColor" stroke-width="1"/>
+        </svg>
+      </div>
+      <span class="nav-label" data-i18n="nav.orders">Orders</span>
+    </button>
+    <button class="nav-item">
+      <div class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M4 10c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6-6-2.7-6-6Z" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M8 10h4M10 8v4" stroke="currentColor" stroke-width="1" stroke-linecap="square"/>
+        </svg>
+      </div>
+      <span class="nav-label" data-i18n="nav.voucher">Voucher</span>
+    </button>
+    <button class="nav-item">
+      <div class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M4 17c0-3.3 2.7-4 6-4s6 .7 6 4" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <span class="nav-label" data-i18n="nav.account">Account</span>
+    </button>
+  </nav>
+
+</div><!-- end phone-shell -->
+
+<script>
+(function () {
+  // Mode toggle (For Me / As a Gift)
+  const modeToggle = document.getElementById('modeToggle');
+  if (modeToggle) {
+    modeToggle.addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-toggle]');
+      if (!btn) return;
+      modeToggle.querySelectorAll('.toggle-btn').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+    });
+  }
+
+  // Order Mode grid
+  const orderModeGrid = document.getElementById('orderModeGrid');
+  if (orderModeGrid) {
+    orderModeGrid.addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-mode]');
+      if (!btn) return;
+      orderModeGrid.querySelectorAll('.order-mode-cell').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+    });
+  }
+})();
+
+// Qty controls
+var qtys = { 'qty-vanilla': 1, 'qty-choc': 1 };
+function adjustQty(id, delta) {
+  qtys[id] = Math.max(1, (qtys[id] || 1) + delta);
+  var numEl = document.getElementById(id + '-num');
+  if (numEl) numEl.textContent = qtys[id] < 10 ? '0' + qtys[id] : '' + qtys[id];
+}
+</script>
+
+</body>
+</html>

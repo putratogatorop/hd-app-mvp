@@ -2,31 +2,35 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Search, X, Gift } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import type { Database } from '@/lib/supabase/database.types'
-import { useOrderContext } from '@/lib/store/order-context'
 import { useCartStore } from '@/lib/store/cart'
-import MenuItemCard from './MenuItemCard'
+import { useTranslation, useCurrency } from '@/lib/i18n/context'
 import ProductSheet from '@/components/ProductSheet'
-import FloatingCartButton from '@/components/FloatingCartButton'
-import { Eyebrow } from '@/components/ui'
 
 type MenuItem = Database['public']['Tables']['menu_items']['Row']
 type Category = MenuItem['category'] | 'all'
 
-const CATEGORIES: { label: string; value: Category }[] = [
-  { label: 'All', value: 'all' },
-  { label: 'Ice Cream', value: 'ice_cream' },
-  { label: 'Patisserie', value: 'cake' },
-  { label: 'Beverage', value: 'beverage' },
-  { label: 'Topping', value: 'topping' },
-]
-
-const MODE_LABEL: Record<string, string> = {
-  pickup: 'Pick Up',
-  delivery: 'Delivery',
-  dinein: 'Dine In',
+// Category tiles — image pool (hd-photos)
+const CATEGORY_IMAGES: Record<string, string> = {
+  pints: '/hd-photos/DW5RVLkkwA6.jpg',
+  mini_cups: '/hd-photos/DVxL5rJE5B8.jpg',
+  ice_cream: '/hd-photos/DW5RVLkkwA6.jpg',
+  cake: '/hd-photos/DXEOeW3E_Ed.jpg',
+  beverage: '/hd-photos/DVaSW5-Ey6f.jpg',
+  topping: '/hd-photos/DVHzikJk669.jpg',
 }
+
+const FALLBACK_PHOTOS = [
+  '/hd-photos/DXEOeW3E_Ed.jpg',
+  '/hd-photos/DW5RVLkkwA6.jpg',
+  '/hd-photos/DWffta7k4Ei.jpg',
+  '/hd-photos/DWI-Kpok62S.jpg',
+  '/hd-photos/DW03wihk-je.jpg',
+  '/hd-photos/DWffta7k4Ei.jpg',
+  '/hd-photos/DV7gQA2k4-5.jpg',
+]
 
 interface MenuClientProps {
   items: MenuItem[]
@@ -34,14 +38,16 @@ interface MenuClientProps {
 
 export default function MenuClient({ items }: MenuClientProps) {
   const [search, setSearch] = useState('')
-  const [activeCategory, setActiveCategory] = useState<Category>('all')
+  const [activeCategory, setActiveCategory] = useState<Category>('ice_cream')
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
 
-  const { mode, selectedStore } = useOrderContext()
-  const modeLabel = MODE_LABEL[mode] ?? 'Pick Up'
-  const storeName = selectedStore?.name ?? 'Select a store'
+  const { t, lang } = useTranslation()
+  const { formatPrice } = useCurrency()
+  const addItem = useCartStore((s) => s.addItem)
+  const itemCount = useCartStore((s) => s.itemCount())
+  const router = useRouter()
 
-  // Auto-enable cart gift mode when arriving from /menu?gift=1 (e.g. from home tile)
+  // Auto-enable cart gift mode when arriving from /menu?gift=1
   const searchParams = useSearchParams()
   const setIsGift = useCartStore((s) => s.setIsGift)
   const isGift = useCartStore((s) => s.isGift)
@@ -50,6 +56,22 @@ export default function MenuClient({ items }: MenuClientProps) {
       setIsGift(true)
     }
   }, [searchParams, isGift, setIsGift])
+
+  // Categories derived from items
+  const categories = useMemo((): { label: string; value: Category; image: string }[] => {
+    const cats = Array.from(new Set(items.map((i) => i.category)))
+    return cats.map((c) => ({
+      value: c as Category,
+      label: c === 'ice_cream'
+        ? (lang === 'id' ? 'Pints' : 'Pints')
+        : c === 'cake'
+        ? (lang === 'id' ? 'Patisserie' : 'Patisserie')
+        : c === 'beverage'
+        ? (lang === 'id' ? 'Minuman' : 'Beverages')
+        : lang === 'id' ? 'Topping' : 'Toppings',
+      image: CATEGORY_IMAGES[c] ?? FALLBACK_PHOTOS[0],
+    }))
+  }, [items, lang])
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim()
@@ -60,122 +82,281 @@ export default function MenuClient({ items }: MenuClientProps) {
     })
   }, [items, search, activeCategory])
 
-  const available = filtered.filter((i) => i.is_available)
-  const unavailable = filtered.filter((i) => !i.is_available)
-  const sorted = [...available, ...unavailable]
+  // Section label
+  const sectionTitle = lang === 'id' ? 'Koleksi' : 'The Classics'
 
   return (
-    <div className="page-enter pb-32 bg-hd-cream min-h-screen">
-      {/* ── Editorial masthead ── */}
-      <header className="sticky top-0 z-20 bg-hd-cream/95 backdrop-blur-md border-b border-hd-ink/10">
-        <div className="px-5 pt-10 pb-4">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <Eyebrow number="02">The Selection</Eyebrow>
-              <h1 className="font-display text-display-lg text-hd-ink mt-3 tracking-editorial">
-                The <span className="italic">Menu</span>
-              </h1>
-            </div>
-            <div className="text-right pb-1">
-              <p className="numeral text-[0.65rem] text-hd-ink/50 uppercase tracking-widest">
-                {modeLabel}
-              </p>
-              <p className="font-display text-[0.95rem] text-hd-ink/90 leading-tight mt-0.5 max-w-[140px] truncate">
-                {storeName}
-              </p>
-            </div>
-          </div>
+    <div className="bg-hd-cream min-h-screen pb-32">
 
-          {/* Search — underline only */}
-          <div className="relative mt-6 border-b border-hd-ink/25 focus-within:border-hd-ink transition-colors">
-            <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-hd-ink/40" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search the selection…"
-              className="w-full pl-6 pr-8 py-3 bg-transparent text-[0.95rem] placeholder:text-hd-ink/40 focus:outline-none"
-            />
-            {search && (
-              <button
-                onClick={() => setSearch('')}
-                className="absolute right-0 top-1/2 -translate-y-1/2 text-hd-ink/40 hover:text-hd-ink"
-                aria-label="Clear search"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+      {/* ══ TOP BAR ══ */}
+      <header
+        className="sticky top-0 z-50 bg-hd-cream flex items-center justify-between px-5 py-3.5"
+        style={{ borderBottom: '1px solid rgba(43,43,43,0.07)' }}
+      >
+        {/* Back arrow */}
+        <button
+          aria-label="Back"
+          className="text-hd-burgundy flex items-center"
+          onClick={() => router.back()}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square">
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 5 5 12 12 19" />
+          </svg>
+        </button>
 
-          {/* Category — numbered editorial nav */}
-          <div className="flex gap-5 mt-5 overflow-x-auto no-scrollbar pb-1">
-            {CATEGORIES.map((cat, i) => {
-              const active = activeCategory === cat.value
+        {/* Stacked wordmark */}
+        <div className="text-center" style={{ lineHeight: 1.15 }}>
+          <span
+            className="font-display text-hd-burgundy tracking-[0.18em] uppercase block"
+            style={{ fontSize: 14, fontWeight: 500 }}
+          >
+            Häagen-<br />Dazs
+          </span>
+        </div>
+
+        {/* Bag icon */}
+        <button
+          aria-label="Cart"
+          className="text-hd-burgundy flex items-center relative"
+          onClick={() => router.push('/cart')}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <path d="M16 10a4 4 0 01-8 0" />
+          </svg>
+          {itemCount > 0 && (
+            <span
+              className="absolute -top-1 -right-1 bg-hd-burgundy text-hd-cream font-mono flex items-center justify-center"
+              style={{ width: 14, height: 14, fontSize: 8, fontWeight: 600, lineHeight: 1 }}
+            >
+              {itemCount > 9 ? '9+' : itemCount}
+            </span>
+          )}
+        </button>
+      </header>
+
+      {/* ══ SEARCH BAR ══ */}
+      <div
+        className="flex items-center gap-2.5 px-5 py-3.5"
+        style={{ borderBottom: '1px solid rgba(43,43,43,0.10)' }}
+      >
+        <svg
+          width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square"
+          style={{ color: 'rgba(43,43,43,0.25)', flexShrink: 0 }}
+        >
+          <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.35-4.35" />
+        </svg>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={lang === 'id' ? 'TEMUKAN CITA RASA…' : 'DISCOVER A FLAVOR…'}
+          className="flex-1 bg-transparent border-none outline-none font-sans uppercase tracking-[0.22em] text-hd-ink"
+          style={{ fontSize: 10, fontWeight: 600 }}
+        />
+        {search && (
+          <button
+            onClick={() => setSearch('')}
+            className="text-hd-ink/40 hover:text-hd-ink transition-colors"
+            aria-label="Clear search"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {/* ══ VOLUME / MENU SELECTION HEADER ══ */}
+      <div
+        className="flex items-baseline justify-between px-5 py-3.5"
+        style={{ borderBottom: '1px solid rgba(43,43,43,0.07)' }}
+      >
+        <span
+          className="font-sans text-hd-burgundy uppercase tracking-[0.22em]"
+          style={{ fontSize: 10, fontWeight: 600 }}
+        >
+          {lang === 'id' ? 'Volume 04' : 'Volume 04'}
+        </span>
+        <span
+          className="font-sans uppercase tracking-[0.22em]"
+          style={{ fontSize: 10, fontWeight: 600, color: 'rgba(43,43,43,0.25)' }}
+        >
+          {lang === 'id' ? 'Pilihan Menu' : 'Menu Selection'}
+        </span>
+      </div>
+
+      {/* ══ CATEGORY TILES — 2-col grid ══ */}
+      {categories.length > 0 && (
+        <div
+          className="px-5 py-6"
+          style={{ borderBottom: '1px solid rgba(43,43,43,0.07)' }}
+        >
+          <div className="grid grid-cols-2 gap-4">
+            {categories.map((cat) => {
+              const isActive = activeCategory === cat.value
               return (
                 <button
                   key={cat.value}
                   onClick={() => setActiveCategory(cat.value)}
-                  className="relative flex-shrink-0 flex items-baseline gap-1.5 pb-1.5 group"
+                  className="text-left group"
                 >
-                  <span
-                    className={`numeral text-[0.6rem] transition-colors ${
-                      active ? 'text-hd-burgundy' : 'text-hd-ink/40'
-                    }`}
+                  {/* Category image — 4/5 aspect */}
+                  <div
+                    className="w-full overflow-hidden mb-2.5"
+                    style={{ aspectRatio: '4/5', background: '#F8ECDD' }}
                   >
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
+                    <Image
+                      src={cat.image}
+                      alt={cat.label}
+                      width={200}
+                      height={250}
+                      className="w-full h-full object-cover transition-transform duration-[700ms] group-hover:scale-[1.04]"
+                      style={{ filter: 'grayscale(10%)' }}
+                    />
+                  </div>
+
+                  {/* Label with active underline */}
                   <span
-                    className={`text-[0.8rem] font-medium tracking-wide transition-colors ${
-                      active ? 'text-hd-burgundy' : 'text-hd-ink/60 group-hover:text-hd-ink'
-                    }`}
+                    className="font-sans uppercase tracking-[0.22em] inline-block transition-colors"
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      color: isActive ? '#650A30' : 'rgba(43,43,43,0.55)',
+                      borderBottom: isActive
+                        ? '1px solid rgba(101,10,48,0.40)'
+                        : '1px solid transparent',
+                      paddingBottom: 2,
+                    }}
                   >
                     {cat.label}
                   </span>
-                  {active && (
-                    <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-hd-burgundy" />
-                  )}
                 </button>
               )
             })}
           </div>
         </div>
-      </header>
+      )}
 
-      {/* ── Results count bar ── */}
-      <div className="px-5 py-4 flex items-center justify-between border-b border-hd-ink/5">
-        <span className="eyebrow text-hd-ink/50">
-          <span className="numeral text-hd-ink">{String(sorted.length).padStart(2, '0')}</span>
-          &nbsp;&nbsp;items in view
-        </span>
-        <span className="eyebrow text-hd-ink/40">Est. 1961</span>
-      </div>
+      {/* ══ PRODUCT SECTION ══ */}
+      <section className="px-5">
 
-      {/* ── Product grid ── */}
-      <div className="px-5 pt-6">
-        {sorted.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-hd-ink/40 gap-3">
-            <Search className="w-8 h-8" />
-            <p className="font-display italic text-lg">Nothing matches that search.</p>
+        {/* Section header: 01 — hairline — title */}
+        <div className="flex items-center gap-4 py-7">
+          <span
+            className="font-mono tracking-[0.04em] shrink-0"
+            style={{ fontSize: 11, color: 'rgba(43,43,43,0.25)' }}
+          >
+            01
+          </span>
+          <div className="flex-1 h-px" style={{ background: 'rgba(43,43,43,0.10)' }} />
+          <h2
+            className="font-display text-hd-ink uppercase tracking-[0.04em] shrink-0"
+            style={{ fontSize: 26, fontWeight: 500, lineHeight: 1 }}
+          >
+            {sectionTitle}
+          </h2>
+        </div>
+
+        {/* Product grid — 2 columns */}
+        {filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 gap-3" style={{ color: 'rgba(43,43,43,0.35)' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square">
+              <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.35-4.35" />
+            </svg>
+            <p className="font-display italic text-lg">
+              {lang === 'id' ? 'Tidak ditemukan.' : 'Nothing matches that search.'}
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-x-4 gap-y-8">
-            {sorted.map((item, i) => (
-              <MenuItemCard
-                key={item.id}
-                item={item}
-                index={i}
-                disabled={!item.is_available}
-                onTap={() => setSelectedItem(item)}
-              />
-            ))}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-8 pb-8">
+            {filtered.map((item, i) => {
+              const photo = item.image_url ?? FALLBACK_PHOTOS[i % FALLBACK_PHOTOS.length]
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setSelectedItem(item)}
+                  className="text-left flex flex-col group"
+                >
+                  {/* Product image — 3/4 aspect */}
+                  <div
+                    className="w-full overflow-hidden mb-3 flex items-center justify-center"
+                    style={{ aspectRatio: '3/4', background: '#F8ECDD', padding: 8 }}
+                  >
+                    <Image
+                      src={photo}
+                      alt={item.name}
+                      width={200}
+                      height={267}
+                      className="w-full h-full object-contain transition-transform duration-[700ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] group-hover:scale-[1.04]"
+                      style={{ filter: 'grayscale(10%)' }}
+                    />
+                  </div>
+
+                  {/* Name */}
+                  <p
+                    className="font-sans text-hd-burgundy uppercase tracking-[0.08em] mb-1"
+                    style={{ fontSize: 12, fontWeight: 500, lineHeight: 1.2 }}
+                  >
+                    {item.name}
+                  </p>
+
+                  {/* Volume label */}
+                  {item.description && (
+                    <p
+                      className="font-sans uppercase tracking-[0.22em] mb-2.5"
+                      style={{ fontSize: 9, color: 'rgba(43,43,43,0.25)' }}
+                    >
+                      473 ML
+                    </p>
+                  )}
+
+                  {/* Footer: price + add */}
+                  <div
+                    className="flex items-center justify-between pt-2.5 mt-auto"
+                    style={{ borderTop: '1px solid rgba(43,43,43,0.07)' }}
+                  >
+                    <span
+                      className="font-mono text-hd-burgundy"
+                      style={{ fontSize: 12, fontWeight: 500, letterSpacing: '-0.01em' }}
+                    >
+                      {formatPrice(item.price)}
+                    </span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); addItem(item) }}
+                      aria-label={`Add ${item.name}`}
+                      className="text-hd-burgundy flex items-center justify-center transition-transform hover:scale-110"
+                      style={{ padding: 2 }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    </button>
+                  </div>
+                </button>
+              )
+            })}
           </div>
         )}
+      </section>
+
+      {/* ══ END OF JOURNAL ══ */}
+      <div className="flex flex-col items-center gap-3.5 px-5 py-8">
+        <div style={{ width: 1, height: 48, background: 'rgba(43,43,43,0.10)' }} />
+        <span
+          className="font-mono uppercase tracking-[0.22em]"
+          style={{ fontSize: 9, color: 'rgba(43,43,43,0.25)' }}
+        >
+          {lang === 'id' ? 'Akhir Jurnal' : 'End of Journal'}
+        </span>
       </div>
 
       {selectedItem && (
         <ProductSheet item={selectedItem} onClose={() => setSelectedItem(null)} />
       )}
-      <FloatingCartButton />
     </div>
   )
 }

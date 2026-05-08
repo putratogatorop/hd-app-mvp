@@ -59,3 +59,6 @@ android/app/debug/
 *.pptx
 /logo/Haagen-Dazs_Infra_*
 /logo/*.pptx
+
+# IG source dumps (kept locally, never pushed)
+design-system/assets/imagery/ig-raw/

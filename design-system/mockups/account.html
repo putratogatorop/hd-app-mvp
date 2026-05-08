@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HD App — Account</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<script src="i18n.js" defer></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --hd-burgundy:       #650A30;
+  --hd-burgundy-dark:  #40061E;
+  --hd-burgundy-light: #801237;
+  --hd-gold:           #B8922A;
+  --hd-gold-light:     #F5E6C8;
+  --hd-cream:          #FEF2E3;
+  --hd-cream-deep:     #F5E6C8;
+  --hd-paper:          #FEF2E3;
+  --hd-ink:            #2B2B2B;
+  --rule:              rgba(43,43,43,0.12);
+  --rule-soft:         rgba(43,43,43,0.08);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans:    'Jost', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+  --ease-ed: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html, body {
+  background: #16030b;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px 60px;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.global-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+
+.phone-shell {
+  width: 390px;
+  min-width: 390px;
+  background: var(--hd-cream);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 40px 120px -20px rgba(0,0,0,0.85),
+    0 80px 200px -40px rgba(64,6,30,0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.status-bar {
+  background: var(--hd-burgundy-dark);
+  color: rgba(254,242,227,0.75);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  height: 44px;
+}
+
+.scroll-area {
+  height: calc(100dvh - 44px - 68px);
+  max-height: calc(844px - 44px - 68px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  background: var(--hd-cream);
+}
+.scroll-area::-webkit-scrollbar { display: none; }
+.scroll-area { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── HEADER ── */
+.acct-header {
+  background: var(--hd-burgundy-dark);
+  position: relative;
+  overflow: hidden;
+  padding: 0 20px 28px;
+}
+.acct-header-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+.acct-header-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(184,146,42,0.18), transparent 60%),
+    radial-gradient(ellipse 50% 60% at 5% 90%, rgba(128,18,55,0.4), transparent 70%);
+}
+.acct-header-inner {
+  position: relative;
+  z-index: 1;
+}
+.acct-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(254,242,227,0.12);
+  padding: 12px 0 10px;
+  margin-bottom: 24px;
+}
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 17px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hd-cream);
+}
+.acct-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(254,242,227,0.45);
+}
+.acct-headline {
+  font-family: var(--font-display);
+  font-size: 72px;
+  font-weight: 300;
+  font-style: italic;
+  line-height: 0.88;
+  letter-spacing: -0.025em;
+  color: var(--hd-cream);
+}
+.acct-headline em {
+  color: rgba(254,242,227,0.75);
+}
+
+/* ── SHARED SECTION PARTS ── */
+.section-wrapper {
+  padding: 32px 20px 0;
+}
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 12px;
+  margin-bottom: 22px;
+}
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(43,43,43,0.3);
+  letter-spacing: 0.04em;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--hd-ink);
+  line-height: 1;
+}
+
+/* ── 01 IDENTITAS ── */
+.identity-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding-bottom: 24px;
+}
+.profile-photo {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border: 1px solid var(--rule);
+  background: var(--hd-cream-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.profile-photo svg { color: rgba(43,43,43,0.25); }
+.identity-fields { flex: 1; }
+.field-row {
+  padding: 11px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.field-row:last-child { border-bottom: none; }
+.field-value {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--hd-ink);
+  line-height: 1.3;
+}
+.field-value.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: -0.01em;
+}
+.field-value.name-val {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.edit-link {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: rgba(43,43,43,0.35);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  transition: color 200ms;
+}
+.edit-link:hover { color: var(--hd-burgundy); }
+
+/* ── 02 KEANGGOTAAN ── */
+.membership-section {
+  padding: 32px 20px 0;
+}
+.membership-mini-card {
+  background: var(--hd-burgundy-dark);
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+  margin-bottom: 14px;
+}
+.mem-card-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+.mem-card-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.mem-card-tier {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--hd-gold-light);
+  margin-bottom: 8px;
+}
+.mem-card-pts {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  line-height: 1;
+  font-weight: 500;
+  color: var(--hd-cream);
+  letter-spacing: -0.03em;
+}
+.mem-card-pts-unit {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13px;
+  color: rgba(254,242,227,0.5);
+  margin-left: 4px;
+}
+.mem-card-wordmark {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(254,242,227,0.3);
+  text-align: right;
+}
+.lounge-link {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  font-weight: 600;
+  color: var(--hd-burgundy);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: color 200ms;
+}
+.lounge-link:hover { color: var(--hd-burgundy-dark); }
+
+/* ── 03 PREFERENSI ── */
+.pref-section {
+  padding: 32px 20px 0;
+}
+.pref-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 14px;
+}
+.pref-scroll::-webkit-scrollbar { display: none; }
+.pref-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+.pref-card {
+  flex-shrink: 0;
+  width: 80px;
+}
+.pref-img {
+  width: 80px;
+  height: 80px;
+  overflow: hidden;
+  border: 1px solid var(--rule-soft);
+  margin-bottom: 6px;
+}
+.pref-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pref-name {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--hd-ink);
+  line-height: 1.2;
+  text-align: center;
+}
+.edit-pref-link {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  font-weight: 600;
+  color: var(--hd-burgundy);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  display: inline-block;
+  transition: color 200ms;
+}
+.edit-pref-link:hover { color: var(--hd-burgundy-dark); }
+
+/* ── 04 PESANAN TERAKHIR ── */
+.orders-section {
+  padding: 32px 20px 0;
+}
+.order-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  cursor: pointer;
+  transition: background 200ms;
+}
+.order-row:last-child { border-bottom: none; }
+.order-left { flex: 1; }
+.order-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: rgba(43,43,43,0.4);
+  margin-bottom: 3px;
+}
+.order-meta {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--hd-ink);
+}
+.order-date {
+  font-size: 11px;
+  color: rgba(43,43,43,0.4);
+  margin-top: 2px;
+  font-family: var(--font-sans);
+}
+.order-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.order-total {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--hd-ink);
+  letter-spacing: -0.01em;
+}
+.order-arrow {
+  font-size: 14px;
+  color: rgba(43,43,43,0.25);
+  transition: color 200ms, transform 200ms;
+}
+.order-row:hover .order-arrow { color: var(--hd-burgundy); transform: translate(1px, -1px); }
+
+/* ── 05 PENGATURAN ── */
+.settings-section {
+  padding: 32px 20px 0;
+}
+.settings-list { }
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  cursor: pointer;
+  transition: background 200ms;
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-label {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--hd-ink);
+  letter-spacing: -0.01em;
+}
+.settings-row.logout .settings-label { color: var(--hd-burgundy); }
+.settings-arrow {
+  font-size: 14px;
+  color: rgba(43,43,43,0.2);
+  transition: color 200ms, transform 200ms;
+}
+.settings-row:hover .settings-arrow { color: var(--hd-burgundy); transform: translate(1px, -1px); }
+
+/* ── FOOTER ── */
+.footer-section {
+  padding: 48px 20px 28px;
+  text-align: center;
+  border-top: 1px solid var(--rule-soft);
+  margin-top: 32px;
+}
+.footer-copy {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(43,43,43,0.25);
+}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  height: 68px;
+  background: var(--hd-paper);
+  border-top: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  padding: 8px 4px;
+  position: relative;
+  background: none;
+  border: none;
+  transition: opacity 200ms;
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  width: 60%;
+  height: 1.5px;
+  background: var(--hd-burgundy);
+}
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  color: rgba(43,43,43,0.28);
+  transition: color 250ms;
+}
+.nav-item.active .nav-icon { color: var(--hd-burgundy); }
+.nav-label {
+  font-family: var(--font-sans);
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.3);
+  transition: color 250ms;
+}
+.nav-item.active .nav-label {
+  color: var(--hd-burgundy);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+</style>
+</head>
+<body>
+
+<div class="global-grain"></div>
+
+<div class="phone-shell">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>5G &nbsp; 100%</span>
+  </div>
+
+  <!-- Scrollable content -->
+  <div class="scroll-area">
+
+    <!-- Header masthead -->
+    <header class="acct-header">
+      <div class="acct-header-grain"></div>
+      <div class="acct-header-glow"></div>
+      <div class="acct-header-inner">
+        <div class="acct-topline">
+          <span class="wordmark">Häagen-Dazs</span>
+          <span class="acct-eyebrow">· &nbsp; <span data-i18n="nav.account">Account</span></span>
+        </div>
+        <!-- Stitch loyalty_v2 airy: large "A portrait\nof you." editorial header -->
+        <h1 class="acct-headline" style="font-size:72px;">A portrait<br><em>of you.</em></h1>
+      </div>
+    </header>
+
+    <!-- ── 01 IDENTITAS ── -->
+    <div class="section-wrapper">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <span class="section-title"><em style="font-style:italic;font-weight:300" data-i18n="section.identity">Identity</em></span>
+      </div>
+      <div class="identity-row">
+        <div class="profile-photo">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div class="identity-fields">
+          <div class="field-row">
+            <span class="field-value name-val">Putra Togatorop</span>
+            <button class="edit-link">edit</button>
+          </div>
+          <div class="field-row">
+            <span class="field-value">togatorop.putra@gmail.com</span>
+            <button class="edit-link">edit</button>
+          </div>
+          <div class="field-row">
+            <span class="field-value mono">+62 812 0000 2026</span>
+            <button class="edit-link">edit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 02 KEANGGOTAAN ── -->
+    <div class="membership-section">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <span class="section-title"><em style="font-style:italic;font-weight:300" data-i18n="section.membership">Membership</em></span>
+      </div>
+      <div class="membership-mini-card">
+        <div class="mem-card-grain"></div>
+        <div class="mem-card-inner">
+          <div>
+            <div class="mem-card-tier">Reserve &middot; Maestro</div>
+            <div>
+              <span class="mem-card-pts">1,240</span><span class="mem-card-pts-unit">pts</span>
+            </div>
+          </div>
+          <div class="mem-card-wordmark">Häagen-Dazs<br>Indonesia</div>
+        </div>
+      </div>
+      <a href="#" class="lounge-link">
+        <span data-i18n="account.open_lounge">Enter The Lounge</span>
+        <span style="font-size:12px;">→</span>
+      </a>
+    </div>
+
+    <!-- ── 03 PREFERENSI ── -->
+    <div class="pref-section">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <span class="section-title"><em style="font-style:italic;font-weight:300" data-i18n="section.preferences">Preferences</em></span>
+      </div>
+      <div class="pref-scroll">
+        <div class="pref-card">
+          <div class="pref-img">
+            <img src="photos/DWizLL8k3Vq.jpg" alt="Vanilla" loading="lazy" />
+          </div>
+          <div class="pref-name">Vanilla</div>
+        </div>
+        <div class="pref-card">
+          <div class="pref-img">
+            <img src="photos/DWffta7k4Ei.jpg" alt="Pistachio &amp; Cream" loading="lazy" />
+          </div>
+          <div class="pref-name">Pistachio &amp; Cream</div>
+        </div>
+        <div class="pref-card">
+          <div class="pref-img">
+            <img src="photos/DVxL5rJE5B8.jpg" alt="Chocolate" loading="lazy" />
+          </div>
+          <div class="pref-name">Chocolate</div>
+        </div>
+      </div>
+      <a href="#" class="edit-pref-link">Edit Preferences →</a>
+    </div>
+
+    <!-- ── 04 PESANAN TERAKHIR ── -->
+    <div class="orders-section">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <span class="section-title"><em style="font-style:italic;font-weight:300" data-i18n="section.recent_orders">Recent Orders</em></span>
+      </div>
+      <div>
+        <div class="order-row">
+          <div class="order-left">
+            <div class="order-num">#HD-20260501</div>
+            <div class="order-meta">3 items &middot; Pick Up</div>
+            <div class="order-date">01 May 2026</div>
+          </div>
+          <div class="order-right">
+            <span class="order-total" data-price-idr="195000">Rp 195.000</span>
+            <span class="order-arrow">↗</span>
+          </div>
+        </div>
+        <div class="order-row">
+          <div class="order-left">
+            <div class="order-num">#HD-20260427</div>
+            <div class="order-meta">2 items &middot; Delivery</div>
+            <div class="order-date">27 Apr 2026</div>
+          </div>
+          <div class="order-right">
+            <span class="order-total" data-price-idr="136000">Rp 136.000</span>
+            <span class="order-arrow">↗</span>
+          </div>
+        </div>
+        <div class="order-row">
+          <div class="order-left">
+            <div class="order-num">#HD-20260420</div>
+            <div class="order-meta">5 items &middot; Dine In</div>
+            <div class="order-date">20 Apr 2026</div>
+          </div>
+          <div class="order-right">
+            <span class="order-total" data-price-idr="340000">Rp 340.000</span>
+            <span class="order-arrow">↗</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 05 PENGATURAN ── -->
+    <div class="settings-section">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <span class="section-title"><em style="font-style:italic;font-weight:300" data-i18n="section.settings">Settings</em></span>
+      </div>
+      <div class="settings-list">
+        <div class="settings-row">
+          <span class="settings-label" data-i18n="account.notifications">Notifications</span>
+          <span class="settings-arrow">→</span>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label" data-i18n="account.language">Language</span>
+          <span class="settings-arrow">→</span>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label" data-i18n="account.privacy">Privacy</span>
+          <span class="settings-arrow">→</span>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label" data-i18n="account.help">Help</span>
+          <span class="settings-arrow">→</span>
+        </div>
+        <div class="settings-row logout">
+          <span class="settings-label" data-i18n="account.sign_out">Sign Out</span>
+          <span class="settings-arrow" style="color: rgba(101,10,48,0.35);">→</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-section">
+      <div class="footer-copy">© Häagen-Dazs Indonesia &middot; Since 1960</div>
+    </div>
+
+  </div>
+  <!-- end scroll -->
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-item" data-nav="home">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      <span class="nav-label" data-i18n="nav.home">Home</span>
+    </button>
+    <button class="nav-item" data-nav="menu">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <span class="nav-label" data-i18n="nav.menu">Menu</span>
+    </button>
+    <button class="nav-item" data-nav="orders">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      <span class="nav-label" data-i18n="nav.orders">Orders</span>
+    </button>
+    <button class="nav-item" data-nav="rewards">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>
+      <span class="nav-label" data-i18n="nav.rewards">Rewards</span>
+    </button>
+    <button class="nav-item active" data-nav="account">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="nav-label" data-i18n="nav.account">Account</span>
+    </button>
+  </nav>
+
+</div>
+
+<script>
+(function () {
+  const bottomNav = document.querySelector('.bottom-nav');
+  if (bottomNav) {
+    bottomNav.addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-nav]');
+      if (!btn) return;
+      bottomNav.querySelectorAll('.nav-item').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

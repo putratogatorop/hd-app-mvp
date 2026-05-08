@@ -9,6 +9,7 @@ export default async function MenuPage() {
   const { data: menuItems } = await supabase
     .from('menu_items')
     .select('*')
+    .eq('is_available', true)
     .order('category')
     .order('name') as unknown as { data: MenuItemRow[] | null }
 

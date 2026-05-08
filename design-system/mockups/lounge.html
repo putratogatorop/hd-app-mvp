@@ -1,0 +1,1105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HD App — The Lounge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<script src="i18n.js" defer></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --hd-burgundy:       #650A30;
+  --hd-burgundy-dark:  #40061E;
+  --hd-burgundy-light: #801237;
+  --hd-gold:           #B8922A;
+  --hd-gold-light:     #F5E6C8;
+  --hd-cream:          #FEF2E3;
+  --hd-cream-deep:     #F5E6C8;
+  --hd-paper:          #FEF2E3;
+  --hd-ink:            #2B2B2B;
+  --rule:              rgba(43,43,43,0.12);
+  --rule-soft:         rgba(43,43,43,0.08);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans:    'Jost', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+  --ease-ed: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html, body {
+  background: #1a1310;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px 60px;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.global-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+
+.phone-shell {
+  width: 390px;
+  min-width: 390px;
+  background: var(--hd-cream);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 40px 120px -20px rgba(0,0,0,0.85),
+    0 80px 200px -40px rgba(64,6,30,0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.status-bar {
+  background: var(--hd-burgundy-dark);
+  color: rgba(254,242,227,0.75);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  height: 44px;
+}
+
+.scroll-area {
+  height: calc(100dvh - 44px - 68px);
+  max-height: calc(844px - 44px - 68px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  background: var(--hd-cream);
+}
+.scroll-area::-webkit-scrollbar { display: none; }
+.scroll-area { -ms-overflow-style: none; scrollbar-width: none; }
+
+
+/* ── LOUNGE HEADER (loyalty_native_app_view pattern) ── */
+.lounge-header {
+  background: var(--hd-burgundy-dark);
+  position: relative;
+  overflow: hidden;
+  padding: 0 20px 36px;
+}
+.lounge-header-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+.lounge-header-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 90% 10%, rgba(184,146,42,0.22), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 0% 100%, rgba(128,18,55,0.35), transparent 60%);
+}
+.lounge-header-inner {
+  position: relative;
+  z-index: 1;
+}
+.lounge-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(254,242,227,0.15);
+  padding: 12px 0 10px;
+}
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 18px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--hd-cream);
+}
+.lounge-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(254,242,227,0.45);
+}
+.lounge-intro {
+  padding-top: 28px;
+}
+.lounge-intro-headline {
+  font-family: var(--font-display);
+  font-size: 76px;
+  font-weight: 300;
+  font-style: italic;
+  line-height: 0.9;
+  color: var(--hd-cream);
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+.lounge-intro-headline .indent {
+  padding-left: 0.4em;
+  display: block;
+}
+.lounge-intro-sub {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: rgba(254,242,227,0.45);
+}
+
+/* ── EDITORIAL SECTION LABEL (loyalty_native_app_view: "LOYALTY · 2026" style) ── */
+.editorial-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(254,242,227,0.4);
+  padding: 18px 20px 0;
+  background: var(--hd-burgundy-dark);
+}
+
+/* ── MEMBERSHIP CARD ── */
+.card-section {
+  padding: 0 20px;
+  margin-top: -2px;
+  background: var(--hd-burgundy-dark);
+  padding-bottom: 28px;
+}
+.membership-card {
+  aspect-ratio: 1.6 / 1;
+  background: var(--hd-burgundy-dark);
+  border: 1px solid rgba(184,146,42,0.25);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 18px 20px;
+}
+.membership-card-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='ng'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23ng)'/></svg>");
+  background-size: 160px 160px;
+}
+.membership-card-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 50% at 95% 5%, rgba(184,146,42,0.25), transparent 55%),
+    radial-gradient(ellipse 60% 60% at 0% 100%, rgba(101,10,48,0.5), transparent 70%);
+}
+/* Decorative circle ring — from loyalty_native_app_view */
+.membership-card-ring {
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  width: 160px;
+  height: 160px;
+  border: 1px solid rgba(184,146,42,0.15);
+  border-radius: 9999px;
+  pointer-events: none;
+}
+.membership-card-corner {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  opacity: 0.55;
+}
+.membership-card-top {
+  position: relative;
+  z-index: 1;
+}
+.card-tier-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,223,151,0.6);
+  margin-bottom: 3px;
+}
+.card-tier {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 300;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  color: var(--hd-gold);
+  line-height: 1;
+}
+.membership-card-mid {
+  position: relative;
+  z-index: 1;
+}
+.card-name {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--hd-cream);
+  line-height: 1;
+  margin-bottom: 5px;
+}
+.card-since {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(254,242,227,0.4);
+}
+.membership-card-bottom {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.card-member-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(254,242,227,0.35);
+}
+.card-points-block {
+  text-align: right;
+}
+.card-points-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(184,146,42,0.55);
+  margin-bottom: 4px;
+}
+.card-points-num {
+  font-family: var(--font-mono);
+  font-size: 38px;
+  font-weight: 500;
+  color: var(--hd-gold);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+
+/* ── TIER PROGRESS ── */
+.tier-progress {
+  padding: 20px 20px 0;
+  background: var(--hd-cream);
+  border-top: 1px solid var(--rule);
+}
+.tier-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+.tier-progress-left {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: -0.01em;
+  color: var(--hd-ink);
+}
+.tier-progress-right {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.45);
+}
+.tier-progress-rail {
+  height: 2px;
+  background: rgba(43,43,43,0.08);
+  position: relative;
+  overflow: hidden;
+}
+.tier-progress-fill {
+  position: absolute;
+  inset-y: 0;
+  left: 0;
+  background: var(--hd-gold);
+  width: 62%;
+  border-radius: 9999px;
+}
+.tier-progress-caption {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-style: italic;
+  color: rgba(43,43,43,0.45);
+  line-height: 1.5;
+  margin-top: 10px;
+  padding-bottom: 4px;
+}
+
+
+/* ── TIER LADDER ── */
+.tier-ladder {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--rule);
+}
+.tier-ladder-scroll {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+}
+.tier-ladder-scroll::-webkit-scrollbar { display: none; }
+.tier-ladder-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+.tier-item {
+  flex-shrink: 0;
+  padding: 0 16px 8px 0;
+  cursor: pointer;
+  position: relative;
+}
+.tier-item:first-child { padding-left: 0; }
+.tier-item-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: rgba(43,43,43,0.35);
+  white-space: nowrap;
+  line-height: 1;
+}
+.tier-item.active .tier-item-label {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+  color: var(--hd-ink);
+  text-transform: none;
+}
+.tier-item-line {
+  height: 1px;
+  background: transparent;
+  margin-top: 5px;
+}
+.tier-item.active .tier-item-line {
+  background: var(--hd-gold);
+}
+
+
+/* ── SECTION HEADER ── */
+.section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--rule);
+  padding: 0 20px 14px;
+}
+.section-header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(43,43,43,0.35);
+  letter-spacing: 0.04em;
+}
+.section-title-text {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--hd-ink);
+  line-height: 1;
+}
+
+
+/* ── STATS SECTION ── */
+.stats-section { padding-top: 64px; }
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--rule-soft);
+  border: 1px solid var(--rule-soft);
+  margin: 20px 20px 0;
+}
+.stat-cell {
+  background: var(--hd-paper);
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stat-num {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  color: var(--hd-ink);
+  line-height: 1;
+}
+.stat-label {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: rgba(43,43,43,0.45);
+  line-height: 1.3;
+}
+
+
+/* ── PRIVILEGES SECTION ── */
+.privileges-section { padding-top: 64px; }
+.privilege-list {
+  margin: 16px 20px 0;
+}
+.privilege-item {
+  border-top: 1px solid var(--rule-soft);
+  padding: 20px 0 20px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  position: relative;
+}
+.privilege-item:last-child { border-bottom: 1px solid var(--rule-soft); }
+.privilege-item-num {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: rgba(43,43,43,0.28);
+  margin-bottom: 10px;
+}
+.privilege-item-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.privilege-img {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.privilege-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(20%);
+  transition: transform 600ms var(--ease-ed), filter 600ms var(--ease-ed);
+}
+.privilege-item:hover .privilege-img img {
+  transform: scale(1.06);
+  filter: grayscale(0%);
+}
+.privilege-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 80px;
+}
+.privilege-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  color: var(--hd-ink);
+  line-height: 1.05;
+  margin-bottom: 5px;
+}
+.privilege-desc {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(43,43,43,0.55);
+  flex: 1;
+}
+.privilege-footer {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.privilege-status {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hd-gold);
+}
+.privilege-locked-btn {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(43,43,43,0.4);
+  border: 1px solid rgba(43,43,43,0.15);
+  padding: 4px 8px;
+  background: none;
+  cursor: default;
+}
+.privilege-card { display: none; }
+
+
+/* ── REDEEM SECTION ── */
+.redeem-section { padding-top: 64px; }
+.redeem-list { margin: 16px 0 0; }
+.redeem-reward {
+  border-bottom: 1px solid var(--rule-soft);
+  cursor: pointer;
+  position: relative;
+}
+.redeem-reward:hover .redeem-reward-img img { transform: scale(1.03); filter: grayscale(0%); }
+.redeem-reward-pts-label {
+  position: absolute;
+  top: 12px;
+  left: 20px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hd-cream);
+  background: var(--hd-burgundy);
+  padding: 3px 7px;
+  z-index: 2;
+}
+.redeem-reward-img {
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  background: var(--hd-cream-deep);
+}
+.redeem-reward-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(20%);
+  transition: transform 700ms var(--ease-ed), filter 700ms var(--ease-ed);
+}
+.redeem-reward-body {
+  padding: 16px 20px 20px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+.redeem-reward-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  color: var(--hd-ink);
+  line-height: 1.1;
+}
+.redeem-reward-sub {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(43,43,43,0.40);
+  margin-top: 4px;
+}
+.redeem-reward-action {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  font-weight: 600;
+  color: var(--hd-burgundy);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.redeem-reward.locked { opacity: 0.55; }
+.redeem-reward.locked .redeem-reward-action {
+  color: rgba(43,43,43,0.40);
+  border: 1px solid rgba(43,43,43,0.18);
+  padding: 5px 8px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+}
+
+
+/* ── JOURNAL SECTION ── */
+.journal-section { padding-top: 64px; }
+.journal-list {
+  margin: 16px 20px 0;
+  border: 1px solid var(--rule-soft);
+}
+.journal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.journal-row:last-child { border-bottom: none; }
+.journal-desc { flex: 1; }
+.journal-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--hd-ink);
+  line-height: 1.2;
+}
+.journal-meta {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(43,43,43,0.4);
+  margin-top: 3px;
+}
+.journal-pts {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: -0.02em;
+  padding-top: 2px;
+  white-space: nowrap;
+}
+.journal-pts.positive { color: var(--hd-gold); }
+.journal-pts.negative { color: rgba(43,43,43,0.45); }
+
+
+/* ── FOOTER ── */
+.lounge-footer { padding: 64px 20px 32px; }
+.lounge-footer-rule { border-top: 1px solid var(--rule); padding-top: 20px; }
+.lounge-footer-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: rgba(43,43,43,0.45);
+  margin-bottom: 8px;
+}
+.lounge-footer-link {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--hd-burgundy);
+  text-decoration: underline;
+  text-decoration-color: rgba(101,10,48,0.3);
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+.lounge-footer-copy {
+  margin-top: 32px;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(43,43,43,0.25);
+  text-align: center;
+}
+
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  height: 68px;
+  background: var(--hd-paper);
+  border-top: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  position: relative;
+  z-index: 10;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  position: relative;
+  background: none;
+  border: none;
+  padding: 0;
+  transition: opacity 200ms;
+}
+.nav-item:active { opacity: 0.6; }
+.nav-item .nav-icon {
+  width: 22px;
+  height: 22px;
+  color: rgba(43,43,43,0.35);
+  transition: color 250ms;
+}
+.nav-item.active .nav-icon { color: var(--hd-burgundy); }
+.nav-item .nav-label {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.35);
+  transition: color 250ms;
+}
+.nav-item.active .nav-label { color: var(--hd-burgundy); }
+.nav-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 20%;
+  width: 60%;
+  height: 1.5px;
+  background: var(--hd-burgundy);
+  transform: scaleX(0);
+  transition: transform 300ms var(--ease-ed);
+}
+.nav-item.active::before { transform: scaleX(1); }
+</style>
+</head>
+<body>
+
+<div class="global-grain"></div>
+
+<div class="phone-shell">
+
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>5G &nbsp; 100%</span>
+  </div>
+
+  <div class="scroll-area">
+
+    <!-- loyalty_native_app_view pattern: editorial header in burgundy-dark -->
+    <div class="lounge-header">
+      <div class="lounge-header-grain"></div>
+      <div class="lounge-header-glow"></div>
+      <div class="lounge-header-inner">
+        <div class="lounge-topline">
+          <span class="wordmark">Häagen-Dazs</span>
+          <span class="lounge-eyebrow">· &nbsp;<span data-i18n="lounge.the_lounge">The Lounge</span></span>
+        </div>
+        <div class="lounge-intro">
+          <!-- Stitch: large italic display, second line indented 0.4em -->
+          <div class="lounge-intro-headline">A small<span class="indent">luxury.</span></div>
+          <div class="lounge-intro-sub">Every scoop is a celebration — refined for members who appreciate the finest.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Editorial label above card — from loyalty_native_app_view -->
+    <div class="editorial-label">LOYALTY · 2026</div>
+
+    <!-- Membership Card — updated: tier in italic display, decorative ring, clear points layout -->
+    <div class="card-section">
+      <div class="membership-card">
+        <div class="membership-card-grain"></div>
+        <div class="membership-card-glow"></div>
+        <div class="membership-card-ring"></div>
+        <svg class="membership-card-corner" width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 1L11.8 7.2L18 10L11.8 12.8L10 19L8.2 12.8L2 10L8.2 7.2Z" fill="rgba(184,146,42,0.5)" stroke="rgba(184,146,42,0.3)" stroke-width="0.5"/>
+        </svg>
+        <div class="membership-card-top">
+          <div class="card-tier-eyebrow">CURRENT TIER</div>
+          <div class="card-tier">Maestro</div>
+        </div>
+        <div class="membership-card-mid">
+          <div style="font-family:var(--font-mono);font-size:8px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(254,242,227,0.35);margin-bottom:5px;" data-i18n="misc.member_since">Member since</div>
+          <div class="card-name">PUTRA TOGATOROP</div>
+          <div class="card-since">Apr 2026</div>
+        </div>
+        <div class="membership-card-bottom">
+          <div class="card-member-label">Member ID · HD-9341</div>
+          <div class="card-points-block">
+            <div class="card-points-label">Available</div>
+            <div class="card-points-num">1,240</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tier progress -->
+    <div class="tier-progress">
+      <div class="tier-progress-labels">
+        <span class="tier-progress-left">1,240 / 2,000</span>
+        <span class="tier-progress-right">Grand Maestro</span>
+      </div>
+      <div class="tier-progress-rail">
+        <div class="tier-progress-fill" style="width:62%"></div>
+      </div>
+      <div class="tier-progress-caption">Indulge in 3 more signature pints to unlock Private Event invitations and seasonal pre-access.</div>
+    </div>
+
+    <!-- Tier ladder -->
+    <div class="tier-ladder">
+      <div class="tier-ladder-scroll">
+        <div class="tier-item">
+          <div class="tier-item-label">Initiate</div>
+          <div class="tier-item-line"></div>
+        </div>
+        <div class="tier-item">
+          <div class="tier-item-label">Connoisseur</div>
+          <div class="tier-item-line"></div>
+        </div>
+        <div class="tier-item active">
+          <div class="tier-item-label">Maestro</div>
+          <div class="tier-item-line"></div>
+        </div>
+        <div class="tier-item">
+          <div class="tier-item-label">Grand Maestro</div>
+          <div class="tier-item-line"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 01 — Earned -->
+    <section class="stats-section">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-num">01</span>
+          <span class="section-title-text" data-i18n="section.earned_this_season">Earned this season</span>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-cell">
+          <div class="stat-num">420</div>
+          <div class="stat-label">Points<br>accrued</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num">07</div>
+          <div class="stat-label">Visits</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num">02</div>
+          <div class="stat-label">Privileges<br>enjoyed</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 — Privileges -->
+    <section class="privileges-section">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-num">02</span>
+          <span class="section-title-text" data-i18n="section.curated_privileges">Curated Privileges</span>
+        </div>
+      </div>
+
+      <div class="privilege-list">
+        <div class="privilege-item">
+          <div class="privilege-item-num">02.1</div>
+          <div class="privilege-item-row">
+            <div class="privilege-img">
+              <img src="photos/DVxL5rJE5B8.jpg" alt="Early Access" />
+            </div>
+            <div class="privilege-body">
+              <div>
+                <div class="privilege-title" data-i18n="lounge.early_access">Early Access</div>
+                <div class="privilege-desc" data-i18n="lounge.early_access_desc">First access to limited editions before public release.</div>
+              </div>
+              <div class="privilege-footer">
+                <span class="privilege-status">Active</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="privilege-item">
+          <div class="privilege-item-num">02.2</div>
+          <div class="privilege-item-row">
+            <div class="privilege-img">
+              <img src="photos/DW03wihk-je.jpg" alt="Artisan Workshop" />
+            </div>
+            <div class="privilege-body">
+              <div>
+                <div class="privilege-title" data-i18n="lounge.artisan_workshop">Artisan Workshop</div>
+                <div class="privilege-desc" data-i18n="lounge.artisan_workshop_desc">Exclusive invitation to private tasting workshops.</div>
+              </div>
+              <div class="privilege-footer">
+                <span class="privilege-locked-btn">Locked · 2,500 pts</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="privilege-item">
+          <div class="privilege-item-num">02.3</div>
+          <div class="privilege-item-row">
+            <div class="privilege-img">
+              <img src="photos/DWDNYgPk8Nd.jpg" alt="Birthday Scoop" />
+            </div>
+            <div class="privilege-body">
+              <div>
+                <div class="privilege-title" data-i18n="lounge.birthday_scoop">Birthday Scoop</div>
+                <div class="privilege-desc" data-i18n="lounge.birthday_scoop_desc">A complimentary selection on your anniversary month.</div>
+              </div>
+              <div class="privilege-footer">
+                <span class="privilege-status">Active</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 — Redeem -->
+    <section class="redeem-section">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-num">03</span>
+          <span class="section-title-text"><em style="font-style:italic;font-weight:300" data-i18n="section.redeem">Redeem</em></span>
+        </div>
+      </div>
+      <div class="redeem-list">
+        <div class="redeem-reward">
+          <span class="redeem-reward-pts-label">500 pts</span>
+          <div class="redeem-reward-img">
+            <img src="photos/DWizLL8k3Vq.jpg" alt="The Signature Flight" loading="lazy" />
+          </div>
+          <div class="redeem-reward-body">
+            <div class="redeem-reward-info">
+              <div class="redeem-reward-name">The Signature Flight</div>
+              <div class="redeem-reward-sub">A micro-tasters journey</div>
+            </div>
+            <a href="#" class="redeem-reward-action" data-i18n="cta.redeem">Redeem →</a>
+          </div>
+        </div>
+
+        <div class="redeem-reward">
+          <span class="redeem-reward-pts-label">1,000 pts</span>
+          <div class="redeem-reward-img">
+            <img src="photos/DVxL5rJE5B8.jpg" alt="Chef's Platter" loading="lazy" />
+          </div>
+          <div class="redeem-reward-body">
+            <div class="redeem-reward-info">
+              <div class="redeem-reward-name">Chef's Platter</div>
+              <div class="redeem-reward-sub">Boutique exclusive</div>
+            </div>
+            <a href="#" class="redeem-reward-action" data-i18n="cta.redeem">Redeem →</a>
+          </div>
+        </div>
+
+        <div class="redeem-reward locked">
+          <span class="redeem-reward-pts-label">3,000 pts</span>
+          <div class="redeem-reward-img">
+            <img src="photos/DWDNYgPk8Nd.jpg" alt="The Heritage Kit" loading="lazy" />
+          </div>
+          <div class="redeem-reward-body">
+            <div class="redeem-reward-info">
+              <div class="redeem-reward-name">The Heritage Kit</div>
+              <div class="redeem-reward-sub">Gold membership gift</div>
+            </div>
+            <span class="redeem-reward-action">Locked · 3K pts</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 — The Journal -->
+    <section class="journal-section">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-num">04</span>
+          <span class="section-title-text" data-i18n="section.the_journal">The Journal</span>
+        </div>
+      </div>
+      <div class="journal-list">
+        <div class="journal-row">
+          <div class="journal-desc">
+            <div class="journal-title">Boutique visit — Grand Indonesia</div>
+            <div class="journal-meta">12 Apr 2026 · Pick Up</div>
+          </div>
+          <div class="journal-pts positive">+450 pts</div>
+        </div>
+        <div class="journal-row">
+          <div class="journal-desc">
+            <div class="journal-title">Birthday redemption</div>
+            <div class="journal-meta">03 Apr 2026 · Privilege</div>
+          </div>
+          <div class="journal-pts negative">−500 pts</div>
+        </div>
+        <div class="journal-row">
+          <div class="journal-desc">
+            <div class="journal-title">Senayan City — signature tasting</div>
+            <div class="journal-meta">28 Mar 2026 · Dine In</div>
+          </div>
+          <div class="journal-pts positive">+320 pts</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="lounge-footer">
+      <div class="lounge-footer-rule">
+        <div class="lounge-footer-label">Concierge</div>
+        <div class="lounge-footer-link">Join the inner circle</div>
+      </div>
+      <div class="lounge-footer-copy">© Häagen-Dazs Indonesia · The Lounge</div>
+    </section>
+
+  </div><!-- end scroll-area -->
+
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-item" data-nav="home">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.home">Home</span>
+    </button>
+    <button class="nav-item" data-nav="menu">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.menu">Menu</span>
+    </button>
+    <button class="nav-item" data-nav="orders">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.orders">Orders</span>
+    </button>
+    <button class="nav-item active" data-nav="rewards">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.rewards">Rewards</span>
+    </button>
+    <button class="nav-item" data-nav="account">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.account">Account</span>
+    </button>
+  </nav>
+
+</div>
+
+<script>
+(function () {
+  var bottomNav = document.getElementById('bottomNav');
+  if (bottomNav) {
+    bottomNav.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-nav]');
+      if (!btn) return;
+      bottomNav.querySelectorAll('.nav-item').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

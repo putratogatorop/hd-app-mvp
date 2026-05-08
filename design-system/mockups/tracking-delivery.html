@@ -1,0 +1,990 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HD App — Tracking · Delivery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<script src="i18n.js" defer></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --hd-burgundy:       #650A30;
+  --hd-burgundy-dark:  #40061E;
+  --hd-burgundy-light: #801237;
+  --hd-gold:           #B8922A;
+  --hd-gold-light:     #F5E6C8;
+  --hd-cream:          #FEF2E3;
+  --hd-cream-deep:     #F5E6C8;
+  --hd-paper:          #FEF2E3;
+  --hd-ink:            #2B2B2B;
+  --rule:              rgba(43,43,43,0.12);
+  --rule-soft:         rgba(43,43,43,0.08);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans:    'Jost', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+  --ease-ed: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html, body {
+  background: #1a1310;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px 60px;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.global-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+
+.phone-shell {
+  width: 390px;
+  min-width: 390px;
+  background: var(--hd-cream);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 40px 120px -20px rgba(0,0,0,0.85),
+    0 80px 200px -40px rgba(64,6,30,0.5);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── STATUS BAR ── */
+.status-bar {
+  background: var(--hd-burgundy-dark);
+  color: rgba(254,242,227,0.75);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+/* ── V3: FIXED TOP APP BAR ── */
+.top-app-bar {
+  background: rgba(254,242,227,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--rule);
+  height: 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+.top-bar-back {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  color: var(--hd-burgundy);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+.top-bar-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.top-bar-wordmark {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hd-burgundy);
+  line-height: 1;
+}
+.top-bar-order {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(43,43,43,0.38);
+  line-height: 1;
+}
+.top-bar-bag {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  color: var(--hd-burgundy);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  /* bag icon via SVG — no icon lib needed */
+  display: flex;
+  align-items: center;
+}
+
+/* ── SCROLL AREA ── */
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  background: var(--hd-cream);
+  /* simulate screen height */
+  max-height: calc(844px - 44px - 56px - 68px);
+}
+.scroll-area::-webkit-scrollbar { display: none; }
+.scroll-area { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── SECTION DIVIDER ── */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  margin-bottom: 20px;
+}
+.section-divider-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--hd-burgundy);
+  opacity: 0.40;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.section-divider-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+.section-divider-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--hd-burgundy);
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+
+/* ── V3: MAP SECTION (01 — full-width square) ── */
+.map-section {
+  padding: 24px 20px 0;
+}
+.map-frame {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  background: var(--hd-cream-deep);
+  border: 1px solid var(--rule-soft);
+  overflow: hidden;
+}
+.map-svg-lines {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── V3: COURIER DETAIL (below map) ── */
+.courier-block {
+  padding: 20px 20px 20px;
+  border-bottom: 1px solid var(--rule);
+}
+.courier-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.35);
+  margin-bottom: 6px;
+  display: block;
+}
+.courier-name {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--hd-burgundy);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+.courier-plate {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: rgba(43,43,43,0.45);
+}
+.courier-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+.courier-btn-ghost {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--rule);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--hd-burgundy);
+  font-size: 14px;
+}
+.courier-btn-filled {
+  width: 44px;
+  height: 44px;
+  background: var(--hd-burgundy);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(254,242,227,0.90);
+  font-size: 14px;
+}
+
+/* ── V3: POINTS EARNED CARD (gold-light, inline after courier) ── */
+.points-card {
+  margin: 0;
+  background: rgba(245,230,200,0.35);
+  border: 1px solid rgba(184,146,42,0.25);
+  border-top: none;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.points-card-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.points-star-box {
+  width: 36px;
+  height: 36px;
+  background: rgba(184,146,42,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.points-star {
+  font-size: 16px;
+  color: var(--hd-gold);
+}
+.points-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(184,146,42,0.70);
+  display: block;
+  margin-bottom: 2px;
+}
+.points-value {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 400;
+  color: rgba(43,43,43,0.75);
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.points-value span {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--hd-burgundy);
+}
+.points-chevron {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: rgba(43,43,43,0.25);
+}
+
+/* ── V3: STATUS JOURNAL TIMELINE ── */
+.timeline-section {
+  padding: 32px 20px 0;
+}
+.timeline {
+  position: relative;
+}
+.tl-step {
+  display: flex;
+  align-items: flex-start;
+  padding-bottom: 36px;
+  position: relative;
+}
+.tl-step:last-child { padding-bottom: 0; }
+/* V3 hairline vertical connector — runs through marker col */
+.tl-step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 18px;
+  bottom: 0;
+  width: 1px;
+  background: var(--rule);
+}
+.tl-marker-col {
+  width: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  margin-top: 2px;
+  position: relative;
+  z-index: 1;
+}
+/* V3 dot styles */
+.tl-dot-done {
+  width: 16px;
+  height: 16px;
+  background: var(--hd-burgundy);
+  flex-shrink: 0;
+}
+/* V3 current: filled + outer ring (border-4 border-primary-fixed treatment) */
+.tl-dot-current {
+  width: 16px;
+  height: 16px;
+  background: var(--hd-burgundy);
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: 0 0 0 3px var(--hd-cream), 0 0 0 5px rgba(101,10,48,0.25);
+}
+.tl-dot-pending {
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(43,43,43,0.20);
+  background: var(--hd-cream);
+  flex-shrink: 0;
+}
+.tl-body {
+  flex: 1;
+  padding-left: 20px;
+}
+.tl-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+/* V3: eyebrow-label style for step names */
+.tl-step-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.35);
+  line-height: 1;
+}
+.tl-step-label.done {
+  color: var(--hd-burgundy);
+  text-decoration: line-through;
+  text-decoration-color: rgba(101,10,48,0.25);
+  text-underline-offset: 2px;
+}
+.tl-step-label.current {
+  color: var(--hd-burgundy);
+  font-weight: 700;
+  text-decoration: none;
+}
+.tl-time {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: -0.01em;
+  color: rgba(43,43,43,0.30);
+  flex-shrink: 0;
+}
+.tl-time.done { color: rgba(43,43,43,0.40); }
+.tl-time.current { color: var(--hd-burgundy); }
+/* V3: editorial sub-copy per step */
+.tl-sub-copy {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 300;
+  color: rgba(43,43,43,0.55);
+  line-height: 1.45;
+  margin-top: 2px;
+}
+.tl-sub-copy.pending {
+  opacity: 0.40;
+}
+/* V3: "Currently Carrying" inline product strip (on active step) */
+.tl-carrying-strip {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--rule);
+  background: var(--hd-cream);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.tl-carrying-thumb {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  background: var(--hd-cream-deep);
+  border: 1px solid var(--rule-soft);
+  overflow: hidden;
+}
+.tl-carrying-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.tl-carrying-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 8px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.35);
+  display: block;
+  margin-bottom: 3px;
+}
+.tl-carrying-name {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--hd-ink);
+  line-height: 1.3;
+}
+
+/* ── ORDER ITEMS ── */
+.items-section {
+  padding: 32px 20px 0;
+}
+.order-item {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.item-num {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: rgba(43,43,43,0.28);
+  flex-shrink: 0;
+  width: 14px;
+  text-align: right;
+}
+.item-thumb {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--hd-cream-deep);
+  border: 1px solid var(--rule-soft);
+}
+.item-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.item-body { flex: 1; }
+.item-name {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--hd-ink);
+  margin-bottom: 2px;
+}
+.item-qty {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(43,43,43,0.35);
+  letter-spacing: 0.04em;
+}
+.item-price {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: rgba(43,43,43,0.55);
+  letter-spacing: -0.02em;
+}
+
+/* ── ORDER TOTAL + DELIVERY LINE ── */
+.order-summary {
+  padding: 0 20px;
+  margin-top: 0;
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.summary-row:last-child {
+  border-bottom: none;
+  border-top: 1px solid var(--rule);
+  padding-top: 14px;
+  margin-top: 4px;
+}
+.summary-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: rgba(43,43,43,0.45);
+}
+.summary-label.total {
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--hd-ink);
+  font-size: 11px;
+}
+.summary-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: rgba(43,43,43,0.55);
+  letter-spacing: -0.02em;
+}
+.summary-value.total {
+  font-size: 26px;
+  color: var(--hd-burgundy);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+/* ── V3: CTAs — stacked, full-width, "Enquiries →" ghost ── */
+.cta-stack {
+  margin: 32px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.cta-primary {
+  width: 100%;
+  background: var(--hd-burgundy);
+  color: rgba(254,242,227,0.92);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 18px 20px;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cta-primary-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+.cta-primary-label {
+  position: relative;
+  z-index: 1;
+}
+/* V3: "Contact Concierge" / "Enquiries" — bordered, not plain ghost */
+.cta-concierge {
+  width: 100%;
+  background: transparent;
+  color: var(--hd-burgundy);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 16px 20px;
+  border: 1px solid var(--rule);
+  border-top: none;
+  cursor: pointer;
+  text-align: center;
+  margin-top: 0;
+}
+
+/* ── V3: HELP SECTION EYEBROW ── */
+.help-section {
+  margin: 24px 20px 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+  text-align: center;
+}
+.help-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.30);
+  display: block;
+  margin-bottom: 12px;
+}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  height: 68px;
+  background: var(--hd-paper);
+  border-top: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  flex-shrink: 0;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  position: relative;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.nav-icon {
+  width: 22px;
+  height: 22px;
+  color: rgba(43,43,43,0.30);
+}
+.nav-item.active .nav-icon { color: var(--hd-burgundy); }
+.nav-label {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.30);
+}
+.nav-item.active .nav-label { color: var(--hd-burgundy); font-style: italic; }
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  width: 60%;
+  height: 1.5px;
+  background: var(--hd-burgundy);
+}
+
+/* ── FOOTER SPACER ── */
+.page-footer {
+  padding: 40px 20px 28px;
+}
+</style>
+</head>
+<body>
+
+<div class="global-grain"></div>
+
+<div class="phone-shell">
+
+  <!-- iOS-style status bar -->
+  <div class="status-bar">
+    <span>14:52</span>
+    <span>5G &nbsp; 87%</span>
+  </div>
+
+  <!-- V3: Fixed top app bar — back arrow, centered wordmark + order#, bag icon -->
+  <header class="top-app-bar">
+    <button class="top-bar-back" aria-label="Back">&#8592;</button>
+    <div class="top-bar-center">
+      <span class="top-bar-wordmark">Häagen-Dazs</span>
+      <span class="top-bar-order">Order #HD-9821-X</span>
+    </div>
+    <button class="top-bar-bag" aria-label="Cart">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <path d="M16 10a4 4 0 01-8 0"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="scroll-area">
+
+    <!-- Section 01: Map + Courier -->
+    <section style="padding-top: 24px;">
+      <div class="section-divider">
+        <span class="section-divider-num">01</span>
+        <div class="section-divider-rule"></div>
+      </div>
+
+      <!-- V3: Square map frame -->
+      <div class="map-section" style="padding-top: 0;">
+        <div class="map-frame">
+          <svg class="map-svg-lines" viewBox="0 0 350 350" xmlns="http://www.w3.org/2000/svg">
+            <!-- Editorial grid — cream base -->
+            <rect width="350" height="350" fill="#F5E6C8"/>
+            <!-- Grid lines -->
+            <line x1="0" y1="50"  x2="350" y2="50"  stroke="rgba(43,43,43,0.07)" stroke-width="1"/>
+            <line x1="0" y1="100" x2="350" y2="100" stroke="rgba(43,43,43,0.07)" stroke-width="1"/>
+            <line x1="0" y1="150" x2="350" y2="150" stroke="rgba(43,43,43,0.07)" stroke-width="1"/>
+            <line x1="0" y1="200" x2="350" y2="200" stroke="rgba(43,43,43,0.07)" stroke-width="1"/>
+            <line x1="0" y1="250" x2="350" y2="250" stroke="rgba(43,43,43,0.07)" stroke-width="1"/>
+            <line x1="0" y1="300" x2="350" y2="300" stroke="rgba(43,43,43,0.07)" stroke-width="1"/>
+            <line x1="50"  y1="0" x2="50"  y2="350" stroke="rgba(43,43,43,0.07)" stroke-width="1"/>
+            <line x1="100" y1="0" x2="100" y2="350" stroke="rgba(43,43,43,0.07)" stroke-width="1"/>
+            <line x1="150" y1="0" x2="150" y2="350" stroke="rgba(43,43,43,0.07)" stroke-width="1"/>
+            <line x1="200" y1="0" x2="200" y2="350" stroke="rgba(43,43,43,0.07)" stroke-width="1"/>
+            <line x1="250" y1="0" x2="250" y2="350" stroke="rgba(43,43,43,0.07)" stroke-width="1"/>
+            <line x1="300" y1="0" x2="300" y2="350" stroke="rgba(43,43,43,0.07)" stroke-width="1"/>
+            <!-- Diagonal streets -->
+            <line x1="0" y1="250" x2="150" y2="0"   stroke="rgba(43,43,43,0.09)" stroke-width="1"/>
+            <line x1="80" y1="350" x2="300" y2="0"   stroke="rgba(43,43,43,0.09)" stroke-width="1"/>
+            <line x1="200" y1="350" x2="350" y2="100" stroke="rgba(43,43,43,0.07)" stroke-width="1"/>
+            <!-- Route path — gold dashed -->
+            <polyline points="80,280 130,220 185,185 230,155 265,135 290,120 310,108" fill="none" stroke="rgba(184,146,42,0.55)" stroke-width="2" stroke-dasharray="5,4"/>
+            <!-- Courier dot (burgundy) -->
+            <circle cx="80" cy="280" r="8" fill="#650A30"/>
+            <circle cx="80" cy="280" r="14" fill="none" stroke="rgba(101,10,48,0.22)" stroke-width="1.5"/>
+            <!-- Destination (gold square) -->
+            <rect x="303" y="101" width="14" height="14" fill="#B8922A"/>
+            <rect x="298" y="96"  width="24" height="24" fill="none" stroke="rgba(184,146,42,0.35)" stroke-width="1"/>
+            <!-- Pin-stem on destination -->
+            <line x1="310" y1="120" x2="310" y2="132" stroke="rgba(184,146,42,0.50)" stroke-width="1.5"/>
+            <!-- Labels -->
+            <text x="44" y="302" font-family="JetBrains Mono, monospace" font-size="8" fill="rgba(101,10,48,0.65)" letter-spacing="0.04em">COURIER</text>
+            <text x="288" y="93"  font-family="JetBrains Mono, monospace" font-size="8" fill="rgba(184,146,42,0.80)" letter-spacing="0.04em">YOU</text>
+            <!-- Frame border -->
+            <rect x="0.5" y="0.5" width="349" height="349" fill="none" stroke="rgba(43,43,43,0.10)" stroke-width="1"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- V3: Courier detail block below map -->
+      <div class="courier-block">
+        <span class="courier-eyebrow">Curated Delivery By</span>
+        <div class="courier-name">Bambang Wijaya</div>
+        <div class="courier-plate">B 1234 HDZ &nbsp;·&nbsp; Yamaha NMAX</div>
+        <div class="courier-actions">
+          <button class="courier-btn-ghost" aria-label="Message courier">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
+          </button>
+          <button class="courier-btn-filled" aria-label="Call courier">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 11 19.79 19.79 0 01.22 2.36a2 2 0 012-2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.13 6.13l1.61-1.61a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- V3: Points Earned inline card (gold-light) -->
+      <div class="points-card">
+        <div class="points-card-left">
+          <div class="points-star-box">
+            <span class="points-star">&#9733;</span>
+          </div>
+          <div>
+            <span class="points-eyebrow">Points Earned</span>
+            <div class="points-value"><span>+45</span> Membership Credits</div>
+          </div>
+        </div>
+        <span class="points-chevron">›</span>
+      </div>
+    </section>
+
+    <!-- Section 02: Status Journal -->
+    <section class="timeline-section">
+      <div class="section-divider" style="margin-bottom: 32px;">
+        <span class="section-divider-num">02</span>
+        <div class="section-divider-rule"></div>
+        <span class="section-divider-label">Status Journal</span>
+      </div>
+
+      <div class="timeline">
+        <!-- Step 01: Confirmed -->
+        <div class="tl-step">
+          <div class="tl-marker-col"><div class="tl-dot-done"></div></div>
+          <div class="tl-body">
+            <div class="tl-header-row">
+              <span class="tl-step-label done" data-i18n="tracking.order_confirmed">Confirmed</span>
+              <span class="tl-time done">14:10</span>
+            </div>
+            <p class="tl-sub-copy">Your artisanal selection has been received and curated for preparation.</p>
+          </div>
+        </div>
+
+        <!-- Step 02: Preparing -->
+        <div class="tl-step">
+          <div class="tl-marker-col"><div class="tl-dot-done"></div></div>
+          <div class="tl-body">
+            <div class="tl-header-row">
+              <span class="tl-step-label done" data-i18n="tracking.order_prepared">Preparing</span>
+              <span class="tl-time done">14:25</span>
+            </div>
+            <p class="tl-sub-copy">Hand-packed at our atelier. Maintaining perfect tempering for delivery.</p>
+          </div>
+        </div>
+
+        <!-- Step 03: Out for Delivery (active) -->
+        <div class="tl-step">
+          <div class="tl-marker-col"><div class="tl-dot-current"></div></div>
+          <div class="tl-body">
+            <div class="tl-header-row">
+              <span class="tl-step-label current" data-i18n="tracking.order_en_route">Out for Delivery</span>
+              <span class="tl-time current">14:52</span>
+            </div>
+            <p class="tl-sub-copy">Bambang is traversing the city. Expect your moment of indulgence within 8 minutes.</p>
+            <!-- V3: Currently Carrying strip -->
+            <div class="tl-carrying-strip">
+              <div class="tl-carrying-thumb">
+                <img src="photos/DW5RVLkkwA6.jpg" alt="Belgian Chocolate Pint" />
+              </div>
+              <div>
+                <span class="tl-carrying-eyebrow">Currently Carrying</span>
+                <div class="tl-carrying-name">Belgian Chocolate Pint &amp; Classic Vanilla</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 04: Delivered (pending) -->
+        <div class="tl-step" style="opacity:0.35;">
+          <div class="tl-marker-col"><div class="tl-dot-pending"></div></div>
+          <div class="tl-body">
+            <div class="tl-header-row">
+              <span class="tl-step-label" data-i18n="tracking.order_delivered">Completed</span>
+              <span class="tl-time">--:--</span>
+            </div>
+            <p class="tl-sub-copy pending" style="font-style:italic;">Awaiting delivery to your doorstep.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 03: Your Order -->
+    <section class="items-section">
+      <div class="section-divider" style="margin-bottom: 8px;">
+        <span class="section-divider-num">03</span>
+        <div class="section-divider-rule"></div>
+        <span class="section-divider-label" data-i18n="section.your_order">Item List</span>
+      </div>
+
+      <div class="order-item">
+        <span class="item-num">01</span>
+        <div class="item-thumb">
+          <img src="photos/DWizLL8k3Vq.jpg" alt="Vanilla" />
+        </div>
+        <div class="item-body">
+          <div class="item-name">Classic Vanilla Pint</div>
+          <div class="item-qty">Qty: 1</div>
+        </div>
+        <span class="item-price" data-price-idr="145000">Rp 145.000</span>
+      </div>
+
+      <div class="order-item">
+        <span class="item-num">02</span>
+        <div class="item-thumb">
+          <img src="photos/DW5RVLkkwA6.jpg" alt="Belgian Chocolate" />
+        </div>
+        <div class="item-body">
+          <div class="item-name">Belgian Chocolate Pint</div>
+          <div class="item-qty">Qty: 1</div>
+        </div>
+        <span class="item-price" data-price-idr="145000">Rp 145.000</span>
+      </div>
+    </section>
+
+    <!-- Order Summary (subtotal + delivery + total) -->
+    <div class="order-summary" style="margin-top: 4px;">
+      <div class="summary-row">
+        <span class="summary-label">Subtotal</span>
+        <span class="summary-value" data-price-idr="290000">Rp 290.000</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Delivery</span>
+        <span class="summary-value" data-price-idr="15000">Rp 15.000</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label total">Total</span>
+        <span class="summary-value total" data-price-idr="305000">Rp 305.000</span>
+      </div>
+    </div>
+
+    <!-- V3: CTA stack — "Order Again" primary + "Enquiries →" bordered -->
+    <div class="cta-stack">
+      <button class="cta-primary" data-i18n="cta.order_again">
+        <div class="cta-primary-grain"></div>
+        <span class="cta-primary-label">Order Again</span>
+      </button>
+      <button class="cta-concierge">Enquiries &rarr;</button>
+    </div>
+
+    <div class="page-footer"></div>
+
+  </div><!-- end scroll-area -->
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <polyline points="9,22 9,12 15,12 15,22"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.home">Home</span>
+    </button>
+    <button class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <line x1="8" y1="6" x2="21" y2="6"/>
+        <line x1="8" y1="12" x2="21" y2="12"/>
+        <line x1="8" y1="18" x2="21" y2="18"/>
+        <line x1="3" y1="6" x2="3.01" y2="6"/>
+        <line x1="3" y1="12" x2="3.01" y2="12"/>
+        <line x1="3" y1="18" x2="3.01" y2="18"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.menu">Menu</span>
+    </button>
+    <button class="nav-item active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14,2 14,8 20,8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.orders">Orders</span>
+    </button>
+    <button class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.rewards">Rewards</span>
+    </button>
+    <button class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.account">Account</span>
+    </button>
+  </nav>
+
+</div><!-- end phone-shell -->
+
+</body>
+</html>

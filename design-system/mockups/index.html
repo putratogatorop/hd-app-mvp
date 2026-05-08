@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Häagen-Dazs App Mockups</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <script src="i18n.js" defer></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      background-color: #FEF2E3;
+      color: #2B2B2B;
+      font-family: 'Jost', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Grain texture */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' seed='2'/%3E%3C/filter%3E%3Crect width='400' height='400' fill='%23FEF2E3' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    main {
+      position: relative;
+      z-index: 2;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 60px 24px 80px;
+    }
+
+    .eyebrow {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(43, 43, 43, 0.6);
+      margin-bottom: 48px;
+      font-weight: 400;
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 64px;
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      color: #2B2B2B;
+    }
+
+    .intro {
+      font-family: 'Jost', sans-serif;
+      font-size: 16px;
+      font-style: italic;
+      color: rgba(43, 43, 43, 0.75);
+      margin-bottom: 60px;
+      max-width: 700px;
+      line-height: 1.7;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 48px 32px;
+      margin-bottom: 60px;
+    }
+
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr;
+        gap: 40px 0;
+      }
+    }
+
+    .card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      transition: all 200ms ease;
+      padding-bottom: 24px;
+      border-bottom: 1px solid rgba(43, 43, 43, 0.1);
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+    }
+
+    .card:hover .card-title {
+      color: #650A30;
+    }
+
+    .card-number {
+      font-family: 'Jost', sans-serif;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(43, 43, 43, 0.5);
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 400;
+      font-style: italic;
+      margin-bottom: 8px;
+      transition: color 200ms ease;
+      color: #2B2B2B;
+    }
+
+    .card-description {
+      font-family: 'Jost', sans-serif;
+      font-size: 14px;
+      font-style: italic;
+      color: rgba(43, 43, 43, 0.7);
+    }
+
+    footer {
+      text-align: center;
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(43, 43, 43, 0.4);
+      padding-top: 40px;
+      border-top: 1px solid rgba(43, 43, 43, 0.1);
+    }
+
+    /* Index page switcher override */
+    .index-switcher {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      color: rgba(43, 43, 43, 0.6);
+    }
+    .index-switcher [data-mode] {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(43, 43, 43, 0.35);
+      background: none;
+      border: none;
+      padding: 0 3px;
+      cursor: pointer;
+      line-height: 1;
+      position: relative;
+      white-space: nowrap;
+    }
+    .index-switcher [data-mode][data-active="true"] {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-style: italic;
+      font-weight: 400;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: none;
+      color: #650A30;
+      opacity: 1;
+    }
+    .index-switcher [data-mode][data-active="true"]::after {
+      content: "";
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: #650A30;
+      opacity: 0.7;
+    }
+    .index-switcher .sep {
+      font-family: 'Jost', sans-serif;
+      font-size: 9px;
+      opacity: 0.2;
+      padding: 0 1px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Language / currency switcher for index page -->
+  <div class="index-switcher">
+    <button data-mode="en-idr" data-active="true" title="English · IDR" onclick="setMode('en-idr')">EN</button>
+    <span class="sep">·</span>
+    <button data-mode="id-idr" data-active="false" title="Bahasa Indonesia · IDR" onclick="setMode('id-idr')">ID</button>
+    <span class="sep">·</span>
+    <button data-mode="en-usd" data-active="false" title="English · USD" onclick="setMode('en-usd')">USD</button>
+  </div>
+
+  <main>
+    <div class="eyebrow">Häagen-Dazs · App Mockups</div>
+
+    <h1>The collection.</h1>
+
+    <p class="intro">A walkthrough of every screen in the Häagen-Dazs Indonesia application — built to feel like a small luxury, not a quick purchase.</p>
+
+    <div class="grid">
+      <a href="home.html" class="card">
+        <span class="card-number">01 — Home</span>
+        <div class="card-title">Home</div>
+        <div class="card-description">A flavour for the season — your daily destination</div>
+      </a>
+
+      <a href="menu.html" class="card">
+        <span class="card-number">02 — The Shortlist</span>
+        <div class="card-title">The Shortlist</div>
+        <div class="card-description">Cita rasa, terkurasi — every flavour, every collection</div>
+      </a>
+
+      <a href="cart-personal.html" class="card">
+        <span class="card-number">03 — Cart · For Me</span>
+        <div class="card-title">Cart · For Me</div>
+        <div class="card-description">Your selection, ready to be enjoyed</div>
+      </a>
+
+      <a href="cart-gift.html" class="card">
+        <span class="card-number">04 — Cart · As a Gift</span>
+        <div class="card-title">Cart · As a Gift</div>
+        <div class="card-description">A gift, sent — with a note and editorial wrap</div>
+      </a>
+
+      <a href="tracking-delivery.html" class="card">
+        <span class="card-number">05 — Order Tracking · Delivery</span>
+        <div class="card-title">Order Tracking · Delivery</div>
+        <div class="card-description">On its way — a small ritual approaches</div>
+      </a>
+
+      <a href="tracking-pickup.html" class="card">
+        <span class="card-number">06 — Order Tracking · Pickup</span>
+        <div class="card-title">Order Tracking · Pickup</div>
+        <div class="card-description">Ready for collection — at our boutique</div>
+      </a>
+
+      <a href="lounge.html" class="card">
+        <span class="card-number">07 — The Lounge</span>
+        <div class="card-title">The Lounge</div>
+        <div class="card-description">Your tasting journey, curated — Reserve members only</div>
+      </a>
+
+      <a href="account.html" class="card">
+        <span class="card-number">08 — Account</span>
+        <div class="card-title">Account</div>
+        <div class="card-description">Profil Anda — identity, membership, preferences</div>
+      </a>
+
+      <a href="onboarding-1-splash.html" class="card">
+        <span class="card-number">09 — Onboarding · Begin</span>
+        <div class="card-title">Onboarding · Begin</div>
+        <div class="card-description">Mulai. — the invitation</div>
+      </a>
+
+      <a href="onboarding-2-identity.html" class="card">
+        <span class="card-number">10 — Onboarding · Identity</span>
+        <div class="card-title">Onboarding · Identity</div>
+        <div class="card-description">Sebut nama Anda — a small introduction</div>
+      </a>
+
+      <a href="onboarding-3-preferences.html" class="card">
+        <span class="card-number">11 — Onboarding · Preferences</span>
+        <div class="card-title">Onboarding · Preferences</div>
+        <div class="card-description">Pilih tiga rasa kesayangan — your tasting preferences</div>
+      </a>
+
+      <a href="onboarding-4-tier-reveal.html" class="card">
+        <span class="card-number">12 — Onboarding · Tier Reveal</span>
+        <div class="card-title">Onboarding · Tier Reveal</div>
+        <div class="card-description">Anda seorang Connoisseur — welcome to the inner circle</div>
+      </a>
+
+      <a href="lounge-initiate.html" class="card">
+        <span class="card-number">13 — The Lounge · Initiate Tier</span>
+        <div class="card-title">The Lounge · Initiate</div>
+        <div class="card-description">Just joined — FOMO framing, locked privileges, 0–499 pts</div>
+      </a>
+
+      <a href="lounge-connoisseur.html" class="card">
+        <span class="card-number">14 — The Lounge · Connoisseur Tier</span>
+        <div class="card-title">The Lounge · Connoisseur</div>
+        <div class="card-description">Mid-tier sophistication — Early Access unlocked, 500–999 pts</div>
+      </a>
+
+      <a href="lounge-grand-maestro.html" class="card">
+        <span class="card-number">15 — The Lounge · Grand Maestro Tier</span>
+        <div class="card-title">The Lounge · Grand Maestro</div>
+        <div class="card-description">Supreme status — all privileges unlocked, deepest burgundy, 2000+ pts</div>
+      </a>
+    </div>
+
+    <footer>
+      Häagen-Dazs Indonesia · Mockup collection · Mei 2026
+    </footer>
+  </main>
+</body>
+</html>
