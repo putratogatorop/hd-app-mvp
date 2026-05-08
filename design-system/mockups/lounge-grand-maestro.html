@@ -1,0 +1,1220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HD App — The Lounge · Grand Maestro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<script src="i18n.js" defer></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --hd-burgundy:       #650A30;
+  --hd-burgundy-dark:  #40061E;
+  --hd-burgundy-deep:  #2A0315;
+  --hd-burgundy-light: #801237;
+  --hd-gold:           #B8922A;
+  --hd-gold-bright:    #D4A84B;
+  --hd-gold-light:     #F5E6C8;
+  --hd-cream:          #FEF2E3;
+  --hd-cream-deep:     #F5E6C8;
+  --hd-paper:          #FEF2E3;
+  --hd-ink:            #2B2B2B;
+  --rule:              rgba(43,43,43,0.12);
+  --rule-soft:         rgba(43,43,43,0.08);
+  /* Grand Maestro exclusive tones */
+  --gm-surface:        #1E0A0F;
+  --gm-gold:           #C9A43C;
+  --gm-gold-dim:       rgba(201,164,60,0.7);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans:    'Jost', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+  --ease-ed: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html, body {
+  background: #0e0608;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px 60px;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.global-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+
+.phone-shell {
+  width: 390px;
+  min-width: 390px;
+  background: var(--hd-cream);
+  box-shadow:
+    0 0 0 1px rgba(201,164,60,0.12),
+    0 40px 120px -20px rgba(0,0,0,0.95),
+    0 80px 200px -40px rgba(64,6,30,0.7);
+  position: relative;
+  overflow: hidden;
+}
+
+.status-bar {
+  background: var(--hd-burgundy-deep);
+  color: rgba(254,242,227,0.7);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  height: 44px;
+}
+
+.scroll-area {
+  height: calc(100dvh - 44px - 68px);
+  max-height: calc(844px - 44px - 68px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+.scroll-area::-webkit-scrollbar { display: none; }
+.scroll-area { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── GRAND MAESTRO HEADER — deepest burgundy, heavy grain, gold radiance ── */
+.lounge-header {
+  background: var(--gm-surface);
+  position: relative;
+  overflow: hidden;
+  padding: 0 20px 44px;
+}
+.lounge-header-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.10;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+.lounge-header-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 95% 5%, rgba(201,164,60,0.28), transparent 55%),
+    radial-gradient(ellipse 60% 50% at 0% 100%, rgba(101,10,48,0.60), transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(201,164,60,0.05), transparent 70%);
+}
+.lounge-header-inner { position: relative; z-index: 1; }
+.lounge-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(201,164,60,0.18);
+  padding: 12px 0 10px;
+}
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 18px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--hd-cream);
+}
+.lounge-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(201,164,60,0.50);
+}
+.lounge-intro { padding-top: 32px; }
+/* Grand Maestro: largest headline, full 80px+ display */
+.lounge-intro-headline {
+  font-family: var(--font-display);
+  font-size: 80px;
+  font-weight: 300;
+  font-style: italic;
+  line-height: 0.88;
+  color: var(--hd-cream);
+  letter-spacing: -0.03em;
+  margin-bottom: 18px;
+}
+.lounge-intro-headline .indent { padding-left: 0.45em; display: block; }
+.lounge-intro-headline .gold { color: var(--gm-gold); }
+.lounge-intro-sub {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: rgba(201,164,60,0.45);
+}
+
+/* ── SUPREME STATUS BADGE ── */
+.status-badge {
+  margin: 0 20px;
+  padding: 10px 16px;
+  border: 1px solid rgba(201,164,60,0.25);
+  background: var(--hd-burgundy-deep);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.status-badge-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: rgba(201,164,60,0.55);
+}
+.status-badge-value {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gm-gold);
+}
+
+/* ── EDITORIAL LABEL ── */
+.editorial-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(201,164,60,0.40);
+  padding: 18px 20px 0;
+  background: var(--hd-burgundy-deep);
+}
+
+/* ── MEMBERSHIP CARD — Grand Maestro: deepest bg, bright gold, diamond emblem ── */
+.card-section {
+  padding: 0 20px 28px;
+  background: var(--hd-burgundy-deep);
+}
+.membership-card {
+  aspect-ratio: 1.6 / 1;
+  background: var(--hd-burgundy-deep);
+  border: 1px solid rgba(201,164,60,0.35);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 18px 20px;
+}
+.membership-card-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.10;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='ng'><feTurbulence type='fractalNoise' baseFrequency='0.80' numOctaves='5' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23ng)'/></svg>");
+  background-size: 140px 140px;
+}
+.membership-card-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 50% at 95% 5%, rgba(201,164,60,0.30), transparent 55%),
+    radial-gradient(ellipse 60% 60% at 0% 100%, rgba(64,6,30,0.65), transparent 70%);
+}
+/* Grand Maestro rotating diamond emblem -->  */
+.membership-card-diamond {
+  position: absolute;
+  right: -20px;
+  top: -20px;
+  width: 120px;
+  height: 120px;
+  border: 1px solid rgba(201,164,60,0.20);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+.membership-card-diamond-inner {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 100px;
+  height: 100px;
+  border: 0.5px solid rgba(201,164,60,0.12);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+.card-tier-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: rgba(201,164,60,0.60);
+  margin-bottom: 4px;
+  position: relative;
+  z-index: 1;
+}
+.card-tier {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 300;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  color: var(--gm-gold);
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+}
+.card-name {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--hd-cream);
+  line-height: 1;
+  margin-bottom: 5px;
+  position: relative;
+  z-index: 1;
+}
+.card-since {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(254,242,227,0.38);
+  position: relative;
+  z-index: 1;
+}
+.membership-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  position: relative;
+  z-index: 1;
+}
+.card-member-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(254,242,227,0.28);
+}
+.card-points-block { text-align: right; }
+.card-points-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(201,164,60,0.60);
+  margin-bottom: 3px;
+}
+.card-points-num {
+  font-family: var(--font-mono);
+  font-size: 40px;
+  font-weight: 500;
+  color: var(--gm-gold);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+/* ── APEX INDICATOR — "you've arrived" ── */
+.apex-indicator {
+  padding: 16px 20px;
+  background: var(--hd-cream-deep);
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.apex-text {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--hd-ink);
+}
+.apex-tier {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--hd-gold);
+}
+
+/* ── TIER PROGRESS — Grand Maestro: at apex, show full bar ── */
+.tier-progress {
+  padding: 20px 20px 16px;
+  background: var(--hd-cream);
+  border-top: 1px solid var(--rule);
+}
+.tier-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+.tier-progress-left {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: -0.01em;
+  color: var(--hd-ink);
+}
+.tier-progress-right {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.45);
+}
+.tier-progress-rail {
+  height: 2px;
+  background: rgba(43,43,43,0.08);
+  position: relative;
+  overflow: hidden;
+}
+.tier-progress-fill {
+  position: absolute;
+  inset-y: 0;
+  left: 0;
+  background: var(--hd-gold);
+  border-radius: 9999px;
+}
+
+/* ── TIER LADDER ── */
+.tier-ladder {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--rule);
+}
+.tier-ladder-scroll { display: flex; gap: 0; overflow-x: auto; }
+.tier-ladder-scroll::-webkit-scrollbar { display: none; }
+.tier-ladder-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+.tier-item { flex-shrink: 0; padding: 0 16px 8px 0; cursor: pointer; }
+.tier-item:first-child { padding-left: 0; }
+.tier-item-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: rgba(43,43,43,0.35);
+  white-space: nowrap;
+  line-height: 1;
+}
+.tier-item.active .tier-item-label {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+  color: var(--hd-ink);
+  text-transform: none;
+}
+.tier-item-line { height: 1px; background: transparent; margin-top: 5px; }
+.tier-item.active .tier-item-line { background: var(--gm-gold); }
+
+/* ── SECTION HEADER ── */
+.section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--rule);
+  padding: 0 20px 14px;
+}
+.section-header-left { display: flex; align-items: baseline; gap: 14px; }
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(43,43,43,0.35);
+  letter-spacing: 0.04em;
+}
+.section-title-text {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--hd-ink);
+  line-height: 1;
+}
+
+/* ── ANNUAL IMPACT STATS ── */
+.stats-section { padding-top: 64px; }
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--rule-soft);
+  border: 1px solid var(--rule-soft);
+  margin: 20px 20px 0;
+}
+.stat-cell {
+  background: var(--hd-paper);
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stat-num {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  color: var(--hd-ink);
+  line-height: 1;
+}
+.stat-label {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: rgba(43,43,43,0.45);
+  line-height: 1.3;
+}
+
+/* ── PRIVILEGES — ALL UNLOCKED + EXCLUSIVES ── */
+.privileges-section { padding-top: 64px; }
+.privilege-list { margin: 16px 20px 0; }
+.privilege-item {
+  border-top: 1px solid var(--rule-soft);
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+.privilege-item:last-child { border-bottom: 1px solid var(--rule-soft); }
+.privilege-item-num {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: rgba(43,43,43,0.28);
+  margin-bottom: 10px;
+}
+.privilege-item-row { display: flex; gap: 14px; align-items: flex-start; }
+.privilege-img { width: 80px; height: 80px; flex-shrink: 0; overflow: hidden; }
+.privilege-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(10%);
+  transition: transform 600ms var(--ease-ed), filter 600ms var(--ease-ed);
+}
+.privilege-item:hover .privilege-img img { transform: scale(1.06); filter: grayscale(0%); }
+.privilege-body { flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 80px; }
+.privilege-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  color: var(--hd-ink);
+  line-height: 1.05;
+  margin-bottom: 5px;
+}
+.privilege-desc {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(43,43,43,0.55);
+  flex: 1;
+}
+.privilege-footer { margin-top: 12px; display: flex; align-items: center; justify-content: space-between; }
+.privilege-status {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gm-gold);
+}
+.privilege-status.exclusive {
+  color: var(--hd-burgundy);
+  border: 1px solid rgba(101,10,48,0.25);
+  padding: 3px 7px;
+}
+
+/* ── ELITE REWARDS GRID ── */
+.elite-section { padding-top: 64px; }
+.elite-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--rule-soft);
+  margin: 20px 20px 0;
+  border: 1px solid var(--rule-soft);
+}
+.elite-card {
+  background: #fff;
+  cursor: pointer;
+  overflow: hidden;
+}
+.elite-card:hover .elite-card-img img { transform: scale(1.05); filter: grayscale(0%); }
+.elite-card-img { width: 100%; aspect-ratio: 1/1; overflow: hidden; background: var(--hd-cream-deep); }
+.elite-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(15%);
+  transition: transform 700ms var(--ease-ed), filter 700ms var(--ease-ed);
+}
+.elite-card-body { padding: 14px 16px; }
+.elite-card-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  color: var(--hd-ink);
+  line-height: 1.1;
+  margin-bottom: 5px;
+}
+.elite-card-sub {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(43,43,43,0.40);
+  margin-bottom: 8px;
+}
+.elite-card-pts {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--hd-burgundy);
+  letter-spacing: -0.01em;
+}
+
+/* ── REDEEM SECTION ── */
+.redeem-section { padding-top: 64px; }
+.redeem-list { margin: 16px 0 0; }
+.redeem-reward {
+  border-bottom: 1px solid var(--rule-soft);
+  cursor: pointer;
+  position: relative;
+}
+.redeem-reward:hover .redeem-reward-img img { transform: scale(1.03); filter: grayscale(0%); }
+.redeem-reward-pts-label {
+  position: absolute;
+  top: 12px;
+  left: 20px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hd-cream);
+  background: var(--hd-burgundy);
+  padding: 3px 7px;
+  z-index: 2;
+}
+.redeem-reward-img { width: 100%; height: 220px; overflow: hidden; background: var(--hd-cream-deep); }
+.redeem-reward-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(10%);
+  transition: transform 700ms var(--ease-ed), filter 700ms var(--ease-ed);
+}
+.redeem-reward-body {
+  padding: 16px 20px 20px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+.redeem-reward-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  color: var(--hd-ink);
+  line-height: 1.1;
+}
+.redeem-reward-sub {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(43,43,43,0.40);
+  margin-top: 4px;
+}
+.redeem-reward-action {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  font-weight: 600;
+  color: var(--hd-burgundy);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── JOURNAL ── */
+.journal-section { padding-top: 64px; }
+.journal-list { margin: 16px 20px 0; border: 1px solid var(--rule-soft); }
+.journal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.journal-row:last-child { border-bottom: none; }
+.journal-desc { flex: 1; }
+.journal-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--hd-ink);
+  line-height: 1.2;
+}
+.journal-meta {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(43,43,43,0.4);
+  margin-top: 3px;
+}
+.journal-pts {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: -0.02em;
+  padding-top: 2px;
+  white-space: nowrap;
+}
+.journal-pts.positive { color: var(--gm-gold); }
+.journal-pts.negative { color: rgba(43,43,43,0.45); }
+
+/* ── GRAND MAESTRO FOOTER: darker, richer ── */
+.lounge-footer { padding: 64px 20px 32px; }
+.lounge-footer-rule { border-top: 1px solid var(--rule); padding-top: 20px; }
+.lounge-footer-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: rgba(43,43,43,0.45);
+  margin-bottom: 8px;
+}
+.lounge-footer-link {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--hd-burgundy);
+  text-decoration: underline;
+  text-decoration-color: rgba(101,10,48,0.3);
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+.lounge-footer-copy {
+  margin-top: 32px;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(43,43,43,0.25);
+  text-align: center;
+}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  height: 68px;
+  background: var(--hd-paper);
+  border-top: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  position: relative;
+  z-index: 10;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  position: relative;
+  background: none;
+  border: none;
+  padding: 0;
+  transition: opacity 200ms;
+}
+.nav-item .nav-icon { width: 22px; height: 22px; color: rgba(43,43,43,0.35); transition: color 250ms; }
+.nav-item.active .nav-icon { color: var(--hd-burgundy); }
+.nav-item .nav-label {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.35);
+  transition: color 250ms;
+}
+.nav-item.active .nav-label { color: var(--hd-burgundy); }
+.nav-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 20%;
+  width: 60%;
+  height: 1.5px;
+  background: var(--hd-burgundy);
+  transform: scaleX(0);
+  transition: transform 300ms var(--ease-ed);
+}
+.nav-item.active::before { transform: scaleX(1); }
+</style>
+</head>
+<body>
+
+<div class="global-grain"></div>
+
+<div class="phone-shell">
+
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>5G &nbsp; 100%</span>
+  </div>
+
+  <div class="scroll-area">
+
+    <!-- Grand Maestro header: deepest bg, heaviest grain, gold radiance, largest display type -->
+    <div class="lounge-header">
+      <div class="lounge-header-grain"></div>
+      <div class="lounge-header-glow"></div>
+      <div class="lounge-header-inner">
+        <div class="lounge-topline">
+          <span class="wordmark">Häagen-Dazs</span>
+          <span class="lounge-eyebrow">· &nbsp;<span data-i18n="lounge.the_lounge">The Lounge</span></span>
+        </div>
+        <div class="lounge-intro">
+          <!-- "Your ultimate journey." — from Stitch Grand Maestro -->
+          <div class="lounge-intro-headline">Your<span class="indent">ultimate<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="gold">journey.</span></span></div>
+          <div class="lounge-intro-sub">04 — GRAND MAESTRO · SUPREME STATUS</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status badge — Grand Maestro exclusive -->
+    <div class="status-badge" style="background:var(--hd-burgundy-deep);">
+      <span class="status-badge-label">MEMBERSHIP STATUS</span>
+      <span class="status-badge-value">Supreme</span>
+    </div>
+
+    <!-- Editorial label -->
+    <div class="editorial-label">LOYALTY · 2026 · ELITE</div>
+
+    <!-- Membership Card — Grand Maestro: deepest bg, brightest gold, rotating diamond emblem, 2,850 pts -->
+    <div class="card-section">
+      <div class="membership-card">
+        <div class="membership-card-grain"></div>
+        <div class="membership-card-glow"></div>
+        <div class="membership-card-diamond"></div>
+        <div class="membership-card-diamond-inner"></div>
+        <div>
+          <div class="card-tier-eyebrow">CURRENT TIER</div>
+          <div class="card-tier">Grand Maestro</div>
+        </div>
+        <div>
+          <div style="font-family:var(--font-mono);font-size:8px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(254,242,227,0.30);margin-bottom:5px;" data-i18n="misc.member_since">Member since</div>
+          <div class="card-name">PUTRA TOGATOROP</div>
+          <div class="card-since">Oct 2025</div>
+        </div>
+        <div class="membership-card-bottom">
+          <div class="card-member-label">Member ID · HD-0001</div>
+          <div class="card-points-block">
+            <div class="card-points-label">Available</div>
+            <div class="card-points-num">2,850</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Apex indicator — "You've arrived. The journey continues." -->
+    <div class="apex-indicator">
+      <span class="apex-text">The apex of the collection.</span>
+      <span class="apex-tier">Elite Status</span>
+    </div>
+
+    <!-- Tier progress — at top, show 2,850 / apex (symbolic) -->
+    <div class="tier-progress">
+      <div class="tier-progress-labels">
+        <span class="tier-progress-left">2,850 pts</span>
+        <span class="tier-progress-right">Apex · No limit</span>
+      </div>
+      <div class="tier-progress-rail">
+        <div class="tier-progress-fill" style="width:100%"></div>
+      </div>
+    </div>
+
+    <!-- Tier ladder — Grand Maestro active -->
+    <div class="tier-ladder">
+      <div class="tier-ladder-scroll">
+        <div class="tier-item">
+          <div class="tier-item-label">Initiate</div>
+          <div class="tier-item-line"></div>
+        </div>
+        <div class="tier-item">
+          <div class="tier-item-label">Connoisseur</div>
+          <div class="tier-item-line"></div>
+        </div>
+        <div class="tier-item">
+          <div class="tier-item-label">Maestro</div>
+          <div class="tier-item-line"></div>
+        </div>
+        <div class="tier-item active">
+          <div class="tier-item-label">Grand Maestro</div>
+          <div class="tier-item-line"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 01 — Earned: Annual Impact (Grand Maestro shows full-year stats) -->
+    <section class="stats-section">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-num">01</span>
+          <span class="section-title-text">Annual Impact</span>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-cell">
+          <div class="stat-num">142</div>
+          <div class="stat-label">Total<br>scoops</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num">58</div>
+          <div class="stat-label">Moments<br>shared</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num">12</div>
+          <div class="stat-label">Cities<br>visited</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 — Privileges: ALL UNLOCKED + exclusive GM extras -->
+    <section class="privileges-section">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-num">02</span>
+          <span class="section-title-text" data-i18n="section.curated_privileges">Curated Privileges</span>
+        </div>
+      </div>
+
+      <div class="privilege-list">
+        <!-- Early Access — ACTIVE -->
+        <div class="privilege-item">
+          <div class="privilege-item-num">02.1</div>
+          <div class="privilege-item-row">
+            <div class="privilege-img">
+              <img src="photos/DVxL5rJE5B8.jpg" alt="Early Access" />
+            </div>
+            <div class="privilege-body">
+              <div>
+                <div class="privilege-title" data-i18n="lounge.early_access">Early Access</div>
+                <div class="privilege-desc" data-i18n="lounge.early_access_desc">First access to limited editions before public release.</div>
+              </div>
+              <div class="privilege-footer">
+                <span class="privilege-status">Active</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Artisan Workshop — ACTIVE (unlocked at Grand Maestro) -->
+        <div class="privilege-item">
+          <div class="privilege-item-num">02.2</div>
+          <div class="privilege-item-row">
+            <div class="privilege-img">
+              <img src="photos/DW03wihk-je.jpg" alt="Artisan Workshop" />
+            </div>
+            <div class="privilege-body">
+              <div>
+                <div class="privilege-title" data-i18n="lounge.artisan_workshop">Artisan Workshop</div>
+                <div class="privilege-desc" data-i18n="lounge.artisan_workshop_desc">Exclusive invitation to private tasting workshops.</div>
+              </div>
+              <div class="privilege-footer">
+                <span class="privilege-status">Active</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Birthday Scoop — ACTIVE -->
+        <div class="privilege-item">
+          <div class="privilege-item-num">02.3</div>
+          <div class="privilege-item-row">
+            <div class="privilege-img">
+              <img src="photos/DWDNYgPk8Nd.jpg" alt="Birthday Scoop" />
+            </div>
+            <div class="privilege-body">
+              <div>
+                <div class="privilege-title" data-i18n="lounge.birthday_scoop">Birthday Scoop</div>
+                <div class="privilege-desc" data-i18n="lounge.birthday_scoop_desc">A complimentary selection on your anniversary month.</div>
+              </div>
+              <div class="privilege-footer">
+                <span class="privilege-status">Active</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- The Heritage Kit — Grand Maestro exclusive -->
+        <div class="privilege-item">
+          <div class="privilege-item-num">02.4</div>
+          <div class="privilege-item-row">
+            <div class="privilege-img">
+              <img src="photos/DW5RVLkkwA6.jpg" alt="The Heritage Kit" />
+            </div>
+            <div class="privilege-body">
+              <div>
+                <div class="privilege-title">The Heritage Kit</div>
+                <div class="privilege-desc">Annual delivery of our collector's edition heritage box — curated pints, tools, and seasonals.</div>
+              </div>
+              <div class="privilege-footer">
+                <span class="privilege-status exclusive">Grand Maestro Exclusive</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Boutique Concierge — Grand Maestro exclusive -->
+        <div class="privilege-item">
+          <div class="privilege-item-num">02.5</div>
+          <div class="privilege-item-row">
+            <div class="privilege-img">
+              <img src="photos/DVaSW5-Ey6f.jpg" alt="Boutique Concierge" />
+            </div>
+            <div class="privilege-body">
+              <div>
+                <div class="privilege-title">Boutique Concierge</div>
+                <div class="privilege-desc">Dedicated 24/7 support for bespoke orders, private tasting room reservations, and event planning.</div>
+              </div>
+              <div class="privilege-footer">
+                <span class="privilege-status exclusive">Grand Maestro Exclusive</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Elite Rewards 2×2 grid — Grand Maestro section from Stitch ref -->
+    <section class="elite-section">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-num">—</span>
+          <span class="section-title-text" style="font-size:20px;font-style:italic;font-weight:300;">Elite Rewards</span>
+        </div>
+      </div>
+      <div class="elite-grid">
+        <div class="elite-card">
+          <div class="elite-card-img">
+            <img src="photos/DW5RVLkkwA6.jpg" alt="The Heritage Kit" loading="lazy" />
+          </div>
+          <div class="elite-card-body">
+            <div class="elite-card-name">The Heritage Kit</div>
+            <div class="elite-card-sub">Collector's Edition</div>
+            <div class="elite-card-pts">Complimentary</div>
+          </div>
+        </div>
+        <div class="elite-card">
+          <div class="elite-card-img">
+            <img src="photos/DW03wihk-je.jpg" alt="Artisan Masterclass" loading="lazy" />
+          </div>
+          <div class="elite-card-body">
+            <div class="elite-card-name">Artisan Masterclass</div>
+            <div class="elite-card-sub">In-Person Experience</div>
+            <div class="elite-card-pts">Complimentary</div>
+          </div>
+        </div>
+        <div class="elite-card">
+          <div class="elite-card-img">
+            <img src="photos/DWizLL8k3Vq.jpg" alt="The Private Flight" loading="lazy" />
+          </div>
+          <div class="elite-card-body">
+            <div class="elite-card-name">The Private Flight</div>
+            <div class="elite-card-sub">Seasonal Rare Tastes</div>
+            <div class="elite-card-pts">500 pts</div>
+          </div>
+        </div>
+        <div class="elite-card">
+          <div class="elite-card-img">
+            <img src="photos/DVxL5rJE5B8.jpg" alt="Bespoke Flavor Batch" loading="lazy" />
+          </div>
+          <div class="elite-card-body">
+            <div class="elite-card-name">Bespoke Flavor Batch</div>
+            <div class="elite-card-sub">Personalized Pints</div>
+            <div class="elite-card-pts">1,200 pts</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 — Redeem: all unlocked, no locked state -->
+    <section class="redeem-section">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-num">03</span>
+          <span class="section-title-text"><em style="font-style:italic;font-weight:300" data-i18n="section.redeem">Redeem</em></span>
+        </div>
+      </div>
+      <div class="redeem-list">
+        <div class="redeem-reward">
+          <span class="redeem-reward-pts-label">500 pts</span>
+          <div class="redeem-reward-img">
+            <img src="photos/DWizLL8k3Vq.jpg" alt="The Signature Flight" loading="lazy" />
+          </div>
+          <div class="redeem-reward-body">
+            <div>
+              <div class="redeem-reward-name">The Signature Flight</div>
+              <div class="redeem-reward-sub">A micro-tasters journey</div>
+            </div>
+            <a href="#" class="redeem-reward-action" data-i18n="cta.redeem">Redeem →</a>
+          </div>
+        </div>
+
+        <div class="redeem-reward">
+          <span class="redeem-reward-pts-label">1,000 pts</span>
+          <div class="redeem-reward-img">
+            <img src="photos/DVxL5rJE5B8.jpg" alt="Chef's Platter" loading="lazy" />
+          </div>
+          <div class="redeem-reward-body">
+            <div>
+              <div class="redeem-reward-name">Chef's Platter</div>
+              <div class="redeem-reward-sub">Boutique exclusive</div>
+            </div>
+            <a href="#" class="redeem-reward-action" data-i18n="cta.redeem">Redeem →</a>
+          </div>
+        </div>
+
+        <div class="redeem-reward">
+          <span class="redeem-reward-pts-label">3,000 pts</span>
+          <div class="redeem-reward-img">
+            <img src="photos/DW5RVLkkwA6.jpg" alt="The Heritage Kit" loading="lazy" />
+          </div>
+          <div class="redeem-reward-body">
+            <div>
+              <div class="redeem-reward-name">The Heritage Kit</div>
+              <div class="redeem-reward-sub">Gold membership gift</div>
+            </div>
+            <a href="#" class="redeem-reward-action" data-i18n="cta.redeem">Redeem →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 — The Journal -->
+    <section class="journal-section">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-num">04</span>
+          <span class="section-title-text" data-i18n="section.the_journal">The Journal</span>
+        </div>
+      </div>
+      <div class="journal-list">
+        <div class="journal-row">
+          <div class="journal-desc">
+            <div class="journal-title">Private Tasting Room — Senayan</div>
+            <div class="journal-meta">01 May 2026 · Concierge</div>
+          </div>
+          <div class="journal-pts positive">+600 pts</div>
+        </div>
+        <div class="journal-row">
+          <div class="journal-desc">
+            <div class="journal-title">Heritage Kit · April Edition</div>
+            <div class="journal-meta">15 Apr 2026 · Privilege</div>
+          </div>
+          <div class="journal-pts negative">−0 pts</div>
+        </div>
+        <div class="journal-row">
+          <div class="journal-desc">
+            <div class="journal-title">Artisan Workshop — Chocolate Pairing</div>
+            <div class="journal-meta">08 Apr 2026 · Privilege</div>
+          </div>
+          <div class="journal-pts negative">−0 pts</div>
+        </div>
+        <div class="journal-row">
+          <div class="journal-desc">
+            <div class="journal-title">Grand Indonesia — signature tasting</div>
+            <div class="journal-meta">22 Mar 2026 · Dine In</div>
+          </div>
+          <div class="journal-pts positive">+450 pts</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="lounge-footer">
+      <div class="lounge-footer-rule">
+        <div class="lounge-footer-label">Boutique Concierge</div>
+        <div class="lounge-footer-link">Contact your concierge</div>
+      </div>
+      <div class="lounge-footer-copy">© Häagen-Dazs Indonesia · The Lounge · Grand Maestro</div>
+    </section>
+
+  </div><!-- end scroll-area -->
+
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-item" data-nav="home">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.home">Home</span>
+    </button>
+    <button class="nav-item" data-nav="menu">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.menu">Menu</span>
+    </button>
+    <button class="nav-item" data-nav="orders">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.orders">Orders</span>
+    </button>
+    <button class="nav-item active" data-nav="rewards">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.rewards">Rewards</span>
+    </button>
+    <button class="nav-item" data-nav="account">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.account">Account</span>
+    </button>
+  </nav>
+
+</div>
+
+<script>
+(function () {
+  var bottomNav = document.getElementById('bottomNav');
+  if (bottomNav) {
+    bottomNav.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-nav]');
+      if (!btn) return;
+      bottomNav.querySelectorAll('.nav-item').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

@@ -3,24 +3,15 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import {
-  ArrowUpRight,
-  MapPin,
-  ShoppingBag,
-  Truck,
-  UtensilsCrossed,
-  Gift,
-  Cake,
-} from 'lucide-react'
-import { getActiveOccasion } from '@/lib/events/occasions'
+import { useRouter } from 'next/navigation'
 import type { Database } from '@/lib/supabase/database.types'
-import { useOrderContext } from '@/lib/store/order-context'
 import { useCartStore } from '@/lib/store/cart'
-import { formatRupiah } from '@/lib/utils/format'
+import { useTranslation, useCurrency } from '@/lib/i18n/context'
+import { LanguageCurrencySwitcher } from '@/components/LanguageCurrencySwitcher'
 import StoreSelector from '@/components/StoreSelector'
-import FloatingCartButton from '@/components/FloatingCartButton'
 import QRScanner from '@/components/QRScanner'
 import PromoPopup from '@/components/PromoPopup'
+import { getActiveOccasion } from '@/lib/events/occasions'
 
 type ProfileRow = Database['public']['Tables']['profiles']['Row']
 type MenuItem = Database['public']['Tables']['menu_items']['Row']
@@ -36,29 +27,13 @@ interface HomeClientProps {
   voucherCount: number
 }
 
-const tierConfig: Record<string, { label: string; target: number; next: string }> = {
-  silver: { label: 'Silver', target: 500, next: 'Gold' },
-  gold: { label: 'Gold', target: 2000, next: 'Platinum' },
-  platinum: { label: 'Platinum', target: 5000, next: 'Platinum' },
-}
-
-const orderModes: {
-  key: 'pickup' | 'delivery' | 'dinein'
-  numeral: string
-  title: string
-  tagline: string
-  Icon: typeof ShoppingBag
-}[] = [
-  { key: 'pickup', numeral: 'I', title: 'Pick Up', tagline: 'Collected at the counter', Icon: ShoppingBag },
-  { key: 'delivery', numeral: 'II', title: 'Delivery', tagline: 'Brought to the door', Icon: Truck },
-  { key: 'dinein', numeral: 'III', title: 'Dine In', tagline: 'At table, unhurried', Icon: UtensilsCrossed },
-]
-
-const sections = [
-  { num: '01', title: 'Send a Gift', tagline: 'Sealed, with a note', href: '/menu?gift=1', mark: 'Nouveau' },
-  { num: '02', title: 'Catering', tagline: 'For the occasion', href: '/menu' },
-  { num: '03', title: 'MyHD Plan', tagline: 'A standing subscription', href: '/voucher' },
-  { num: '04', title: 'Share the Sip', tagline: 'Invitation, with reward', href: '/voucher' },
+// HD photos fallback pool
+const FALLBACK_PHOTOS = [
+  '/hd-photos/DXEOeW3E_Ed.jpg',
+  '/hd-photos/DW5RVLkkwA6.jpg',
+  '/hd-photos/DWffta7k4Ei.jpg',
+  '/hd-photos/DWI-Kpok62S.jpg',
+  '/hd-photos/DW03wihk-je.jpg',
 ]
 
 export default function HomeClient({
@@ -70,363 +45,422 @@ export default function HomeClient({
   const [storeOpen, setStoreOpen] = useState(false)
   const [qrOpen, setQrOpen] = useState(false)
 
-  const { mode, setMode, selectedStore } = useOrderContext()
+  const { t, lang } = useTranslation()
+  const { formatPrice } = useCurrency()
   const addItem = useCartStore((s) => s.addItem)
+  const itemCount = useCartStore((s) => s.itemCount())
+  const router = useRouter()
 
-  const tier = tierConfig[profile?.tier ?? 'silver'] ?? tierConfig.silver
-  const points = profile?.loyalty_points ?? 0
-  const toNext = Math.max(0, tier.target - points)
-  const firstName = profile?.full_name?.split(' ')[0] ?? 'Guest'
   const occasion = getActiveOccasion({ birthday: profile?.birthday ?? null })
+  const heroItem = featuredItems[0] ?? null
+  const heroImage = heroItem?.image_url ?? FALLBACK_PHOTOS[0]
 
-  const today = new Date()
-  const dateline = today
-    .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-    .toUpperCase()
-  const hour = today.getHours()
-  const greeting =
-    hour < 11 ? 'Selamat pagi' : hour < 15 ? 'Selamat siang' : hour < 19 ? 'Selamat sore' : 'Selamat malam'
+  // First 3 items for the editorial list
+  const collectionItems = featuredItems.slice(0, 3)
 
   return (
     <div className="min-h-screen bg-hd-cream pb-28">
       <PromoPopup />
 
-      {/* ─────────── OCCASION STRIP ─────────── */}
+      {/* ══ TOP BAR ══ */}
+      <header
+        className="sticky top-0 z-50 bg-hd-cream flex items-center justify-between px-5 py-3.5"
+        style={{ borderBottom: '1px solid rgba(43,43,43,0.07)' }}
+      >
+        {/* Hamburger */}
+        <button
+          aria-label="Menu"
+          className="text-hd-burgundy flex items-center"
+          onClick={() => setStoreOpen(true)}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+
+        {/* Wordmark */}
+        <span
+          className="font-display text-hd-burgundy tracking-[0.18em] uppercase"
+          style={{ fontSize: '14px', fontWeight: 500 }}
+        >
+          Häagen-Dazs
+        </span>
+
+        {/* Bag with badge */}
+        <button
+          aria-label="Cart"
+          className="text-hd-burgundy flex items-center relative"
+          onClick={() => router.push('/cart')}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <path d="M16 10a4 4 0 01-8 0" />
+          </svg>
+          {itemCount > 0 && (
+            <span
+              className="absolute -top-1 -right-1 bg-hd-burgundy text-hd-cream font-mono flex items-center justify-center"
+              style={{ width: 14, height: 14, fontSize: 8, fontWeight: 600, lineHeight: 1 }}
+            >
+              {itemCount > 9 ? '9+' : itemCount}
+            </span>
+          )}
+        </button>
+      </header>
+
+      {/* ══ LANGUAGE / CURRENCY SWITCHER ROW ══ */}
+      <div
+        className="flex items-center justify-end px-5 py-2"
+        style={{ borderBottom: '1px solid rgba(43,43,43,0.07)' }}
+      >
+        <LanguageCurrencySwitcher tone="light" />
+      </div>
+
+      {/* ══ OCCASION STRIP (editorial restyle) ══ */}
       {occasion && (
         <Link
           href={occasion.href}
-          className="block bg-hd-gold text-hd-burgundy-dark border-b border-hd-burgundy/30 group"
+          className="block"
+          style={{ borderBottom: '1px solid rgba(43,43,43,0.07)' }}
         >
-          <div className="max-w-lg mx-auto px-5 py-3 flex items-center gap-4">
-            {occasion.isPersonal ? (
-              <Cake className="w-4 h-4 shrink-0" />
-            ) : (
-              <Gift className="w-4 h-4 shrink-0" />
-            )}
+          <div className="px-5 py-4 flex items-center gap-4">
             <div className="flex-1 min-w-0">
-              <p className="eyebrow text-hd-burgundy-dark/80 text-[0.6rem]">
+              <p
+                className="font-sans text-hd-burgundy uppercase tracking-[0.22em]"
+                style={{ fontSize: 9, fontWeight: 600 }}
+              >
                 {occasion.eyebrow}
               </p>
-              <p className="font-display text-[0.95rem] tracking-editorial leading-tight truncate">
+              <p className="font-display text-hd-burgundy mt-1 leading-tight" style={{ fontSize: 16, fontStyle: 'italic' }}>
                 {occasion.title}
-                <span className="italic font-normal text-hd-burgundy-dark/75 text-[0.8rem]">
-                  {' '}— {occasion.tagline}
-                </span>
+                <span className="font-display text-hd-ink/60 not-italic text-sm"> — {occasion.tagline}</span>
               </p>
             </div>
-            <span className="eyebrow text-[0.65rem] inline-flex items-center gap-1 shrink-0">
+            <span
+              className="font-sans text-hd-burgundy uppercase tracking-[0.22em] flex items-center gap-1 shrink-0"
+              style={{ fontSize: 9, fontWeight: 600 }}
+            >
               {occasion.cta}
-              <ArrowUpRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
+                <line x1="7" y1="17" x2="17" y2="7" /><polyline points="7 7 17 7 17 17" />
+              </svg>
             </span>
           </div>
         </Link>
       )}
 
-      {/* ─────────── MASTHEAD / HERO ─────────── */}
-      <section className="relative overflow-hidden bg-hd-burgundy-dark text-hd-cream">
-        <div className="texture-grain absolute inset-0 opacity-30" aria-hidden />
-        {/* Subtle radial light */}
-        <div
-          className="absolute inset-0 opacity-60"
-          aria-hidden
-          style={{
-            background:
-              'radial-gradient(ellipse 80% 60% at 80% 0%, rgba(184,146,42,0.25), transparent 60%), radial-gradient(ellipse 60% 40% at 10% 100%, rgba(128,18,55,0.5), transparent 70%)',
-          }}
+      {/* ══ 00 — HERO MASTHEAD ══ */}
+      <section className="relative w-full overflow-hidden" style={{ height: 480, background: '#F8ECDD' }}>
+        {/* Full-bleed photo */}
+        <Image
+          src={heroImage}
+          alt={heroItem?.name ?? 'Häagen-Dazs'}
+          fill
+          priority
+          className="object-cover object-center"
+          style={{ filter: 'grayscale(15%)' }}
         />
 
-        <div className="relative px-5 pt-12 pb-10">
-          {/* Top masthead line */}
-          <div className="flex items-center justify-between border-b border-hd-cream/25 pb-3">
-            <Image
-              src="/logo/logo-transparent.png"
-              alt="Häagen-Dazs"
-              width={120}
-              height={32}
-              priority
-              className="h-8 w-auto object-contain"
-            />
-            <span className="numeral text-[0.6rem] text-hd-cream/70 tracking-widest">
-              {dateline}
+        {/* Gradient overlay — bottom-up */}
+        <div
+          className="absolute inset-0"
+          style={{ background: 'linear-gradient(to top, rgba(64,6,30,0.72) 0%, rgba(64,6,30,0.12) 55%, transparent 100%)' }}
+        />
+
+        {/* Content anchored to bottom */}
+        <div className="absolute bottom-0 left-0 right-0 px-6 pb-7">
+          {/* Eyebrow row */}
+          <div className="flex items-center gap-2.5 mb-2.5">
+            <div style={{ width: 36, height: 1, background: 'rgba(254,242,227,0.55)' }} />
+            <span
+              className="font-sans uppercase tracking-[0.28em]"
+              style={{ fontSize: 9, fontWeight: 600, color: 'rgba(254,242,227,0.75)' }}
+            >
+              {lang === 'id' ? '00 — Temukan' : '00 — Discover'}
             </span>
           </div>
 
-          {/* Oversized headline */}
-          <div className="mt-10 stagger">
-            <p className="eyebrow text-hd-gold-light">{greeting}, {firstName}</p>
-            <h1 className="mt-5 font-display text-display-xl leading-[0.9] tracking-editorial">
-              Ice Cream,
-              <br />
-              <span className="italic">perfected.</span>
-            </h1>
-            <p className="mt-6 max-w-sm text-[0.9rem] leading-relaxed text-hd-cream/75">
-              A small luxury, measured in spoonfuls. Choose a store below and
-              we&apos;ll see to the rest.
-            </p>
-          </div>
-
-          {/* Scroll cue */}
-          <div className="mt-10 flex items-center gap-2 text-hd-cream/60">
-            <span className="eyebrow text-hd-cream/60">Scroll to begin</span>
-            <span className="h-px flex-1 max-w-[60px] bg-hd-cream/40" />
-          </div>
-        </div>
-      </section>
-
-      {/* ─────────── MEMBER STRIP ─────────── */}
-      <section className="px-5 py-8 border-b border-hd-ink/15 bg-hd-paper relative">
-        <div className="flex items-start justify-between gap-6">
-          <div>
-            <span className="eyebrow text-hd-ink/60">Member · {tier.label}</span>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="numeral text-[2.25rem] leading-none text-hd-ink font-medium">
-                {points.toLocaleString('en-US')}
-              </span>
-              <span className="font-display italic text-[0.9rem] text-hd-ink/60">points</span>
-            </div>
-          </div>
-          <Link
-            href="/voucher"
-            className="flex flex-col items-end gap-1 pt-1 group"
+          {/* Main headline */}
+          <h1
+            className="font-display text-hd-cream"
+            style={{ fontSize: 52, fontWeight: 300, fontStyle: 'italic', lineHeight: 0.92, letterSpacing: '-0.02em', marginBottom: 14 }}
           >
-            <ArrowUpRight className="w-4 h-4 text-hd-burgundy transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            <span className="eyebrow text-hd-burgundy">Rewards</span>
-          </Link>
-        </div>
+            {lang === 'id' ? (
+              <>Indulgensi<br />Murni,<br />Dirajut.</>
+            ) : (
+              <>Pure<br />Indulgence,<br />Crafted.</>
+            )}
+          </h1>
 
-        {/* Progress rule */}
-        <div className="mt-5">
-          <div className="h-[2px] w-full bg-hd-ink/10 relative overflow-hidden">
-            <div
-              className="absolute inset-y-0 left-0 bg-hd-burgundy transition-[width] duration-[900ms]"
-              style={{ width: `${Math.min(100, (points / tier.target) * 100)}%` }}
-            />
-          </div>
-          <div className="mt-2 flex items-center justify-between">
-            <span className="numeral text-[0.65rem] text-hd-ink/50 tracking-widest">
-              {points.toLocaleString('en-US')} / {tier.target.toLocaleString('en-US')}
-            </span>
-            <span className="eyebrow text-hd-ink/50">
-              <span className="numeral text-hd-ink">{toNext}</span> to {tier.next}
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* ─────────── ORDER MODES — SECTION 01 ─────────── */}
-      <section className="px-5 pt-10">
-        <header className="flex items-end justify-between border-b border-hd-ink/15 pb-4">
-          <div className="flex items-baseline gap-4">
-            <span className="numeral text-[0.7rem] text-hd-ink/50 tracking-widest">01</span>
-            <h2 className="font-display text-[1.5rem] text-hd-ink tracking-editorial">
-              How will you have it?
-            </h2>
-          </div>
-        </header>
-
-        <div className="mt-6 grid grid-cols-1 divide-y divide-hd-ink/10 border border-hd-ink/10 bg-hd-paper">
-          {orderModes.map(({ key, numeral, title, tagline, Icon }) => {
-            const active = mode === key
-            return (
-              <button
-                key={key}
-                onClick={() => {
-                  setMode(key)
-                  if (key === 'dinein') setQrOpen(true)
-                  else setStoreOpen(true)
-                }}
-                className={`group flex items-center gap-5 px-5 py-5 text-left transition-colors duration-300 ${
-                  active ? 'bg-hd-burgundy text-hd-cream' : 'hover:bg-hd-cream-deep'
-                }`}
-              >
-                <span
-                  className={`numeral text-sm min-w-[24px] ${
-                    active ? 'text-hd-gold-light' : 'text-hd-ink/40'
-                  }`}
-                >
-                  {numeral}
-                </span>
-                <div className="flex-1">
-                  <p
-                    className={`font-display text-xl tracking-editorial ${
-                      active ? 'italic' : ''
-                    }`}
-                  >
-                    {title}
-                  </p>
-                  <p
-                    className={`text-xs mt-1 italic ${
-                      active ? 'text-hd-cream/70' : 'text-hd-ink/55'
-                    }`}
-                  >
-                    {tagline}
-                  </p>
-                </div>
-                <Icon
-                  className={`w-5 h-5 transition-transform duration-500 ${
-                    active ? 'text-hd-cream' : 'text-hd-ink/50 group-hover:translate-x-0.5'
-                  }`}
-                />
-              </button>
-            )
-          })}
-        </div>
-
-        {selectedStore && (
-          <button
-            onClick={() => setStoreOpen(true)}
-            className="mt-5 w-full flex items-center gap-3 border-b border-hd-ink/25 pb-3 text-left hover:border-hd-ink transition-colors"
+          {/* Sub-copy */}
+          <p
+            className="font-sans"
+            style={{ fontSize: 13, lineHeight: 1.6, color: 'rgba(254,242,227,0.75)', maxWidth: 260, marginBottom: 22 }}
           >
-            <MapPin className="w-4 h-4 text-hd-burgundy shrink-0" />
-            <div className="flex-1 min-w-0">
-              <span className="eyebrow text-hd-ink/50 block">Current store</span>
-              <span className="font-display text-[1rem] text-hd-ink truncate block mt-0.5">
-                {selectedStore.name}
-              </span>
-            </div>
-            <ArrowUpRight className="w-4 h-4 text-hd-ink/60" />
-          </button>
-        )}
-      </section>
+            {t('hero.artisan_sub')}
+          </p>
 
-      {/* ─────────── SHORTLIST — SECTION 02 ─────────── */}
-      <section className="pt-12">
-        <header className="px-5 flex items-end justify-between border-b border-hd-ink/15 pb-4">
-          <div className="flex items-baseline gap-4">
-            <span className="numeral text-[0.7rem] text-hd-ink/50 tracking-widest">02</span>
-            <h2 className="font-display text-[1.5rem] text-hd-ink tracking-editorial">
-              The <span className="italic">shortlist</span>
-            </h2>
-          </div>
+          {/* CTA */}
           <Link
             href="/menu"
-            className="eyebrow text-hd-burgundy flex items-center gap-1.5 pb-1"
+            className="inline-block bg-hd-burgundy text-hd-cream font-sans uppercase tracking-[0.28em] transition-colors hover:bg-hd-burgundy-light"
+            style={{ fontSize: 10, fontWeight: 600, padding: '14px 24px' }}
           >
-            All <ArrowUpRight className="w-3 h-3" />
+            {lang === 'id' ? 'Jelajahi Cita Rasa' : 'Explore Flavors'}
           </Link>
-        </header>
+        </div>
+      </section>
 
-        <div className="flex gap-4 overflow-x-auto no-scrollbar px-5 pt-6 pb-2">
-          {featuredItems.map((item, i) => (
-            <button
-              key={item.id}
-              onClick={() => addItem(item)}
-              className="shrink-0 w-44 text-left group"
-            >
-              <div className="relative aspect-[4/5] bg-hd-cream-deep border border-hd-ink/10 overflow-hidden">
-                {item.image_url ? (
-                  <Image
-                    src={item.image_url}
-                    alt={item.name}
-                    fill
-                    className="object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-4xl opacity-60">
-                    🍨
+      {/* ══ 01 — KOLEKSI (editorial product list) ══ */}
+      <section className="pt-16">
+        {/* Section header */}
+        <div className="px-5 flex items-baseline gap-4 pb-4" style={{ borderBottom: '1px solid rgba(43,43,43,0.10)' }}>
+          <span className="font-mono text-hd-ink/35 tracking-[0.04em]" style={{ fontSize: 11 }}>01</span>
+          <h2 className="font-display text-hd-ink tracking-editorial" style={{ fontSize: 26, fontWeight: 500, letterSpacing: '-0.02em' }}>
+            {lang === 'id' ? 'Koleksi' : 'The Collection'}
+          </h2>
+        </div>
+
+        {/* 3 editorial rows */}
+        <div className="divide-y" style={{ borderTop: 'none' }}>
+          {collectionItems.length === 0 ? (
+            /* Skeleton fallback rows */
+            [0, 1, 2].map((i) => (
+              <div key={i} className="flex items-stretch" style={{ borderBottom: '1px solid rgba(43,43,43,0.07)', minHeight: 140 }}>
+                <div className="bg-hd-cream-deep shrink-0" style={{ width: 120, aspectRatio: '1/1' }} />
+                <div className="flex-1 px-4 py-4 flex flex-col justify-between">
+                  <div>
+                    <div className="h-2 w-16 bg-hd-ink/10 mb-3" />
+                    <div className="h-5 w-36 bg-hd-ink/10 mb-2" />
                   </div>
-                )}
-                <span className="absolute top-2.5 left-2.5 numeral text-[0.6rem] text-hd-burgundy bg-hd-cream/90 px-1.5 py-0.5">
-                  {String(i + 1).padStart(3, '0')}
-                </span>
-              </div>
-              <div className="mt-3">
-                <p className="font-display text-[1rem] leading-tight text-hd-ink tracking-editorial line-clamp-2">
-                  {item.name}
-                </p>
-                <div className="mt-2 pt-2 border-t border-hd-ink/10 flex items-center justify-between">
-                  <span className="numeral text-[0.85rem] text-hd-ink">
-                    {formatRupiah(item.price)}
-                  </span>
-                  <span className="eyebrow text-hd-burgundy">Add</span>
+                  <div className="h-4 w-24 bg-hd-ink/10" />
                 </div>
               </div>
-            </button>
-          ))}
+            ))
+          ) : (
+            collectionItems.map((item, i) => {
+              const photo = item.image_url ?? FALLBACK_PHOTOS[i % FALLBACK_PHOTOS.length]
+              const numeral = String(i + 1).padStart(3, '0')
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => addItem(item)}
+                  className="w-full text-left flex items-stretch group transition-colors hover:bg-hd-paper"
+                  style={{ borderBottom: '1px solid rgba(43,43,43,0.07)' }}
+                >
+                  {/* Square photo */}
+                  <div className="shrink-0 relative overflow-hidden bg-hd-cream-deep" style={{ width: 128, height: 128 }}>
+                    <Image
+                      src={photo}
+                      alt={item.name}
+                      fill
+                      className="object-cover transition-transform duration-[700ms] group-hover:scale-105"
+                      style={{ filter: 'grayscale(15%)' }}
+                    />
+                  </div>
+
+                  {/* Copy */}
+                  <div className="flex-1 px-5 py-4 flex flex-col justify-between">
+                    <div>
+                      {/* Eyebrow numeral */}
+                      <p
+                        className="font-mono text-hd-ink/40 tracking-[0.14em] uppercase mb-1"
+                        style={{ fontSize: 9 }}
+                      >
+                        {numeral}
+                      </p>
+                      {/* Product name */}
+                      <h3
+                        className="font-display text-hd-burgundy leading-tight"
+                        style={{ fontSize: 18, fontWeight: 500, fontStyle: 'italic', letterSpacing: '-0.02em' }}
+                      >
+                        {item.name}
+                      </h3>
+                    </div>
+
+                    {/* Footer: price + arrow */}
+                    <div className="flex items-center justify-between pt-2" style={{ borderTop: '1px solid rgba(43,43,43,0.07)' }}>
+                      <span className="font-mono text-hd-burgundy" style={{ fontSize: 13, fontWeight: 500, letterSpacing: '-0.01em' }}>
+                        {formatPrice(item.price)}
+                      </span>
+                      <span
+                        className="font-sans text-hd-ink/40 group-hover:text-hd-burgundy transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                        style={{ fontSize: 16 }}
+                        aria-hidden="true"
+                      >
+                        ↗
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              )
+            })
+          )}
+        </div>
+
+        {/* View all link */}
+        <div className="px-5 py-4" style={{ borderBottom: '1px solid rgba(43,43,43,0.07)' }}>
+          <Link
+            href="/menu"
+            className="font-sans text-hd-burgundy uppercase tracking-[0.22em] inline-block"
+            style={{ fontSize: 10, fontWeight: 600, borderBottom: '1px solid rgba(101,10,48,0.20)', paddingBottom: 2 }}
+          >
+            {lang === 'id' ? 'Lihat Semua →' : 'View All →'}
+          </Link>
         </div>
       </section>
 
-      {/* ─────────── SECTIONS — 03 ─────────── */}
-      <section className="px-5 pt-12">
-        <header className="flex items-end justify-between border-b border-hd-ink/15 pb-4">
-          <div className="flex items-baseline gap-4">
-            <span className="numeral text-[0.7rem] text-hd-ink/50 tracking-widest">03</span>
-            <h2 className="font-display text-[1.5rem] text-hd-ink tracking-editorial">
-              Of note
-            </h2>
-          </div>
-        </header>
+      {/* ══ 02 — FILOSOFI KAMI (dark editorial block) ══ */}
+      <section className="relative overflow-hidden" style={{ background: '#40061E', marginTop: 64, padding: '56px 24px 48px' }}>
+        {/* Grain texture */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            opacity: 0.05,
+            backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E\")",
+            backgroundSize: '180px 180px',
+          }}
+          aria-hidden
+        />
 
-        <div className="mt-6 grid grid-cols-2 gap-px bg-hd-ink/10 border border-hd-ink/10">
-          {sections.map((s) => (
-            <Link
-              key={s.title}
-              href={s.href}
-              className="relative flex flex-col justify-between min-h-[150px] bg-hd-paper p-4 hover:bg-hd-cream-deep transition-colors duration-400 group"
-            >
-              {s.mark && (
-                <span className="absolute top-3 right-3 eyebrow text-hd-burgundy italic normal-case tracking-normal text-[0.65rem]">
-                  {s.mark}
-                </span>
-              )}
-              <span className="numeral text-[0.65rem] text-hd-ink/40 tracking-widest">
-                {s.num}
-              </span>
-              <div>
-                <p className="font-display text-[1.1rem] leading-tight text-hd-ink tracking-editorial">
-                  {s.title}
-                </p>
-                <p className="mt-1 text-[0.75rem] italic text-hd-ink/55">{s.tagline}</p>
-                <ArrowUpRight className="w-3.5 h-3.5 mt-3 text-hd-ink/40 transition-all duration-300 group-hover:text-hd-burgundy group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </div>
-            </Link>
-          ))}
+        <div className="relative">
+          {/* Eyebrow */}
+          <p
+            className="font-sans uppercase tracking-[0.22em]"
+            style={{ fontSize: 10, fontWeight: 600, color: 'rgba(254,242,227,0.55)', marginBottom: 20 }}
+          >
+            {lang === 'id' ? '02 — Filosofi Kami' : '02 — Our Philosophy'}
+          </p>
+
+          {/* Headline */}
+          <h2
+            className="font-display text-hd-cream"
+            style={{ fontSize: 40, fontWeight: 300, fontStyle: 'italic', lineHeight: 0.95, letterSpacing: '-0.02em', marginBottom: 20 }}
+          >
+            {lang === 'id' ? (
+              <>Seni<br />Mencairkan<br />Perlahan.</>
+            ) : (
+              <>The Art of<br />Slow<br />Craft.</>
+            )}
+          </h2>
+
+          {/* Body */}
+          <p
+            className="font-sans"
+            style={{ fontSize: 13, lineHeight: 1.7, color: 'rgba(254,242,227,0.70)', maxWidth: 300, marginBottom: 36 }}
+          >
+            {t('philosophy.body')}
+          </p>
+
+          {/* CTA link */}
+          <Link
+            href="/menu"
+            className="font-sans uppercase tracking-[0.22em] inline-block transition-colors"
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              color: 'rgba(254,242,227,0.85)',
+              borderBottom: '1px solid rgba(254,242,227,0.20)',
+              paddingBottom: 2,
+            }}
+          >
+            {lang === 'id' ? 'Jelajahi Cerita Kami →' : 'Explore Our Story →'}
+          </Link>
         </div>
       </section>
 
-      {/* ─────────── REWARDS — 04 ─────────── */}
-      <section className="px-5 pt-12">
-        <Link href="/voucher" className="block group">
-          <div className="flex items-end justify-between border-b border-hd-ink/15 pb-4">
-            <div className="flex items-baseline gap-4">
-              <span className="numeral text-[0.7rem] text-hd-ink/50 tracking-widest">04</span>
-              <h2 className="font-display text-[1.5rem] text-hd-ink tracking-editorial">
-                Rewards, unclaimed
-              </h2>
-            </div>
-            <ArrowUpRight className="w-4 h-4 text-hd-ink/50 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </div>
-          <div className="mt-6 flex items-baseline gap-4">
-            <span className="numeral text-[3.5rem] leading-none text-hd-burgundy font-medium">
-              {String(voucherCount).padStart(2, '0')}
-            </span>
-            <p className="font-display italic text-hd-ink/70 text-[1rem]">
-              vouchers await collection.
-            </p>
-          </div>
-        </Link>
-      </section>
-
-      {/* ─────────── ENQUIRIES — FOOTER ─────────── */}
-      <section className="px-5 pt-14 pb-4">
-        <div className="border-t border-hd-ink pt-6">
-          <span className="eyebrow text-hd-ink/60">Enquiries</span>
-          <div className="mt-3 flex items-baseline justify-between">
-            <p className="numeral text-[1.25rem] text-hd-ink">0812&nbsp;1111&nbsp;8456</p>
-            <p className="font-display italic text-[0.85rem] text-hd-ink/55">
-              by chat, always
-            </p>
-          </div>
-        </div>
-        <p className="mt-10 text-[0.65rem] tracking-widest uppercase text-hd-ink/30 text-center">
-          © Häagen-Dazs Indonesia · Savour the moment
+      {/* ══ EDITORIAL FOOTER ══ */}
+      <footer className="px-5 pt-16 pb-6" style={{ borderTop: '1px solid rgba(43,43,43,0.10)', marginTop: 64 }}>
+        {/* Large wordmark */}
+        <p
+          className="font-display text-hd-ink/20 uppercase tracking-[0.18em] mb-4 leading-none"
+          style={{ fontSize: 'clamp(1.8rem, 8vw, 3rem)', fontWeight: 300 }}
+          aria-label="Häagen-Dazs"
+        >
+          Häagen-Dazs
         </p>
-      </section>
+
+        {/* Italic tagline */}
+        <p
+          className="font-display text-hd-ink/55 mb-10"
+          style={{ fontSize: 14, fontStyle: 'italic', lineHeight: 1.5 }}
+        >
+          {t('footer.tagline')}
+        </p>
+
+        {/* 2-column link grid */}
+        <div className="grid grid-cols-2 gap-8 mb-10">
+          {/* Discover */}
+          <div>
+            <p
+              className="font-sans text-hd-ink/40 uppercase tracking-[0.22em] mb-4"
+              style={{ fontSize: 9, fontWeight: 600 }}
+            >
+              {t('footer.explore')}
+            </p>
+            <ul className="space-y-3">
+              {[
+                { label: t('footer.the_shop'), href: '/menu' },
+                { label: t('footer.our_story'), href: '/menu' },
+                { label: t('footer.reservations'), href: '/voucher' },
+                { label: t('footer.gift_cards'), href: '/menu?gift=1' },
+              ].map((link) => (
+                <li key={link.href + link.label}>
+                  <Link
+                    href={link.href}
+                    className="font-sans text-hd-ink/55 hover:text-hd-burgundy transition-colors"
+                    style={{ fontSize: 12 }}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Support */}
+          <div>
+            <p
+              className="font-sans text-hd-ink/40 uppercase tracking-[0.22em] mb-4"
+              style={{ fontSize: 9, fontWeight: 600 }}
+            >
+              {t('footer.support')}
+            </p>
+            <ul className="space-y-3">
+              {[
+                { label: t('footer.contact'), href: '/account' },
+                { label: t('footer.hampers'), href: '/menu' },
+                { label: lang === 'id' ? 'Karir' : 'Careers', href: '/account' },
+                { label: lang === 'id' ? 'Tentang Kami' : 'About', href: '/account' },
+              ].map((link) => (
+                <li key={link.href + link.label}>
+                  <Link
+                    href={link.href}
+                    className="font-sans text-hd-ink/55 hover:text-hd-burgundy transition-colors"
+                    style={{ fontSize: 12 }}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Copyright */}
+        <p
+          className="font-sans text-hd-ink/25 uppercase tracking-widest text-center"
+          style={{ fontSize: '0.65rem' }}
+        >
+          {t('footer.copyright')}
+        </p>
+      </footer>
 
       {/* Overlays */}
       <StoreSelector stores={stores} open={storeOpen} onClose={() => setStoreOpen(false)} />
       <QRScanner stores={stores} open={qrOpen} onClose={() => setQrOpen(false)} />
-      <FloatingCartButton />
     </div>
   )
 }

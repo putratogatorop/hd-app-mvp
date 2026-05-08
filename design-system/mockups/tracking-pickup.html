@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HD App — Tracking · Pickup QR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<script src="i18n.js" defer></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --hd-burgundy:       #650A30;
+  --hd-burgundy-dark:  #40061E;
+  --hd-burgundy-light: #801237;
+  --hd-gold:           #B8922A;
+  --hd-gold-light:     #F5E6C8;
+  --hd-cream:          #FEF2E3;
+  --hd-cream-deep:     #F5E6C8;
+  --hd-paper:          #FEF2E3;
+  --hd-ink:            #2B2B2B;
+  --rule:              rgba(43,43,43,0.12);
+  --rule-soft:         rgba(43,43,43,0.08);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans:    'Jost', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+  --ease-ed: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html, body {
+  background: #1a1310;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px 60px;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.global-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+
+.phone-shell {
+  width: 390px;
+  min-width: 390px;
+  background: var(--hd-cream);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 40px 120px -20px rgba(0,0,0,0.85),
+    0 80px 200px -40px rgba(64,6,30,0.5);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── STATUS BAR ── */
+.status-bar {
+  background: var(--hd-burgundy-dark);
+  color: rgba(254,242,227,0.75);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+/* ── V3: FIXED TOP APP BAR ── */
+.top-app-bar {
+  background: rgba(254,242,227,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--rule);
+  height: 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+.top-bar-back {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  color: var(--hd-burgundy);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+.top-bar-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.top-bar-wordmark {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hd-burgundy);
+  line-height: 1;
+}
+.top-bar-order {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(43,43,43,0.38);
+  line-height: 1;
+  white-space: nowrap;
+}
+.top-bar-bag {
+  display: flex;
+  align-items: center;
+  color: var(--hd-burgundy);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* ── SCROLL AREA ── */
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  background: var(--hd-cream);
+  max-height: calc(844px - 44px - 56px - 68px);
+}
+.scroll-area::-webkit-scrollbar { display: none; }
+.scroll-area { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── SECTION DIVIDER ── */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  margin-bottom: 20px;
+}
+.section-divider-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--hd-burgundy);
+  opacity: 0.40;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.section-divider-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+.section-divider-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--hd-burgundy);
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+
+/* ── V3: HERO — "Ready for pickup" (large italic Cormorant, hd-ink) ── */
+.hero-section {
+  padding: 28px 20px 24px;
+  border-bottom: 1px solid var(--rule);
+}
+.hero-meta {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(43,43,43,0.38);
+  display: block;
+  margin-bottom: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hero-headline {
+  font-family: var(--font-display);
+  font-size: 64px;
+  font-weight: 300;
+  font-style: italic;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  color: var(--hd-ink);
+}
+
+/* ── V3: STATUS JOURNAL TIMELINE (same treatment as delivery) ── */
+.timeline-section {
+  padding: 32px 20px 0;
+}
+.timeline {
+  position: relative;
+}
+.tl-step {
+  display: flex;
+  align-items: flex-start;
+  padding-bottom: 32px;
+  position: relative;
+}
+.tl-step:last-child { padding-bottom: 0; }
+.tl-step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 18px;
+  bottom: 0;
+  width: 1px;
+  background: var(--rule);
+}
+.tl-marker-col {
+  width: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  margin-top: 2px;
+  position: relative;
+  z-index: 1;
+}
+.tl-dot-done {
+  width: 16px;
+  height: 16px;
+  background: var(--hd-burgundy);
+  flex-shrink: 0;
+}
+.tl-dot-current {
+  width: 16px;
+  height: 16px;
+  background: var(--hd-burgundy);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px var(--hd-cream), 0 0 0 5px rgba(101,10,48,0.25);
+}
+.tl-dot-pending {
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(43,43,43,0.20);
+  background: var(--hd-cream);
+  flex-shrink: 0;
+}
+.tl-body {
+  flex: 1;
+  padding-left: 20px;
+}
+.tl-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 3px;
+}
+.tl-step-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.35);
+  line-height: 1;
+}
+.tl-step-label.done {
+  color: var(--hd-burgundy);
+  text-decoration: line-through;
+  text-decoration-color: rgba(101,10,48,0.25);
+}
+.tl-step-label.current {
+  color: var(--hd-burgundy);
+  font-weight: 700;
+  text-decoration: none;
+}
+.tl-time {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: -0.01em;
+  color: rgba(43,43,43,0.30);
+  flex-shrink: 0;
+}
+.tl-time.done { color: rgba(43,43,43,0.40); }
+.tl-time.current { color: var(--hd-burgundy); }
+.tl-sub-copy {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 300;
+  color: rgba(43,43,43,0.55);
+  line-height: 1.45;
+}
+.tl-sub-copy.pending { opacity: 0.40; }
+
+/* ── V3: "Your Indulgence" section header (italic Cormorant label) ── */
+.indulgence-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 0 20px;
+  margin-bottom: 4px;
+}
+.indulgence-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(43,43,43,0.30);
+  letter-spacing: 0.04em;
+}
+.indulgence-label {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--hd-ink);
+}
+
+/* ── ORDER ITEMS ── */
+.items-section {
+  padding: 0 20px;
+}
+.order-item {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.item-thumb {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--hd-cream-deep);
+  border: 1px solid var(--rule-soft);
+}
+.item-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.item-body { flex: 1; }
+.item-name {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--hd-ink);
+  margin-bottom: 2px;
+  font-size: 11px;
+}
+.item-qty {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 300;
+  color: rgba(43,43,43,0.50);
+}
+.item-price {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: rgba(43,43,43,0.55);
+  letter-spacing: -0.02em;
+  text-align: right;
+}
+
+/* ── V3: LOYALTY CARD (dark burgundy, gold pts, editorial sub-copy) ── */
+.loyalty-card {
+  background: var(--hd-burgundy-dark);
+  padding: 22px 20px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(184,146,42,0.18);
+  margin: 0 20px;
+}
+.loyalty-card-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+.loyalty-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.loyalty-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(254,242,227,0.45);
+  display: block;
+  margin-bottom: 8px;
+}
+.loyalty-pts {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--hd-gold);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.loyalty-pts span {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  font-weight: 400;
+  opacity: 0.80;
+}
+.loyalty-subtitle {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-style: italic;
+  font-weight: 300;
+  color: rgba(254,242,227,0.55);
+  line-height: 1.40;
+  max-width: 210px;
+}
+.loyalty-star {
+  font-size: 22px;
+  color: var(--hd-gold);
+  opacity: 0.55;
+  margin-left: 12px;
+  margin-top: 4px;
+}
+
+/* ── V3: CTA PRIMARY full-width (below loyalty card) ── */
+.cta-primary {
+  width: 100%;
+  background: var(--hd-burgundy);
+  color: rgba(254,242,227,0.92);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 18px 20px;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+.cta-primary-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+.cta-primary-label {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── V3: QR SCAN SECTION ── */
+.qr-section {
+  padding: 32px 20px 0;
+}
+.qr-inner {
+  border: 1px solid var(--rule-soft);
+  background: rgba(245,230,200,0.18);
+  padding: 28px 20px;
+}
+.qr-frame {
+  width: 164px;
+  height: 164px;
+  background: #fff;
+  border: 1px solid var(--rule);
+  padding: 12px;
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* CSS QR-like 8×8 pattern */
+.qr-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  width: 100%;
+  height: 100%;
+  gap: 1.5px;
+}
+.qr-cell { background: transparent; }
+.qr-cell.b { background: #1a1310; }
+.qr-caption {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-style: italic;
+  font-weight: 300;
+  color: rgba(43,43,43,0.55);
+  line-height: 1.45;
+  text-align: center;
+  max-width: 220px;
+  margin: 0 auto;
+}
+
+/* ── V3: STORE LOCATION SECTION ── */
+.store-section {
+  padding: 32px 20px 0;
+}
+.store-photo {
+  width: 100%;
+  aspect-ratio: 16/7;
+  overflow: hidden;
+  background: var(--hd-cream-deep);
+  border: 1px solid var(--rule-soft);
+  margin-bottom: 16px;
+}
+.store-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(20%);
+}
+.store-name {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hd-burgundy);
+  margin-bottom: 5px;
+}
+.store-address {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 300;
+  color: rgba(43,43,43,0.55);
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+.store-directions {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--hd-burgundy);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── V3: Enquiries bordered CTA ── */
+.cta-enquiries-outer {
+  padding: 24px 20px 0;
+}
+.cta-enquiries {
+  width: 100%;
+  background: transparent;
+  color: var(--hd-burgundy);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 16px 20px;
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  text-align: center;
+}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  height: 68px;
+  background: var(--hd-paper);
+  border-top: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  flex-shrink: 0;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  position: relative;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.nav-icon {
+  width: 22px;
+  height: 22px;
+  color: rgba(43,43,43,0.30);
+}
+.nav-item.active .nav-icon { color: var(--hd-burgundy); }
+.nav-label {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.30);
+}
+.nav-item.active .nav-label { color: var(--hd-burgundy); font-style: italic; }
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  width: 60%;
+  height: 1.5px;
+  background: var(--hd-burgundy);
+}
+
+/* ── FOOTER SPACER ── */
+.page-footer { padding: 40px 20px 28px; }
+</style>
+</head>
+<body>
+
+<div class="global-grain"></div>
+
+<div class="phone-shell">
+
+  <!-- iOS-style status bar -->
+  <div class="status-bar">
+    <span>11:14</span>
+    <span>5G &nbsp; 92%</span>
+  </div>
+
+  <!-- V3: Fixed top app bar -->
+  <header class="top-app-bar">
+    <button class="top-bar-back" aria-label="Back">&#8592;</button>
+    <div class="top-bar-center">
+      <span class="top-bar-wordmark">Häagen-Dazs</span>
+      <span class="top-bar-order">Order #HD-92834 · Plaza Indonesia</span>
+    </div>
+    <button class="top-bar-bag" aria-label="Cart">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <path d="M16 10a4 4 0 01-8 0"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="scroll-area">
+
+    <!-- Section 01: Status — hero + timeline -->
+    <section>
+      <!-- V3 pickup hero: large "Ready for pickup" italic Cormorant -->
+      <div class="hero-section">
+        <span class="hero-meta">Order · #HD-92834 · Plaza Indonesia Boutique</span>
+        <h1 class="hero-headline" data-i18n="tracking.ready_collection">Ready for<br>pickup</h1>
+      </div>
+
+      <!-- V3: Status Journal timeline -->
+      <div class="timeline-section">
+        <div class="section-divider" style="margin-bottom: 32px;">
+          <span class="section-divider-num">01</span>
+          <div class="section-divider-rule"></div>
+          <span class="section-divider-label">Status Journal</span>
+        </div>
+
+        <div class="timeline">
+          <!-- Step 01: Confirmed -->
+          <div class="tl-step">
+            <div class="tl-marker-col"><div class="tl-dot-done"></div></div>
+            <div class="tl-body">
+              <div class="tl-header-row">
+                <span class="tl-step-label done" data-i18n="tracking.order_confirmed">Confirmed</span>
+                <span class="tl-time done">10:42</span>
+              </div>
+              <p class="tl-sub-copy">Your artisanal selection has been received and curated for preparation.</p>
+            </div>
+          </div>
+
+          <!-- Step 02: Preparing -->
+          <div class="tl-step">
+            <div class="tl-marker-col"><div class="tl-dot-done"></div></div>
+            <div class="tl-body">
+              <div class="tl-header-row">
+                <span class="tl-step-label done" data-i18n="tracking.order_prepared">Preparing</span>
+                <span class="tl-time done">10:58</span>
+              </div>
+              <p class="tl-sub-copy">Hand-packed at our boutique atelier with care.</p>
+            </div>
+          </div>
+
+          <!-- Step 03: Ready for Pickup (active) -->
+          <div class="tl-step">
+            <div class="tl-marker-col"><div class="tl-dot-current"></div></div>
+            <div class="tl-body">
+              <div class="tl-header-row">
+                <span class="tl-step-label current" data-i18n="tracking.order_ready">Ready for Pickup</span>
+                <span class="tl-time current">11:14</span>
+              </div>
+              <p class="tl-sub-copy">Your indulgence awaits at our Plaza Indonesia boutique. Present your QR code below.</p>
+            </div>
+          </div>
+
+          <!-- Step 04: Collected (pending) -->
+          <div class="tl-step" style="opacity:0.35;">
+            <div class="tl-marker-col"><div class="tl-dot-pending"></div></div>
+            <div class="tl-body">
+              <div class="tl-header-row">
+                <span class="tl-step-label" data-i18n="tracking.order_collected">Collected</span>
+                <span class="tl-time">--:--</span>
+              </div>
+              <p class="tl-sub-copy pending" style="font-style:italic;">Awaiting collection at the boutique.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 02: Your Indulgence (items) -->
+    <section style="padding: 32px 0 0;">
+      <div class="indulgence-head">
+        <span class="indulgence-num">02</span>
+        <span class="indulgence-label">Your Indulgence</span>
+      </div>
+
+      <div class="items-section">
+        <div class="order-item">
+          <div class="item-thumb">
+            <img src="photos/DWffta7k4Ei.jpg" alt="Pistachio &amp; Cream" />
+          </div>
+          <div class="item-body">
+            <div class="item-name">Pistachio &amp; Cream Pint</div>
+            <div class="item-qty">Qty: 2</div>
+          </div>
+          <span class="item-price" data-price-idr="290000">Rp 290.000</span>
+        </div>
+
+        <div class="order-item">
+          <div class="item-thumb">
+            <img src="photos/DWizLL8k3Vq.jpg" alt="Vanilla" />
+          </div>
+          <div class="item-body">
+            <div class="item-name">Classic Vanilla Pint</div>
+            <div class="item-qty">Qty: 1</div>
+          </div>
+          <span class="item-price" data-price-idr="145000">Rp 145.000</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 03: Loyalty Rewards (dark burgundy card) -->
+    <section style="padding: 32px 0 0;">
+      <div class="section-divider" style="margin-bottom: 16px;">
+        <span class="section-divider-num">03</span>
+        <div class="section-divider-rule"></div>
+        <span class="section-divider-label">Loyalty Rewards</span>
+      </div>
+
+      <div class="loyalty-card">
+        <div class="loyalty-card-grain"></div>
+        <div class="loyalty-inner">
+          <div>
+            <span class="loyalty-eyebrow">Points Earned</span>
+            <div class="loyalty-pts">+450 <span>Points Earned</span></div>
+            <p class="loyalty-subtitle">You're only 200 points away from your next complimentary scoop.</p>
+          </div>
+          <span class="loyalty-star">&#9733;</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- V3: "Order Again" CTA primary (full-width, below loyalty) -->
+    <div style="padding: 20px 20px 0;">
+      <button class="cta-primary" data-i18n="cta.order_again">
+        <div class="cta-primary-grain"></div>
+        <span class="cta-primary-label">Order Again</span>
+      </button>
+    </div>
+
+    <!-- Section 04: QR Pickup Scan -->
+    <section class="qr-section">
+      <div class="section-divider" style="margin-bottom: 20px;">
+        <span class="section-divider-num">04</span>
+        <div class="section-divider-rule"></div>
+        <span class="section-divider-label">Pickup Scan</span>
+      </div>
+
+      <div class="qr-inner">
+        <div class="qr-frame">
+          <!-- 8×8 CSS QR approximation -->
+          <div class="qr-grid" aria-label="QR Code for order pickup">
+            <!-- Row 1 -->
+            <div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell b"></div>
+            <!-- Row 2 -->
+            <div class="qr-cell b"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell b"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell b"></div><div class="qr-cell b"></div>
+            <!-- Row 3 -->
+            <div class="qr-cell b"></div><div class="qr-cell"></div><div class="qr-cell b"></div><div class="qr-cell"></div><div class="qr-cell b"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell b"></div>
+            <!-- Row 4 -->
+            <div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell"></div><div class="qr-cell b"></div><div class="qr-cell"></div><div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell b"></div>
+            <!-- Row 5 -->
+            <div class="qr-cell b"></div><div class="qr-cell"></div><div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell b"></div>
+            <!-- Row 6 -->
+            <div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell"></div><div class="qr-cell b"></div>
+            <!-- Row 7 -->
+            <div class="qr-cell b"></div><div class="qr-cell"></div><div class="qr-cell b"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell b"></div>
+            <!-- Row 8 -->
+            <div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell b"></div><div class="qr-cell b"></div>
+          </div>
+        </div>
+        <p class="qr-caption">Show this code to our boutique consultant to collect your indulgence.</p>
+      </div>
+    </section>
+
+    <!-- Section 05: Store Location -->
+    <section class="store-section">
+      <div class="section-divider" style="margin-bottom: 16px;">
+        <span class="section-divider-num">05</span>
+        <div class="section-divider-rule"></div>
+        <span class="section-divider-label">Store Location</span>
+      </div>
+
+      <div class="store-photo">
+        <img src="photos/DVxL5rJE5B8.jpg" alt="Häagen-Dazs Plaza Indonesia Boutique" />
+      </div>
+
+      <div class="store-name">Häagen-Dazs Plaza Indonesia</div>
+      <div class="store-address">Level 2, Unit 92-94, Jalan M.H. Thamrin<br>Kav. 28-30, Jakarta Pusat</div>
+      <button class="store-directions" data-i18n="cta.get_directions">
+        <span>&#9675;</span> Get Directions &rarr;
+      </button>
+    </section>
+
+    <!-- V3: Enquiries bordered CTA -->
+    <div class="cta-enquiries-outer">
+      <button class="cta-enquiries">Enquiries &rarr;</button>
+    </div>
+
+    <div class="page-footer"></div>
+
+  </div><!-- end scroll-area -->
+
+  <!-- Bottom Nav — Orders active -->
+  <nav class="bottom-nav">
+    <button class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <polyline points="9,22 9,12 15,12 15,22"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.home">Home</span>
+    </button>
+    <button class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <line x1="8" y1="6" x2="21" y2="6"/>
+        <line x1="8" y1="12" x2="21" y2="12"/>
+        <line x1="8" y1="18" x2="21" y2="18"/>
+        <line x1="3" y1="6" x2="3.01" y2="6"/>
+        <line x1="3" y1="12" x2="3.01" y2="12"/>
+        <line x1="3" y1="18" x2="3.01" y2="18"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.menu">Menu</span>
+    </button>
+    <button class="nav-item active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14,2 14,8 20,8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.orders">Orders</span>
+    </button>
+    <button class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.rewards">Rewards</span>
+    </button>
+    <button class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.account">Account</span>
+    </button>
+  </nav>
+
+</div><!-- end phone-shell -->
+
+</body>
+</html>

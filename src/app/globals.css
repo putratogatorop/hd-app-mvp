@@ -3,15 +3,47 @@
 @tailwind utilities;
 
 :root {
-  --hd-burgundy: #650A30;
-  --hd-burgundy-dark: #40061E;
+  /* ── Brand Colours ── */
+  --hd-burgundy:       #650A30;
+  --hd-burgundy-dark:  #40061E;
   --hd-burgundy-light: #801237;
-  --hd-gold: #B8922A;
-  --hd-gold-light: #F5E6C8;
-  --hd-cream: #FEF2E3;
-  --hd-cream-deep: #F4E3CA;
-  --hd-paper: #FBF6EC;
-  --hd-ink: #1A1414;
+  --hd-gold:           #B8922A;
+  --hd-gold-light:     #F5E6C8;
+  --hd-cream:          #FEF2E3;
+  --hd-cream-deep:     #F5E6C8;
+  --hd-paper:          #FEF2E3;
+  --hd-ink:            #2B2B2B;
+
+  /* ── Design Tokens (Stitch spec) ── */
+  --primary:                    #42001C;
+  --primary-container:          #650A30;
+  --surface:                    #FFF8F3;
+  --surface-container-low:      #FEF2E3;
+  --surface-container:          #F8ECDD;
+  --surface-container-high:     #F2E6D8;
+  --surface-container-highest:  #ECE1D2;
+  --surface-dim:                #E4D8CA;
+  --on-surface:                 #201B12;
+  --on-surface-variant:         #554246;
+  --outline:                    #887176;
+  --outline-variant:            #DAC0C5;
+  --secondary-container:        #FED264;
+  --on-primary:                 #FFFFFF;
+  --on-primary-container:       #E97597;
+  --primary-fixed-dim:          #FFB1C4;
+
+  /* ── Hairline Rules ── */
+  --rule:              rgba(43,43,43,0.12);
+  --rule-soft:         rgba(43,43,43,0.08);
+
+  /* ── Fonts ── */
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans:    'Jost', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* ── Motion ── */
+  --ease-ed: cubic-bezier(0.2, 0.8, 0.2, 1);
+
   color-scheme: light;
 }
 
@@ -34,10 +66,10 @@ input, select, textarea {
   html { color-scheme: light; }
 }
 
-/* Display heading optical sizing */
+/* Display heading — Cormorant Garamond tracking */
 .font-display {
   font-optical-sizing: auto;
-  font-variation-settings: "opsz" 144, "SOFT" 50, "WONK" 0;
+  letter-spacing: -0.02em;
 }
 
 /* Mobile-first safe area for PWA */
@@ -45,25 +77,33 @@ input, select, textarea {
   padding-bottom: env(safe-area-inset-bottom, 16px);
 }
 
-/* ── Editorial grain texture ── */
+/* ── Editorial grain texture (dark surfaces only — 4% opacity per Stitch spec) ── */
+.texture-grain {
+  position: relative;
+}
 .texture-grain::before {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.35;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.08 0 0 0 0.35 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-  background-size: 180px 180px;
+  opacity: 0.04;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
+/* ── Paper texture (light surfaces) ── */
 .texture-paper {
+  position: relative;
   background-color: var(--hd-paper);
-  background-image:
-    radial-gradient(rgba(64, 6, 30, 0.04) 1px, transparent 1px),
-    radial-gradient(rgba(64, 6, 30, 0.03) 1px, transparent 1px);
-  background-size: 24px 24px, 6px 6px;
-  background-position: 0 0, 12px 12px;
+}
+.texture-paper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
 /* ── Editorial rule line ── */
@@ -83,6 +123,7 @@ input, select, textarea {
 .numeral {
   font-family: var(--font-mono), ui-monospace, monospace;
   font-feature-settings: "tnum", "ss02";
+  font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
 
@@ -135,15 +176,46 @@ input, select, textarea {
   background-size: 100% 2px;
 }
 
+/* ── Hairline rule ── */
+.hairline {
+  display: block;
+  border: 0;
+  border-top: 1px solid rgba(43,43,43,0.10);
+  margin: 0;
+}
+
+/* ── Tracking editorial ── */
+.tracking-editorial {
+  letter-spacing: -0.02em;
+}
+
+/* ── Input underline (no border-box) ── */
+.input-underline {
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 1px solid rgba(43,43,43,0.20);
+  background: transparent;
+  padding-left: 0;
+  padding-right: 0;
+  font-family: var(--font-sans);
+  font-weight: 300;
+  outline: none;
+}
+.input-underline:focus {
+  border-bottom-color: #42001c;
+  box-shadow: none;
+}
+
 /* ── Eyebrow label ── */
 /* Placed in @layer components so Tailwind utility colour classes can override */
 @layer components {
   .eyebrow {
     font-family: var(--font-sans);
-    font-size: 0.6875rem;
+    font-size: 0.6875rem; /* 11px */
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    font-weight: 500;
-    color: var(--hd-burgundy);
+    font-weight: 600;
+    line-height: 1;
   }
 }

@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HD App — Cart · Gift</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<script src="i18n.js" defer></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --hd-burgundy:       #650A30;
+  --hd-burgundy-dark:  #40061E;
+  --hd-burgundy-light: #801237;
+  --hd-gold:           #B8922A;
+  --hd-gold-light:     #F5E6C8;
+  --hd-cream:          #FEF2E3;
+  --hd-cream-deep:     #F5E6C8;
+  --hd-paper:          #FEF2E3;
+  --hd-ink:            #2B2B2B;
+  --surface-container: #F8ECDD;
+  --surface-container-low: #FEF2E3;
+  --rule:              rgba(136,113,118,0.20);
+  --rule-soft:         rgba(136,113,118,0.10);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans:    'Jost', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+  --ease-ed: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html, body {
+  background: #1a1310;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px 60px;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.phone-shell {
+  width: 390px;
+  min-width: 390px;
+  background: var(--hd-cream);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 40px 120px -20px rgba(0,0,0,0.85),
+    0 80px 200px -40px rgba(64,6,30,0.5);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Paper grain overlay */
+.global-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+
+/* ── STATUS BAR ── */
+.status-bar {
+  background: var(--hd-burgundy-dark);
+  color: rgba(254,242,227,0.75);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+/* ── TOP APP BAR (v3 native: hamburger · italic Cormorant headline · bag) ── */
+/* v3 gift: large editorial header title, NOT a small wordmark */
+.top-bar {
+  background: var(--hd-cream);
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  height: 64px;
+  flex-shrink: 0;
+}
+.top-bar-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--hd-burgundy);
+  flex-shrink: 0;
+}
+.top-bar-icon svg { display: block; }
+/* v3 gift headline: large italic Cormorant, multi-word title */
+.top-bar-headline {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 300;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  color: var(--hd-burgundy);
+  line-height: 1;
+  text-align: center;
+  flex: 1;
+  padding: 0 8px;
+}
+
+/* ── SCROLL AREA ── */
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  background: var(--hd-cream);
+  max-height: calc(844px - 44px - 64px - 56px - 60px);
+}
+.scroll-area::-webkit-scrollbar { display: none; }
+.scroll-area { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── EYEBROW ── */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* ── SECTION HEADER (v3 native: numeral left · rule · LABEL right) ── */
+/* "01 ——————————————— THE COLLECTION" style */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  margin-bottom: 24px;
+}
+.section-head-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(43,43,43,0.30);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.section-head-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+.section-head-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.50);
+  flex-shrink: 0;
+}
+
+/* ── 01 THE COLLECTION ── */
+.collection-section {
+  padding: 32px 20px 32px;
+}
+/* v3 gift collection row: larger image, large Cormorant product title, price right */
+.collection-row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.collection-img {
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--surface-container);
+}
+.collection-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(0.2);
+}
+.collection-body {
+  flex: 1;
+  min-width: 0;
+}
+.collection-name {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--hd-ink);
+  line-height: 1.05;
+  margin-bottom: 6px;
+}
+.collection-sub {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.40);
+}
+.collection-price {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--hd-burgundy);
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+  align-self: flex-start;
+  padding-top: 4px;
+}
+
+/* ── 02 RECIPIENT DETAILS ── */
+/* v3 native: floating-label inputs with bottom-border only */
+.recipient-section {
+  padding: 0 20px 32px;
+}
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.field {
+  position: relative;
+}
+.field-input {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(136,113,118,0.25);
+  padding: 6px 0 8px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--hd-ink);
+  outline: none;
+  transition: border-color 200ms;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.field-input:focus { border-bottom-color: var(--hd-burgundy); }
+.field-input::placeholder {
+  color: rgba(43,43,43,0.28);
+  font-style: normal;
+}
+.field-label {
+  position: absolute;
+  left: 0;
+  top: -18px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.40);
+  line-height: 1;
+  pointer-events: none;
+}
+.field-textarea {
+  resize: none;
+  line-height: 1.5;
+}
+
+/* ── 03 GIFT WRAP (v3: cream tile card, image left, + add button) ── */
+.wrap-section {
+  padding: 0 20px 32px;
+}
+/* v3: surface-container-low bg, border, image with overlay */
+.wrap-card {
+  background: var(--surface-container-low);
+  border: 1px solid var(--rule-soft);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.wrap-photo {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--hd-burgundy);
+}
+.wrap-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  mix-blend-mode: overlay;
+  opacity: 0.60;
+}
+.wrap-body {
+  flex: 1;
+  min-width: 0;
+}
+.wrap-name {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--hd-burgundy);
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+.wrap-desc {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-style: italic;
+  color: rgba(43,43,43,0.55);
+  line-height: 1.4;
+}
+.wrap-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.wrap-price {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--hd-burgundy);
+  letter-spacing: -0.02em;
+}
+/* v3: small square + button (hairline border) */
+.wrap-add-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--hd-burgundy);
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--hd-burgundy);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  line-height: 1;
+  transition: background 200ms;
+}
+.wrap-add-btn:hover { background: var(--hd-cream-deep); }
+
+/* ── ORDER SUMMARY ── */
+.summary-section {
+  padding: 0 20px 32px;
+  border-top: 1px solid var(--rule);
+  margin: 0 0 0;
+}
+.summary-rows {
+  padding-top: 20px;
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.summary-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.45);
+}
+.summary-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: rgba(43,43,43,0.60);
+  letter-spacing: -0.02em;
+}
+/* v3: total uses Cormorant headline left, large mono right */
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+  margin-top: 8px;
+}
+.summary-total-label {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--hd-burgundy);
+}
+.summary-total-value {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--hd-burgundy);
+  letter-spacing: -0.03em;
+}
+
+/* ── STICKY CTA (v3: fixed above bottom-nav, full-width solid burgundy) ── */
+.sticky-cta-wrap {
+  flex-shrink: 0;
+}
+.sticky-cta {
+  height: 56px;
+  background: var(--hd-burgundy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  transition: background 200ms;
+}
+.sticky-cta:hover { background: var(--hd-burgundy-light); }
+.sticky-cta-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.30em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--hd-cream);
+}
+
+/* ── BOTTOM NAV (v3 native: 5 tabs, "Orders" active) ── */
+.bottom-nav {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 8px 12px;
+  background: var(--hd-cream);
+  border-top: 1px solid var(--rule);
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: rgba(43,43,43,0.45);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 200ms;
+}
+.nav-item.active { color: var(--hd-burgundy); }
+.nav-item:hover { color: var(--hd-burgundy); }
+.nav-icon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.nav-icon svg { display: block; }
+.nav-label {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  line-height: 1;
+}
+
+</style>
+</head>
+<body>
+
+<div class="global-grain"></div>
+
+<div class="phone-shell">
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>5G &nbsp; 100%</span>
+  </div>
+
+  <!-- TOP APP BAR (v3 gift: hamburger · italic Cormorant title "A Gift to Send" · bag) -->
+  <div class="top-bar">
+    <button class="top-bar-icon" aria-label="Menu">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+        <line x1="0" y1="1" x2="18" y2="1" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="0" y1="6" x2="18" y2="6" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="0" y1="11" x2="18" y2="11" stroke="currentColor" stroke-width="1.5"/>
+      </svg>
+    </button>
+    <span class="top-bar-headline" data-i18n="hero.as_a_gift">A Gift to Send</span>
+    <button class="top-bar-icon" aria-label="Bag">
+      <svg width="18" height="20" viewBox="0 0 18 20" fill="none">
+        <path d="M1 6h16l-1.5 13H2.5L1 6Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M5.5 6V4.5a3.5 3.5 0 0 1 7 0V6" stroke="currentColor" stroke-width="1.2"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- SCROLL AREA -->
+  <div class="scroll-area" id="scrollArea">
+
+    <!-- 01 / THE COLLECTION -->
+    <section class="collection-section">
+      <div class="section-head">
+        <span class="section-head-num">01</span>
+        <div class="section-head-rule"></div>
+        <span class="section-head-label" data-i18n="section.the_collection">The Collection</span>
+      </div>
+      <div class="collection-row">
+        <div class="collection-img">
+          <img src="photos/DWvQ4aVEyOq.jpg" alt="Classic Collection Trio" loading="lazy" />
+        </div>
+        <div class="collection-body">
+          <div class="collection-name" data-i18n="gift.collection_name">Classic<br>Collection<br>Trio</div>
+          <div class="collection-sub">3 × 473ml Pints</div>
+        </div>
+        <div class="collection-price" data-price-idr="450000">Rp 450.000</div>
+      </div>
+    </section>
+
+    <!-- 02 / RECIPIENT DETAILS -->
+    <section class="recipient-section">
+      <div class="section-head">
+        <span class="section-head-num">02</span>
+        <div class="section-head-rule"></div>
+        <span class="section-head-label" data-i18n="section.recipient">Recipient Details</span>
+      </div>
+      <div class="field-group">
+
+        <div class="field">
+          <label class="field-label" for="gift-name" data-i18n="form.recipient_name">Recipient's Name</label>
+          <input class="field-input" id="gift-name" type="text" placeholder=" " aria-label="Recipient's name" />
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="gift-phone" data-i18n="form.phone_number">Phone Number</label>
+          <input class="field-input" id="gift-phone" type="tel" placeholder=" " aria-label="Phone number" />
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="gift-date" data-i18n="form.delivery_date">Delivery Date</label>
+          <input class="field-input" id="gift-date" type="date" aria-label="Delivery date" />
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="gift-note" data-i18n="form.personal_note">Personal Note</label>
+          <textarea class="field-input field-textarea" id="gift-note" rows="3" placeholder=" " aria-label="Personal note"></textarea>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 03 / GIFT WRAP (v3: cream bg tile, image with overlay blend, square + button) -->
+    <section class="wrap-section">
+      <div class="section-head">
+        <span class="section-head-num">03</span>
+        <div class="section-head-rule"></div>
+        <span class="section-head-label" data-i18n="section.gift_wrap">Gift Wrap</span>
+      </div>
+      <div class="wrap-card">
+        <div class="wrap-photo">
+          <img src="photos/DWDNYgPk8Nd.jpg" alt="Premium Signature Wrap" loading="lazy" />
+        </div>
+        <div class="wrap-body">
+          <div class="wrap-name" data-i18n="gift.wrap_name">Premium<br>Signature Wrap</div>
+          <div class="wrap-desc" data-i18n="gift.wrap_desc">Artisanal paper &amp; wax seal</div>
+        </div>
+        <div class="wrap-right">
+          <span class="wrap-price" data-price-idr="45000">Rp 45.000</span>
+          <button class="wrap-add-btn" aria-label="Add gift wrap">+</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ORDER SUMMARY -->
+    <section class="summary-section">
+      <div class="summary-rows">
+        <div class="summary-row">
+          <span class="summary-label" data-i18n="cart.subtotal">Subtotal</span>
+          <span class="summary-value" data-price-idr="450000">Rp 450.000</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label" data-i18n="cart.delivery">Delivery</span>
+          <span class="summary-value" data-price-idr="25000">Rp 25.000</span>
+        </div>
+        <!-- Total amount: Cormorant headline left, large mono right (v3 native) -->
+        <div class="summary-total">
+          <span class="summary-total-label" data-i18n="cart.total_amount">Total Amount</span>
+          <span class="summary-total-value" data-price-idr="475000">Rp 475.000</span>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- end scroll-area -->
+
+  <!-- STICKY CTA (v3: full-width solid burgundy, centered SEND A GIFT label, no gradient) -->
+  <div class="sticky-cta-wrap">
+    <button class="sticky-cta">
+      <span class="sticky-cta-label">Send a Gift</span>
+    </button>
+  </div>
+
+  <!-- BOTTOM NAV (v3 native: 5 tabs, "Orders" active) -->
+  <nav class="bottom-nav">
+    <button class="nav-item">
+      <div class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M3 8l7-5 7 5v9H12v-4H8v4H3V8Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="nav-label" data-i18n="nav.home">Home</span>
+    </button>
+    <button class="nav-item">
+      <div class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <rect x="3" y="2" width="14" height="16" rx="0" stroke="currentColor" stroke-width="1.2"/>
+          <line x1="6" y1="7" x2="14" y2="7" stroke="currentColor" stroke-width="1"/>
+          <line x1="6" y1="10" x2="14" y2="10" stroke="currentColor" stroke-width="1"/>
+          <line x1="6" y1="13" x2="10" y2="13" stroke="currentColor" stroke-width="1"/>
+        </svg>
+      </div>
+      <span class="nav-label" data-i18n="nav.menu">Menu</span>
+    </button>
+    <button class="nav-item active">
+      <div class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <rect x="3" y="3" width="14" height="14" rx="0" stroke="currentColor" stroke-width="1.2"/>
+          <line x1="7" y1="8" x2="13" y2="8" stroke="currentColor" stroke-width="1"/>
+          <line x1="7" y1="11" x2="13" y2="11" stroke="currentColor" stroke-width="1"/>
+          <line x1="7" y1="14" x2="10" y2="14" stroke="currentColor" stroke-width="1"/>
+        </svg>
+      </div>
+      <span class="nav-label" data-i18n="nav.orders">Orders</span>
+    </button>
+    <button class="nav-item">
+      <div class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M4 10c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6-6-2.7-6-6Z" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M8 10h4M10 8v4" stroke="currentColor" stroke-width="1" stroke-linecap="square"/>
+        </svg>
+      </div>
+      <span class="nav-label" data-i18n="nav.voucher">Voucher</span>
+    </button>
+    <button class="nav-item">
+      <div class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M4 17c0-3.3 2.7-4 6-4s6 .7 6 4" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <span class="nav-label" data-i18n="nav.account">Account</span>
+    </button>
+  </nav>
+
+</div><!-- end phone-shell -->
+
+</body>
+</html>

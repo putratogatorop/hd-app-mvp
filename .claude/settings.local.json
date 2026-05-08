@@ -27,5 +27,27 @@
       "Bash(curl:*)",
       "Bash(npx sharp-cli:*)",
       "Bash(npm list:*)",
-      "Bash(echo \"Count: $\\(curl -s http://localhost:3001/login)",
-      "Bash(python3 -c \"import sys,json;
+      "Bash(lsof -iTCP:5173 -sTCP:LISTEN)",
+      "Bash(lsof -iTCP:8000 -sTCP:LISTEN)",
+      "Bash(python3 -m http.server 5173)",
+      "Bash(lsof -tiTCP:5173 -sTCP:LISTEN)",
+      "Bash(echo \"PID: $\\(lsof -tiTCP:5173 -sTCP:LISTEN\\)\")",
+      "Read(//Applications/Claude.app/**)",
+      "Bash(launchctl getenv *)",
+      "Bash(ps -axo user,pid,command)",
+      "Bash(sudo mkdir *)",
+      "Bash(sudo chown *)",
+      "Bash(sudo chmod *)",
+      "Bash(defaults read *)",
+      "Bash(dscl . -list /Users)",
+      "Bash(grep -v -E '^\\(daemon|nobody|root|putratogatorop\\)$')",
+      "Bash(dscl . -read /Groups/admin GroupMembership)",
+      "Bash(osascript -e 'do shell script \"chmod o+x /var/folders/zz/zyxvpxvq6csfxvn_n0000000000000/T && mkdir -p /var/folders/zz/zyxvpxvq6csfxvn_n0000000000000/T/claude-hostloop-plugins && chown putratogatorop:staff /var/folders/zz/zyxvpxvq6csfxvn_n0000000000000/T/claude-hostloop-plugins && chmod 700 /var/folders/zz/zyxvpxvq6csfxvn_n0000000000000/T/claude-hostloop-plugins\" with administrator privileges')",
+      "Bash(cp '__TRACKED_VAR__/Library/Application Support/Claude/config.json' '__TRACKED_VAR__/Library/Application Support/Claude/config.json.bak-__CMDSUB_OUTPUT__')",
+      "Bash(osascript -e 'tell application \"Claude\" to quit')",
+      "Bash(pgrep -fl '/Applications/Claude.app/Contents/MacOS/Claude$')",
+      "Bash(kill -TERM 12548)",
+      "Bash(unzip -o \"stitch_h_agen_dazs_indonesia_luxury_pwa \\(1\\).zip\" -d stitch_v2)"
+    ]
+  }
+}

@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Häagen-Dazs — Identity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<script src="i18n.js" defer></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --hd-burgundy:       #650A30;
+  --hd-burgundy-dark:  #40061E;
+  --hd-burgundy-light: #801237;
+  --hd-gold:           #B8922A;
+  --hd-gold-light:     #F5E6C8;
+  --hd-cream:          #FEF2E3;
+  --hd-cream-deep:     #F5E6C8;
+  --hd-paper:          #FEF2E3;
+  --hd-ink:            #2B2B2B;
+  --rule:              rgba(43,43,43,0.12);
+  --rule-soft:         rgba(43,43,43,0.08);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans:    'Jost', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+  --ease-ed: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html, body {
+  background: #16030b;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px 60px;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.global-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+
+.phone-shell {
+  width: 390px;
+  min-width: 390px;
+  background: var(--hd-cream);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 40px 120px -20px rgba(0,0,0,0.85),
+    0 80px 200px -40px rgba(64,6,30,0.5);
+  position: relative;
+  overflow: hidden;
+  min-height: 844px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── STATUS BAR ── */
+.status-bar {
+  background: var(--hd-cream);
+  color: rgba(43,43,43,0.45);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  height: 44px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+/* ── TOP NAV ── */
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--rule);
+}
+.close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--hd-ink);
+  opacity: 0.5;
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 1;
+  transition: opacity 200ms;
+}
+.close-btn:hover { opacity: 1; }
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 17px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hd-burgundy);
+}
+.nav-spacer { width: 28px; }
+
+/* ── CONTENT BODY ── */
+.content-body {
+  flex: 1;
+  padding: 56px 24px 120px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── EYEBROW ── */
+.eyebrow-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.45);
+  white-space: nowrap;
+}
+.eyebrow-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+/* ── HEADLINE ── */
+.identity-headline {
+  font-family: var(--font-display);
+  font-size: 76px;
+  font-weight: 300;
+  font-style: italic;
+  line-height: 0.9;
+  letter-spacing: -0.025em;
+  color: var(--hd-burgundy-dark);
+  margin-bottom: 56px;
+}
+.identity-headline em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--hd-burgundy);
+}
+
+/* ── INPUT FIELD ── */
+.input-group {
+  margin-bottom: 20px;
+}
+.name-input {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(43,43,43,0.2);
+  padding: 0 0 14px;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--hd-ink);
+  outline: none;
+  transition: border-color 300ms var(--ease-ed);
+  border-radius: 0;
+}
+.name-input::placeholder {
+  color: rgba(43,43,43,0.22);
+  font-style: italic;
+  font-size: 22px;
+}
+.name-input:focus {
+  border-bottom-color: var(--hd-burgundy);
+}
+
+.input-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 12px;
+}
+.why-link {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.35);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 200ms;
+}
+.why-link:hover { color: var(--hd-burgundy); }
+.why-icon {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-style: normal;
+  color: currentColor;
+  letter-spacing: 0;
+}
+
+/* ── DECORATIVE BG IMG ── */
+.bg-decor {
+  position: absolute;
+  bottom: 40px;
+  right: -30px;
+  width: 160px;
+  opacity: 0.06;
+  pointer-events: none;
+  filter: grayscale(100%);
+}
+
+/* ── BOTTOM CTA — Stitch: full-width burgundy block flush to bottom-right corner ── */
+.bottom-cta {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0;
+  background: linear-gradient(to top, var(--hd-cream) 60%, transparent);
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+.next-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--hd-burgundy);
+  color: var(--hd-cream);
+  border: none;
+  padding: 20px 32px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 250ms var(--ease-ed);
+  width: 280px;
+}
+.next-btn:hover { background: var(--hd-burgundy-dark); }
+.next-arrow { font-size: 16px; line-height: 1; }
+
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<div class="global-grain"></div>
+
+<div class="phone-shell">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>5G &nbsp; 100%</span>
+  </div>
+
+  <!-- Top nav -->
+  <nav class="top-nav">
+    <button class="close-btn" aria-label="Close">&#215;</button>
+    <span class="wordmark">Häagen-Dazs</span>
+    <div class="nav-spacer"></div>
+  </nav>
+
+  <!-- Content -->
+  <div class="content-body">
+
+    <!-- Eyebrow — Stitch: "01" stacked over "—" stacked over "IDENTITY" with hairline extending right -->
+    <div class="eyebrow-section">
+      <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;">
+        <span style="font-family:var(--font-mono);font-size:11px;letter-spacing:0.04em;color:rgba(43,43,43,0.35);">01</span>
+        <span style="font-family:var(--font-mono);font-size:11px;color:rgba(43,43,43,0.22);">—</span>
+        <span style="font-family:var(--font-sans);font-size:11px;letter-spacing:0.22em;text-transform:uppercase;font-weight:600;color:rgba(43,43,43,0.45);" data-i18n="section.identity">Identity</span>
+      </div>
+      <span class="eyebrow-rule"></span>
+    </div>
+
+    <!-- Headline — Stitch: "Tell us your\nname." large italic, intentional 2-line wrap -->
+    <h1 class="identity-headline" data-i18n="identity.headline">
+      Tell us your<br><em>name.</em>
+    </h1>
+
+    <!-- Input -->
+    <div class="input-group">
+      <input
+        class="name-input"
+        type="text"
+        placeholder="First and last name"
+        data-i18n-placeholder="identity.name_placeholder"
+        autocomplete="name"
+        autofocus
+      />
+      <div class="input-meta">
+        <a href="#" class="why-link">
+          <span class="why-icon">?</span>
+          Why?
+        </a>
+      </div>
+    </div>
+
+    <!-- Decorative image -->
+    <img class="bg-decor" src="photos/DWizLL8k3Vq.jpg" alt="" />
+
+    <!-- Bottom CTA inside content -->
+    <div class="bottom-cta">
+      <button class="next-btn">
+        <span data-i18n="onboarding.continue">Continue</span>
+        <span class="next-arrow">→</span>
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

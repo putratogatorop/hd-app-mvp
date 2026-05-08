@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Häagen-Dazs — Cita Rasa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<script src="i18n.js" defer></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --hd-burgundy:       #650A30;
+  --hd-burgundy-dark:  #40061E;
+  --hd-burgundy-light: #801237;
+  --hd-gold:           #B8922A;
+  --hd-gold-light:     #F5E6C8;
+  --hd-cream:          #FEF2E3;
+  --hd-cream-deep:     #F5E6C8;
+  --hd-paper:          #FEF2E3;
+  --hd-ink:            #2B2B2B;
+  --rule:              rgba(43,43,43,0.12);
+  --rule-soft:         rgba(43,43,43,0.08);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans:    'Jost', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+  --ease-ed: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html, body {
+  background: #16030b;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px 60px;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.global-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+
+.phone-shell {
+  width: 390px;
+  min-width: 390px;
+  background: var(--hd-cream);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 40px 120px -20px rgba(0,0,0,0.85),
+    0 80px 200px -40px rgba(64,6,30,0.5);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── STATUS BAR ── */
+.status-bar {
+  background: var(--hd-cream);
+  color: rgba(43,43,43,0.45);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  height: 44px;
+  border-bottom: 1px solid var(--rule-soft);
+  flex-shrink: 0;
+}
+
+/* ── TOP NAV ── */
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--rule);
+  flex-shrink: 0;
+}
+.close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--hd-ink);
+  opacity: 0.5;
+  font-size: 18px;
+  line-height: 1;
+  transition: opacity 200ms;
+}
+.close-btn:hover { opacity: 1; }
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 17px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hd-burgundy);
+}
+.nav-spacer { width: 28px; }
+
+/* ── SCROLL AREA ── */
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  padding-bottom: 140px;
+}
+.scroll-area::-webkit-scrollbar { display: none; }
+.scroll-area { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── HEADER SECTION ── */
+.header-section {
+  padding: 40px 24px 28px;
+}
+.eyebrow-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.45);
+  white-space: nowrap;
+}
+.eyebrow-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+.pref-headline {
+  font-family: var(--font-display);
+  font-size: 52px;
+  font-weight: 300;
+  font-style: italic;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  color: var(--hd-burgundy-dark);
+  margin-bottom: 16px;
+}
+.pref-headline em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--hd-burgundy);
+}
+.pref-sub {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(43,43,43,0.55);
+  max-width: 300px;
+}
+
+/* ── FLAVOUR GRID ── */
+.flavour-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--rule-soft);
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.flavour-card {
+  background: var(--hd-cream);
+  cursor: pointer;
+  position: relative;
+  transition: background 250ms var(--ease-ed);
+}
+.flavour-card:hover { background: #FAE8D2; }
+.flavour-card.selected {
+  background: var(--hd-cream);
+  outline: 1px solid var(--hd-gold);
+  outline-offset: -1px;
+}
+
+.selection-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 5;
+  width: 22px;
+  height: 22px;
+  background: var(--hd-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: white;
+  font-weight: 500;
+}
+
+.card-image {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #EDE0CE;
+}
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 700ms var(--ease-ed);
+  filter: grayscale(20%);
+}
+.flavour-card.selected .card-image img { filter: none; }
+.flavour-card:hover .card-image img { transform: scale(1.04); }
+
+.card-body {
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--rule-soft);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px;
+}
+.card-name {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--hd-ink);
+  line-height: 1.2;
+}
+.card-price {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(43,43,43,0.45);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav-outer {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  background: var(--hd-cream);
+  border-top: 1px solid var(--rule);
+}
+.confirm-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background: var(--hd-burgundy);
+  color: var(--hd-cream);
+  border: none;
+  padding: 18px 24px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 250ms var(--ease-ed);
+}
+.confirm-btn:hover { background: var(--hd-burgundy-dark); }
+
+.bottom-nav {
+  height: 68px;
+  background: var(--hd-cream);
+  border-top: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 8px 4px;
+  position: relative;
+  background: none;
+  border: none;
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  width: 60%;
+  height: 1.5px;
+  background: var(--hd-burgundy);
+}
+.nav-label {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(43,43,43,0.35);
+}
+.nav-item.active .nav-label {
+  color: var(--hd-burgundy);
+  font-style: italic;
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  font-weight: 400;
+  text-transform: none;
+}
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  color: rgba(43,43,43,0.35);
+}
+.nav-item.active .nav-icon { color: var(--hd-burgundy); }
+</style>
+</head>
+<body>
+
+<div class="global-grain"></div>
+
+<div class="phone-shell">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>5G &nbsp; 100%</span>
+  </div>
+
+  <!-- Top nav -->
+  <nav class="top-nav">
+    <button class="close-btn" aria-label="Close">&#215;</button>
+    <span class="wordmark">Häagen-Dazs</span>
+    <div class="nav-spacer"></div>
+  </nav>
+
+  <!-- Scrollable content -->
+  <div class="scroll-area">
+
+    <!-- Header — Stitch: "02 — PREFERENCES" stacked eyebrow, headline "Pick three flavours you love." -->
+    <div class="header-section">
+      <div class="eyebrow-row">
+        <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;">
+          <span style="font-family:var(--font-mono);font-size:11px;letter-spacing:0.04em;color:rgba(43,43,43,0.35);">02</span>
+          <span style="font-family:var(--font-mono);font-size:11px;color:rgba(43,43,43,0.22);">—</span>
+          <span style="font-family:var(--font-sans);font-size:11px;letter-spacing:0.22em;text-transform:uppercase;font-weight:600;color:rgba(43,43,43,0.45);" data-i18n="section.preferences">Preferences</span>
+        </div>
+        <span class="eyebrow-rule"></span>
+      </div>
+      <h1 class="pref-headline" data-i18n="pref.headline">Pick three flavours<br><em>you love.</em></h1>
+      <p class="pref-sub" data-i18n="pref.sub">Indulgence is personal. Select your favorites to tailor your experience.</p>
+    </div>
+
+    <!-- Flavour grid -->
+    <div class="flavour-grid">
+
+      <!-- Vanilla — selected 01 -->
+      <div class="flavour-card selected">
+        <div class="selection-badge">01</div>
+        <div class="card-image">
+          <img src="photos/DWizLL8k3Vq.jpg" alt="Vanilla" loading="lazy" />
+        </div>
+        <div class="card-body">
+          <span class="card-name">Vanilla</span>
+          <span class="card-price" data-price-idr="65000">Rp 65.000</span>
+        </div>
+      </div>
+
+      <!-- Pistachio & Cream — selected 02 -->
+      <div class="flavour-card selected">
+        <div class="selection-badge">02</div>
+        <div class="card-image">
+          <img src="photos/DWffta7k4Ei.jpg" alt="Pistachio &amp; Cream" loading="lazy" />
+        </div>
+        <div class="card-body">
+          <span class="card-name">Pistachio &amp; Cream</span>
+          <span class="card-price" data-price-idr="72000">Rp 72.000</span>
+        </div>
+      </div>
+
+      <!-- Chocolate — selected 03 -->
+      <div class="flavour-card selected">
+        <div class="selection-badge">03</div>
+        <div class="card-image">
+          <img src="photos/DVxL5rJE5B8.jpg" alt="Chocolate" loading="lazy" />
+        </div>
+        <div class="card-body">
+          <span class="card-name">Chocolate</span>
+          <span class="card-price" data-price-idr="65000">Rp 65.000</span>
+        </div>
+      </div>
+
+      <!-- Raspberry Sorbet — unselected -->
+      <div class="flavour-card">
+        <div class="card-image">
+          <img src="photos/DWI-Kpok62S.jpg" alt="Raspberry Sorbet" loading="lazy" />
+        </div>
+        <div class="card-body">
+          <span class="card-name">Raspberry Sorbet</span>
+          <span class="card-price" data-price-idr="65000">Rp 65.000</span>
+        </div>
+      </div>
+
+      <!-- Strawberry — unselected -->
+      <div class="flavour-card">
+        <div class="card-image">
+          <img src="photos/DV7gQA2k4-5.jpg" alt="Strawberry" loading="lazy" />
+        </div>
+        <div class="card-body">
+          <span class="card-name">Strawberry</span>
+          <span class="card-price" data-price-idr="65000">Rp 65.000</span>
+        </div>
+      </div>
+
+      <!-- Cookies &amp; Cream — unselected -->
+      <div class="flavour-card">
+        <div class="card-image">
+          <img src="photos/DWp1UAiE4nR.jpg" alt="Cookies &amp; Cream" loading="lazy" />
+        </div>
+        <div class="card-body">
+          <span class="card-name">Cookies &amp; Cream</span>
+          <span class="card-price" data-price-idr="68000">Rp 68.000</span>
+        </div>
+      </div>
+
+    </div>
+    <!-- end grid -->
+
+  </div>
+  <!-- end scroll -->
+
+  <!-- Sticky bottom -->
+  <div class="bottom-nav-outer">
+    <button class="confirm-btn" data-i18n="pref.confirm">Confirm Selection</button>
+    <nav class="bottom-nav">
+      <button class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        <span class="nav-label" data-i18n="nav.home">Home</span>
+      </button>
+      <button class="nav-item active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        <span class="nav-label" data-i18n="nav.menu">Menu</span>
+      </button>
+      <button class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        <span class="nav-label" data-i18n="nav.orders">Orders</span>
+      </button>
+      <button class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>
+        <span class="nav-label" data-i18n="nav.rewards">Rewards</span>
+      </button>
+      <button class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="nav-label" data-i18n="nav.account">Account</span>
+      </button>
+    </nav>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  const cards = document.querySelectorAll('.flavour-card');
+  let selected = [...document.querySelectorAll('.flavour-card.selected')];
+
+  cards.forEach(function(card) {
+    card.addEventListener('click', function() {
+      if (card.classList.contains('selected')) {
+        card.classList.remove('selected');
+        const badge = card.querySelector('.selection-badge');
+        if (badge) badge.remove();
+        selected = selected.filter(c => c !== card);
+        // renumber
+        let n = 1;
+        selected.forEach(c => {
+          const b = c.querySelector('.selection-badge');
+          if (b) b.textContent = String(n++).padStart(2, '0');
+        });
+      } else {
+        if (selected.length >= 3) return;
+        card.classList.add('selected');
+        const badge = document.createElement('div');
+        badge.className = 'selection-badge';
+        badge.textContent = String(selected.length + 1).padStart(2, '0');
+        card.insertBefore(badge, card.firstChild);
+        selected.push(card);
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

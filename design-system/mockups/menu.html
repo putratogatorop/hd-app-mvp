@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HD App — Menu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<script src="i18n.js" defer></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --hd-burgundy:       #650A30;
+  --hd-burgundy-dark:  #40061E;
+  --hd-burgundy-light: #801237;
+  --hd-gold:           #B8922A;
+  --hd-gold-light:     #F5E6C8;
+  --hd-cream:          #FEF2E3;
+  --hd-cream-deep:     #F2E6D8;
+  --hd-surface:        #F8ECDD;
+  --hd-ink:            #201B12;
+  --hd-ink-dim:        rgba(32,27,18,0.55);
+  --hd-ink-faint:      rgba(32,27,18,0.25);
+  --rule:              rgba(32,27,18,0.10);
+  --rule-soft:         rgba(32,27,18,0.07);
+  --font-display:      'Cormorant Garamond', Georgia, serif;
+  --font-sans:         'Jost', system-ui, sans-serif;
+  --font-mono:         'JetBrains Mono', monospace;
+  --ease-ed:           cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html, body {
+  background: #16030b;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px 60px;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.global-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+
+.phone-shell {
+  width: 390px;
+  min-width: 390px;
+  background: var(--hd-cream);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 40px 120px -20px rgba(0,0,0,0.85),
+    0 80px 200px -40px rgba(64,6,30,0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.status-bar {
+  background: var(--hd-cream);
+  color: var(--hd-ink-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  height: 44px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.scroll-area {
+  height: calc(100dvh - 44px - 68px);
+  max-height: calc(844px - 44px - 68px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  background: var(--hd-cream);
+  padding-bottom: 40px;
+}
+.scroll-area::-webkit-scrollbar { display: none; }
+.scroll-area { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── TYPOGRAPHY UTILITIES ── */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--hd-burgundy);
+  line-height: 1;
+}
+
+/* ══════════════════════════════════
+   TOP BAR (v3: hamburger + wordmark + bag)
+══════════════════════════════════ */
+.top-bar {
+  background: var(--hd-cream);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--rule-soft);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.top-bar-menu {
+  cursor: pointer;
+  color: var(--hd-burgundy);
+  display: flex;
+  align-items: center;
+}
+.top-bar-wordmark {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--hd-burgundy);
+  line-height: 1;
+}
+/* v3: two-line wordmark break for narrow screens */
+.top-bar-wordmark-wrap {
+  text-align: center;
+  line-height: 1.15;
+}
+.top-bar-bag {
+  cursor: pointer;
+  color: var(--hd-burgundy);
+  display: flex;
+  align-items: center;
+}
+
+/* ══════════════════════════════════
+   SEARCH BAR (v3: typographic, with search icon)
+══════════════════════════════════ */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--rule);
+}
+.search-icon {
+  color: var(--hd-ink-faint);
+  flex-shrink: 0;
+}
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--hd-ink);
+}
+.search-input::placeholder {
+  color: var(--hd-ink-faint);
+}
+
+/* ══════════════════════════════════
+   VOLUME / MENU SELECTION HEADER (v3)
+══════════════════════════════════ */
+.volume-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 14px 20px 10px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.volume-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--hd-burgundy);
+}
+.menu-selection-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--hd-ink-faint);
+}
+
+/* ══════════════════════════════════
+   CATEGORY TILES — 2-column (v3 native_app_view)
+══════════════════════════════════ */
+.category-section {
+  padding: 24px 20px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.category-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.category-tile {
+  cursor: pointer;
+}
+.category-tile-img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--hd-surface);
+  margin-bottom: 10px;
+}
+.category-tile-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(10%);
+  transition: transform 700ms var(--ease-ed);
+}
+.category-tile:hover .category-tile-img img { transform: scale(1.04); }
+.category-tile-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--hd-burgundy);
+  border-bottom: 1px solid rgba(101,10,48,0.20);
+  display: inline-block;
+  padding-bottom: 2px;
+}
+.category-tile-label.inactive {
+  color: var(--hd-ink-dim);
+  border-bottom-color: transparent;
+}
+
+/* ══════════════════════════════════
+   PRODUCT SECTION — "THE CLASSICS"
+   2-column grid, 3/4 aspect ratio (v3)
+══════════════════════════════════ */
+.product-section {
+  padding: 0 20px;
+}
+.product-section-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 28px 0 20px;
+}
+.product-section-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--hd-ink-faint);
+  flex-shrink: 0;
+}
+.product-section-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+.product-section-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--hd-ink);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 16px;
+  row-gap: 32px;
+  padding-bottom: 32px;
+}
+.product-item {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+.product-item-img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: var(--hd-surface);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+.product-item-img img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  filter: grayscale(10%);
+  transition: transform 700ms var(--ease-ed), filter 500ms;
+}
+.product-item:hover .product-item-img img {
+  transform: scale(1.04);
+  filter: grayscale(0%);
+}
+.product-item-name {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--hd-burgundy);
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+.product-item-volume {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--hd-ink-faint);
+  margin-bottom: 10px;
+}
+.product-item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid var(--rule-soft);
+  margin-top: auto;
+}
+.product-item-price {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--hd-burgundy);
+  letter-spacing: -0.01em;
+}
+.product-item-add {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--hd-burgundy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 150ms;
+  padding: 2px;
+}
+.product-item-add:hover { transform: scale(1.15); }
+
+/* ══════════════════════════════════
+   END OF JOURNAL DIVIDER (v3)
+══════════════════════════════════ */
+.end-of-journal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 32px 20px 48px;
+}
+.end-of-journal-rule {
+  width: 1px;
+  height: 48px;
+  background: var(--rule);
+}
+.end-of-journal-text {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--hd-ink-faint);
+}
+
+/* ══════════════════════════════════
+   BOTTOM NAV — 5 items
+══════════════════════════════════ */
+.bottom-nav {
+  height: 68px;
+  background: var(--hd-cream);
+  border-top: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  position: relative;
+  z-index: 10;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  position: relative;
+  transition: opacity 200ms;
+}
+.nav-item:active { opacity: 0.6; }
+.nav-item .nav-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--hd-ink-faint);
+  transition: color 250ms;
+}
+.nav-item.active .nav-icon { color: var(--hd-burgundy); }
+.nav-item .nav-label {
+  font-family: var(--font-sans);
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--hd-ink-faint);
+  transition: color 250ms;
+}
+.nav-item.active .nav-label { color: var(--hd-burgundy); }
+.nav-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 20%;
+  width: 60%;
+  height: 1px;
+  background: var(--hd-burgundy);
+  transform: scaleX(0);
+  transition: transform 300ms var(--ease-ed);
+}
+.nav-item.active::before { transform: scaleX(1); }
+</style>
+</head>
+<body>
+
+<div class="global-grain"></div>
+
+<div class="phone-shell">
+
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>5G &nbsp; 100%</span>
+  </div>
+
+  <!-- ══ TOP BAR ══ -->
+  <header class="top-bar">
+    <button class="top-bar-menu" aria-label="Menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <!-- v3: wordmark breaks to two lines on mobile -->
+    <div class="top-bar-wordmark-wrap">
+      <div class="top-bar-wordmark">Häagen-<br>Dazs</div>
+    </div>
+    <button class="top-bar-bag" aria-label="Bag">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <path d="M16 10a4 4 0 01-8 0"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="scroll-area" id="scrollArea">
+
+    <!-- ══ SEARCH BAR (v3 native_app_view) ══ -->
+    <div class="search-bar">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Discover a flavor…"
+        data-i18n-placeholder="misc.discover_placeholder"
+      />
+    </div>
+
+    <!-- ══ VOLUME / MENU SELECTION HEADER (v3) ══ -->
+    <div class="volume-header">
+      <span class="volume-label" data-i18n="menu.volume">Volume 04</span>
+      <span class="menu-selection-label" data-i18n="menu.selection">Menu Selection</span>
+    </div>
+
+    <!-- ══ CATEGORY TILES — Pints, Mini Cups (v3 2-col grid) ══ -->
+    <div class="category-section">
+      <div class="category-grid">
+
+        <div class="category-tile">
+          <div class="category-tile-img">
+            <img
+              src="photos/DW5RVLkkwA6.jpg"
+              alt="Pints — core collection"
+              loading="eager"
+            />
+          </div>
+          <span class="category-tile-label" data-i18n="category.pints">Pints</span>
+        </div>
+
+        <div class="category-tile">
+          <div class="category-tile-img">
+            <img
+              src="photos/DVxL5rJE5B8.jpg"
+              alt="Mini Cups"
+              loading="eager"
+            />
+          </div>
+          <span class="category-tile-label inactive" data-i18n="category.mini_cups">Mini Cups</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ 01 — THE CLASSICS (2-col product grid, v3) ══ -->
+    <section class="product-section">
+
+      <div class="product-section-header">
+        <span class="product-section-num">01</span>
+        <div class="product-section-rule"></div>
+        <h2 class="product-section-title" data-i18n="section.the_classics">The Classics</h2>
+      </div>
+
+      <div class="product-grid">
+
+        <!-- Product 1: Vanilla Bean Special -->
+        <div class="product-item">
+          <div class="product-item-img">
+            <img src="photos/DXEOeW3E_Ed.jpg" alt="Vanilla Bean Special" loading="lazy" />
+          </div>
+          <div class="product-item-name" data-i18n="product.vanilla_name">Vanilla Bean Special</div>
+          <div class="product-item-volume" data-i18n="product.volume_473">473 ML</div>
+          <div class="product-item-footer">
+            <span class="product-item-price"><span data-price-idr="145000">Rp 145.000</span></span>
+            <button class="product-item-add" aria-label="Add to order">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Product 2: Belgian Chocolate -->
+        <div class="product-item">
+          <div class="product-item-img">
+            <img src="photos/DW5RVLkkwA6.jpg" alt="Belgian Chocolate" loading="lazy" />
+          </div>
+          <div class="product-item-name" data-i18n="product.belgian_name">Belgian Chocolate</div>
+          <div class="product-item-volume" data-i18n="product.volume_473">473 ML</div>
+          <div class="product-item-footer">
+            <span class="product-item-price"><span data-price-idr="145000">Rp 145.000</span></span>
+            <button class="product-item-add" aria-label="Add to order">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Product 3: Strawberry Cheesecake -->
+        <div class="product-item">
+          <div class="product-item-img">
+            <img src="photos/DWI-Kpok62S.jpg" alt="Strawberry Cheesecake" loading="lazy" />
+          </div>
+          <div class="product-item-name" data-i18n="product.strawberry_name">Strawberry Cheesecake</div>
+          <div class="product-item-volume" data-i18n="product.volume_473">473 ML</div>
+          <div class="product-item-footer">
+            <span class="product-item-price"><span data-price-idr="145000">Rp 145.000</span></span>
+            <button class="product-item-add" aria-label="Add to order">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Product 4: Macadamia Nut -->
+        <div class="product-item">
+          <div class="product-item-img">
+            <img src="photos/DWffta7k4Ei.jpg" alt="Macadamia Nut" loading="lazy" />
+          </div>
+          <div class="product-item-name" data-i18n="product.macadamia_name">Macadamia Nut</div>
+          <div class="product-item-volume" data-i18n="product.volume_473">473 ML</div>
+          <div class="product-item-footer">
+            <span class="product-item-price"><span data-price-idr="155000">Rp 155.000</span></span>
+            <button class="product-item-add" aria-label="Add to order">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Product 5: Dulce de Leche -->
+        <div class="product-item">
+          <div class="product-item-img">
+            <img src="photos/DV7gQA2k4-5.jpg" alt="Dulce de Leche" loading="lazy" />
+          </div>
+          <div class="product-item-name" data-i18n="product.dulce_name">Dulce de Leche</div>
+          <div class="product-item-volume" data-i18n="product.volume_473">473 ML</div>
+          <div class="product-item-footer">
+            <span class="product-item-price"><span data-price-idr="145000">Rp 145.000</span></span>
+            <button class="product-item-add" aria-label="Add to order">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Product 6: Salted Caramel -->
+        <div class="product-item">
+          <div class="product-item-img">
+            <img src="photos/DW03wihk-je.jpg" alt="Salted Caramel" loading="lazy" />
+          </div>
+          <div class="product-item-name" data-i18n="product.caramel_name">Salted Caramel</div>
+          <div class="product-item-volume" data-i18n="product.volume_473">473 ML</div>
+          <div class="product-item-footer">
+            <span class="product-item-price"><span data-price-idr="145000">Rp 145.000</span></span>
+            <button class="product-item-add" aria-label="Add to order">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div><!-- /product-grid -->
+
+    </section>
+
+    <!-- ══ END OF JOURNAL (v3 divider) ══ -->
+    <div class="end-of-journal">
+      <div class="end-of-journal-rule"></div>
+      <span class="end-of-journal-text" data-i18n="misc.end_of_journal">End of Journal</span>
+    </div>
+
+  </div><!-- /scroll-area -->
+
+  <!-- ══ BOTTOM NAV — 5 items ══ -->
+  <nav class="bottom-nav" id="bottomNav">
+
+    <button class="nav-item" data-nav="home">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <polyline points="9,22 9,12 15,12 15,22"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.home">Home</span>
+    </button>
+
+    <button class="nav-item active" data-nav="menu">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+        <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.menu">Menu</span>
+    </button>
+
+    <button class="nav-item" data-nav="orders">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14,2 14,8 20,8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.orders">Orders</span>
+    </button>
+
+    <button class="nav-item" data-nav="voucher">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M20 12V6a2 2 0 00-2-2H6a2 2 0 00-2 2v6"/>
+        <path d="M4 12a2 2 0 000 4v2a2 2 0 002 2h12a2 2 0 002-2v-2a2 2 0 000-4"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.voucher">Voucher</span>
+    </button>
+
+    <button class="nav-item" data-nav="account">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span class="nav-label" data-i18n="nav.account">Account</span>
+    </button>
+
+  </nav>
+
+</div><!-- /phone-shell -->
+
+<script>
+(function () {
+  var bottomNav = document.getElementById('bottomNav');
+  if (bottomNav) {
+    bottomNav.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-nav]');
+      if (!btn) return;
+      bottomNav.querySelectorAll('.nav-item').forEach(function (b) {
+        b.classList.remove('active');
+      });
+      btn.classList.add('active');
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

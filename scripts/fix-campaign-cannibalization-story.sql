@@ -1,4 +1,4 @@
--- ============================================
+`-- ============================================
 -- Rollback: v3 swap of Champions holdouts was too aggressive.
 -- The 3 active-holdout users ordered more in the window than
 -- treatment, which inverted incrementality (negative mROI,
@@ -69,3 +69,4 @@ SELECT c.name, c.segment_key,
 FROM public.campaigns c
 JOIN public.v_campaign_incrementality inc ON inc.campaign_id = c.id
 ORDER BY c.segment_key;
+`
