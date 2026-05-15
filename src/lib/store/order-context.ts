@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Database } from '@/lib/supabase/database.types'
 
-type Store = Database['public']['Tables']['stores']['Row']
+type Store = Database['haagen_dazs']['Tables']['stores']['Row']
 
 type OrderMode = 'pickup' | 'delivery' | 'dinein'
 

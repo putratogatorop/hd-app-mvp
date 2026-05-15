@@ -3,7 +3,7 @@ import type { Database } from '@/lib/supabase/database.types'
 import ToggleAvailability from './ToggleAvailability'
 import { Eyebrow } from '@/components/ui'
 
-type MenuItemRow = Database['public']['Tables']['menu_items']['Row']
+type MenuItemRow = Database['haagen_dazs']['Tables']['menu_items']['Row']
 
 export const dynamic = 'force-dynamic'
 
