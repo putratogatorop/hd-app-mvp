@@ -3,8 +3,8 @@ import { redirect } from 'next/navigation'
 import AccountClient from './AccountClient'
 import type { Database } from '@/lib/supabase/database.types'
 
-type ProfileRow = Database['public']['Tables']['profiles']['Row']
-type OrderRow = Database['public']['Tables']['orders']['Row']
+type ProfileRow = Database['haagen_dazs']['Tables']['profiles']['Row']
+type OrderRow = Database['haagen_dazs']['Tables']['orders']['Row']
 
 export default async function AccountPage() {
   const supabase = await createClient()

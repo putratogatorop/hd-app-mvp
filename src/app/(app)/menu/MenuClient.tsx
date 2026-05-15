@@ -9,7 +9,7 @@ import { useCartStore } from '@/lib/store/cart'
 import { useTranslation, useCurrency } from '@/lib/i18n/context'
 import ProductSheet from '@/components/ProductSheet'
 
-type MenuItem = Database['public']['Tables']['menu_items']['Row']
+type MenuItem = Database['haagen_dazs']['Tables']['menu_items']['Row']
 type Category = MenuItem['category'] | 'all'
 
 // Category tiles — image pool (hd-photos)

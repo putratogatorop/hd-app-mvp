@@ -6,7 +6,7 @@ import { useCartStore } from '@/lib/store/cart'
 import { formatRupiah } from '@/lib/utils/format'
 import { Plus } from 'lucide-react'
 
-type MenuItem = Database['public']['Tables']['menu_items']['Row']
+type MenuItem = Database['haagen_dazs']['Tables']['menu_items']['Row']
 
 const categoryEmoji: Record<MenuItem['category'], string> = {
   ice_cream: '🍨',

@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import type { Database } from '@/lib/supabase/database.types'
 import PosTopNav from './PosTopNav'
 
-type ProfileRow = Database['public']['Tables']['profiles']['Row']
+type ProfileRow = Database['haagen_dazs']['Tables']['profiles']['Row']
 
 export default async function PosLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
