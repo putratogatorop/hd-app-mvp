@@ -6,10 +6,10 @@ import { headers } from 'next/headers'
 import type { Database } from '@/lib/supabase/database.types'
 import { sendGiftNotification } from '@/lib/notifications/whatsapp'
 
-type OrderInsert = Database['haagen_dazs']['Tables']['orders']['Insert']
-type OrderItemInsert = Database['haagen_dazs']['Tables']['order_items']['Insert']
-type LoyaltyTxInsert = Database['haagen_dazs']['Tables']['loyalty_transactions']['Insert']
-type ProfileUpdate = Database['haagen_dazs']['Tables']['profiles']['Update']
+type OrderInsert = Database['public']['Tables']['orders']['Insert']
+type OrderItemInsert = Database['public']['Tables']['order_items']['Insert']
+type LoyaltyTxInsert = Database['public']['Tables']['loyalty_transactions']['Insert']
+type ProfileUpdate = Database['public']['Tables']['profiles']['Update']
 
 export interface PlaceOrderItem {
   id: string

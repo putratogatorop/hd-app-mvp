@@ -6,7 +6,7 @@ import type { Database } from '@/lib/supabase/database.types'
 import { useOrderContext } from '@/lib/store/order-context'
 import { Eyebrow } from '@/components/ui'
 
-type Store = Database['haagen_dazs']['Tables']['stores']['Row']
+type Store = Database['public']['Tables']['stores']['Row']
 
 interface StoreSelectorProps {
   stores: Store[]

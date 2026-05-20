@@ -13,9 +13,9 @@ import QRScanner from '@/components/QRScanner'
 import PromoPopup from '@/components/PromoPopup'
 import { getActiveOccasion } from '@/lib/events/occasions'
 
-type ProfileRow = Database['haagen_dazs']['Tables']['profiles']['Row']
-type MenuItem = Database['haagen_dazs']['Tables']['menu_items']['Row']
-type Store = Database['haagen_dazs']['Tables']['stores']['Row']
+type ProfileRow = Database['public']['Tables']['profiles']['Row']
+type MenuItem = Database['public']['Tables']['menu_items']['Row']
+type Store = Database['public']['Tables']['stores']['Row']
 type Profile = Pick<ProfileRow, 'full_name' | 'loyalty_points' | 'tier' | 'referral_code'> & {
   birthday?: string | null
 }

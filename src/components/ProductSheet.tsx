@@ -7,7 +7,7 @@ import type { Database } from '@/lib/supabase/database.types'
 import { useCartStore } from '@/lib/store/cart'
 import { formatRupiah } from '@/lib/utils/format'
 
-type MenuItem = Database['haagen_dazs']['Tables']['menu_items']['Row']
+type MenuItem = Database['public']['Tables']['menu_items']['Row']
 
 interface ProductSheetProps {
   item: MenuItem | null

@@ -5,7 +5,7 @@ import { X, QrCode } from 'lucide-react'
 import type { Database } from '@/lib/supabase/database.types'
 import { useOrderContext } from '@/lib/store/order-context'
 
-type Store = Database['haagen_dazs']['Tables']['stores']['Row']
+type Store = Database['public']['Tables']['stores']['Row']
 
 interface QRScannerProps {
   open: boolean

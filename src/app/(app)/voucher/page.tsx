@@ -3,8 +3,8 @@ import { redirect } from 'next/navigation'
 import type { Database } from '@/lib/supabase/database.types'
 import VoucherClient from './VoucherClient'
 
-type ProfileRow = Database['haagen_dazs']['Tables']['profiles']['Row']
-type VoucherRow = Database['haagen_dazs']['Tables']['vouchers']['Row']
+type ProfileRow = Database['public']['Tables']['profiles']['Row']
+type VoucherRow = Database['public']['Tables']['vouchers']['Row']
 
 export const dynamic = 'force-dynamic'
 

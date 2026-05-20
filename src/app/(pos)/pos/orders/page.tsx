@@ -3,7 +3,7 @@ import type { Database } from '@/lib/supabase/database.types'
 import RealtimeOrderQueue from './RealtimeOrderQueue'
 import { Eyebrow } from '@/components/ui'
 
-type OrderRow = Database['haagen_dazs']['Tables']['orders']['Row']
+type OrderRow = Database['public']['Tables']['orders']['Row']
 
 export const dynamic = 'force-dynamic'
 

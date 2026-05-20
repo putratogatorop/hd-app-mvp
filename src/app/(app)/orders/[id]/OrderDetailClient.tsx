@@ -1107,7 +1107,7 @@ export default function OrderDetailClient({ order: initialOrder }: { order: Orde
         'postgres_changes',
         {
           event: 'UPDATE',
-          schema: 'haagen_dazs',
+          schema: 'public',
           table: 'orders',
           filter: `id=eq.${initialOrder.id}`,
         },
