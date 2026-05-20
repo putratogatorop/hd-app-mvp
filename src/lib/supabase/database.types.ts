@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  haagen_dazs: {
+  public: {
     Tables: {
       profiles: {
         Row: {

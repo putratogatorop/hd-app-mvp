@@ -2,9 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/lib/supabase/database.types'
 import HomeClient from './HomeClient'
 
-type ProfileRow = Database['haagen_dazs']['Tables']['profiles']['Row']
-type MenuItemRow = Database['haagen_dazs']['Tables']['menu_items']['Row']
-type StoreRow = Database['haagen_dazs']['Tables']['stores']['Row']
+type ProfileRow = Database['public']['Tables']['profiles']['Row']
+type MenuItemRow = Database['public']['Tables']['menu_items']['Row']
+type StoreRow = Database['public']['Tables']['stores']['Row']
 
 export default async function HomePage() {
   const supabase = await createClient()

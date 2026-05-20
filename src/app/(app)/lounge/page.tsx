@@ -3,9 +3,9 @@ import { redirect } from 'next/navigation'
 import LoungeClient from './LoungeClient'
 import type { Database } from '@/lib/supabase/database.types'
 
-type ProfileRow = Database['haagen_dazs']['Tables']['profiles']['Row']
-type LoyaltyTx = Database['haagen_dazs']['Tables']['loyalty_transactions']['Row']
-type Order = Database['haagen_dazs']['Tables']['orders']['Row']
+type ProfileRow = Database['public']['Tables']['profiles']['Row']
+type LoyaltyTx = Database['public']['Tables']['loyalty_transactions']['Row']
+type Order = Database['public']['Tables']['orders']['Row']
 
 export interface LoungeProfile {
   full_name: string | null

@@ -16,6 +16,6 @@ export function createAdminClient() {
   }
   return createClient<Database>(url, key, {
     auth: { autoRefreshToken: false, persistSession: false },
-    db: { schema: 'haagen_dazs' },
+    db: { schema: 'public' },
   })
 }

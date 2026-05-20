@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Database } from '@/lib/supabase/database.types'
 
-type OrderRow = Database['haagen_dazs']['Tables']['orders']['Row']
+type OrderRow = Database['public']['Tables']['orders']['Row']
 
 interface OrderItemRow {
   quantity: number
@@ -109,7 +109,7 @@ export default function RealtimeOrderQueue({ initialOrders }: { initialOrders: O
   useEffect(() => {
     const channel = supabase
       .channel('pos-orders')
-      .on('postgres_changes', { event: '*', schema: 'haagen_dazs', table: 'orders' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
         refetch()
       })
       .subscribe()

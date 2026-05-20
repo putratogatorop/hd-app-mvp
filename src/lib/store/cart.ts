@@ -2,8 +2,8 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Database } from '@/lib/supabase/database.types'
 
-type MenuItem = Database['haagen_dazs']['Tables']['menu_items']['Row']
-type Voucher = Database['haagen_dazs']['Tables']['vouchers']['Row']
+type MenuItem = Database['public']['Tables']['menu_items']['Row']
+type Voucher = Database['public']['Tables']['vouchers']['Row']
 
 export interface CartItem {
   item: MenuItem

@@ -8,9 +8,9 @@ import { formatRupiah } from '@/lib/utils/format'
 import type { Database } from '@/lib/supabase/database.types'
 import { Eyebrow } from '@/components/ui'
 
-type Voucher = Database['haagen_dazs']['Tables']['vouchers']['Row']
+type Voucher = Database['public']['Tables']['vouchers']['Row']
 type ProfileData = Pick<
-  Database['haagen_dazs']['Tables']['profiles']['Row'],
+  Database['public']['Tables']['profiles']['Row'],
   'tier' | 'loyalty_points'
 >
 
