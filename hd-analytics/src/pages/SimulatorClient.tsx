@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from 'react'
 import Link from '@/shims/next-link'
 import { useRouter } from '@/shims/next-navigation'
 import AnalyticsTabs from '@/components/AnalyticsTabs'
+import ThemeToggle from '@/components/ThemeToggle'
 import type {
   SegmentBaseline,
   MenuItemMargin,
@@ -20,16 +21,9 @@ import {
 import { recipeFor, type OfferRecipe } from '@/lib/dashboard/campaigns/playbook'
 import type { RFMSegment } from '@/lib/dashboard/real-metrics'
 import { saveDraftAction, issueAction } from '@/lib/dashboard/campaigns/mock-actions'
+import { getDashColors } from '@/lib/dashboard/theme'
+import { useTheme } from '@/lib/dashboard/use-theme'
 import { InfoTip, HowToRead } from './InfoTip'
-
-const COLORS = {
-  bg: '#1C0810', card: '#2A0F1C', cardBorder: 'rgba(184, 146, 42, 0.18)',
-  burgundy: '#650A30', gold: '#B8922A', goldLight: '#F5E6C8',
-  emerald: '#4ECDC4', red: '#D96C6C',
-  textPrimary: '#FEF2E3',
-  textSecondary: 'rgba(254, 242, 227, 0.55)',
-  textMuted: 'rgba(254, 242, 227, 0.35)',
-}
 
 const ALL_SEGMENTS: RFMSegment[] = [
   'Champions', 'Loyal', 'Potential Loyalists', 'New Customers', 'Promising',
@@ -74,6 +68,8 @@ export default function SimulatorClient({
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [status, setStatus] = useState<string>('')
+  const { theme } = useTheme()
+  const colors = getDashColors(theme)
 
   // Segment picker default
   const firstWithCustomers = (ALL_SEGMENTS.find((s) => (segmentCounts[s] ?? 0) > 0) ?? 'At Risk') as RFMSegment
@@ -223,18 +219,21 @@ export default function SimulatorClient({
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
-      <header className="sticky top-0 z-30 backdrop-blur-xl border-b border-[#3d1825]" style={{ backgroundColor: 'rgba(15,15,18,0.85)' }}>
+    <div className="min-h-screen" style={{ backgroundColor: colors.bg }}>
+      <header className="sticky top-0 z-30 backdrop-blur-xl border-b border-dash-card-border" style={{ backgroundColor: colors.headerBg }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-3 pb-2 flex items-center justify-between">
           <div>
-            <span className="eyebrow text-[#B8922A]">HD Analytics · Campaigns</span>
-            <h1 className="font-display text-[1.4rem] tracking-editorial text-[#FEF2E3] leading-tight mt-0.5">
+            <span className="eyebrow text-hd-gold">HD Analytics · Campaigns</span>
+            <h1 className="font-display text-[1.4rem] tracking-editorial text-dash-text leading-tight mt-0.5">
               Design <span className="italic">an offer.</span>
             </h1>
           </div>
-          <Link href="/analytics/campaigns" className="text-xs tracking-wider uppercase" style={{ color: COLORS.textSecondary }}>
-            ← back to list
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/analytics/campaigns" className="text-xs tracking-wider uppercase" style={{ color: colors.textSecondary }}>
+              ← back to list
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2">
           <AnalyticsTabs />
@@ -283,7 +282,7 @@ export default function SimulatorClient({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full bg-transparent border px-3 py-2 text-sm"
-                style={{ borderColor: COLORS.cardBorder, color: COLORS.textPrimary }}
+                style={{ borderColor: colors.cardBorder, color: colors.textPrimary }}
               />
             </Card>
 
@@ -300,22 +299,22 @@ export default function SimulatorClient({
                       onClick={() => onSegmentChange(s)}
                       className="text-left px-3 py-2 transition-all"
                       style={{
-                        border: `1px solid ${selected ? COLORS.gold : COLORS.cardBorder}`,
+                        border: `1px solid ${selected ? colors.gold : colors.cardBorder}`,
                         backgroundColor: selected ? 'rgba(184,146,42,0.1)' : 'transparent',
                       }}
                     >
                       <div className="flex items-baseline justify-between">
-                        <span className="text-[11px] font-semibold tracking-wider uppercase" style={{ color: selected ? COLORS.gold : COLORS.textPrimary }}>
+                        <span className="text-[11px] font-semibold tracking-wider uppercase" style={{ color: selected ? colors.gold : colors.textPrimary }}>
                           {s}
                         </span>
-                        <span className="numeral text-[0.85rem]" style={{ color: COLORS.textSecondary }}>{count}</span>
+                        <span className="numeral text-[0.85rem]" style={{ color: colors.textSecondary }}>{count}</span>
                       </div>
                     </button>
                   )
                 })}
               </div>
-              <p className="text-[11px] mt-3 leading-snug" style={{ color: COLORS.textSecondary }}>
-                <span style={{ color: COLORS.gold }}>Playbook: </span>{recipe.rationale}
+              <p className="text-[11px] mt-3 leading-snug" style={{ color: colors.textSecondary }}>
+                <span style={{ color: colors.gold }}>Playbook: </span>{recipe.rationale}
               </p>
             </Card>
 
@@ -327,9 +326,9 @@ export default function SimulatorClient({
                   value={offerType}
                   onChange={(e) => setOfferType(e.target.value as OfferType)}
                   className="flex-1 bg-transparent border px-3 py-2 text-sm"
-                  style={{ borderColor: COLORS.cardBorder, color: COLORS.textPrimary }}
+                  style={{ borderColor: colors.cardBorder, color: colors.textPrimary }}
                 >
-                  {OFFER_TYPES.map((t) => <option key={t.value} value={t.value} style={{ backgroundColor: COLORS.card }}>{t.label}</option>)}
+                  {OFFER_TYPES.map((t) => <option key={t.value} value={t.value} style={{ backgroundColor: colors.card }}>{t.label}</option>)}
                 </select>
               </Row>
               <Row>
@@ -341,13 +340,13 @@ export default function SimulatorClient({
                   onChange={(e) => setOfferValue(Number(e.target.value))}
                   className="flex-1 accent-[#B8922A]"
                 />
-                <span className="numeral text-sm w-20 text-right" style={{ color: COLORS.textPrimary }}>
+                <span className="numeral text-sm w-20 text-right" style={{ color: colors.textPrimary }}>
                   {offerType.includes('fixed') ? formatRupiah(offerValue) : `${offerValue}%`}
                 </span>
               </Row>
               {!offerType.includes('fixed') && (
-                <div className="flex items-center gap-3 mt-1 text-[10px]" style={{ color: COLORS.textMuted }}>
-                  <span>Break-even at hurdle ≈ <span style={{ color: COLORS.red }}>{breakEvenValue.toFixed(1)}%</span></span>
+                <div className="flex items-center gap-3 mt-1 text-[10px]" style={{ color: colors.textMuted }}>
+                  <span>Break-even at hurdle ≈ <span style={{ color: colors.red }}>{breakEvenValue.toFixed(1)}%</span></span>
                   <span>Recipe max: {recipe.max_discount_pct}%</span>
                 </div>
               )}
@@ -356,7 +355,7 @@ export default function SimulatorClient({
                 <input
                   type="number" value={minOrder} onChange={(e) => setMinOrder(Number(e.target.value))}
                   className="flex-1 bg-transparent border px-3 py-2 text-sm"
-                  style={{ borderColor: COLORS.cardBorder, color: COLORS.textPrimary }}
+                  style={{ borderColor: colors.cardBorder, color: colors.textPrimary }}
                 />
               </Row>
               <Row>
@@ -370,14 +369,14 @@ export default function SimulatorClient({
                         onClick={() => setProductScope(s.value)}
                         className="text-left px-2 py-1.5"
                         style={{
-                          border: `1px solid ${selected ? COLORS.gold : COLORS.cardBorder}`,
+                          border: `1px solid ${selected ? colors.gold : colors.cardBorder}`,
                           backgroundColor: selected ? 'rgba(184,146,42,0.1)' : 'transparent',
                         }}
                       >
-                        <div className="text-[11px] font-semibold" style={{ color: selected ? COLORS.gold : COLORS.textPrimary }}>
+                        <div className="text-[11px] font-semibold" style={{ color: selected ? colors.gold : colors.textPrimary }}>
                           {s.label}
                         </div>
-                        <div className="text-[10px]" style={{ color: COLORS.textSecondary }}>{s.hint}</div>
+                        <div className="text-[10px]" style={{ color: colors.textSecondary }}>{s.hint}</div>
                       </button>
                     )
                   })}
@@ -410,9 +409,9 @@ export default function SimulatorClient({
                 <input
                   type="number" value={cmFloor} onChange={(e) => setCmFloor(Number(e.target.value))}
                   className="flex-1 bg-transparent border px-3 py-2 text-sm"
-                  style={{ borderColor: COLORS.cardBorder, color: COLORS.textPrimary }}
+                  style={{ borderColor: colors.cardBorder, color: colors.textPrimary }}
                 />
-                <span className="text-[10px]" style={{ color: COLORS.textSecondary }}>IDR / order</span>
+                <span className="text-[10px]" style={{ color: colors.textSecondary }}>IDR / order</span>
               </Row>
               <Row>
                 <Label>Lift factor</Label>
@@ -423,7 +422,7 @@ export default function SimulatorClient({
                 />
                 <span className="numeral text-sm w-20 text-right">{liftFactor.toFixed(1)}×</span>
               </Row>
-              <p className="text-[10px] mt-2 leading-snug" style={{ color: COLORS.textMuted }}>
+              <p className="text-[10px] mt-2 leading-snug" style={{ color: colors.textMuted }}>
                 Lift = expected incremental orders per redeemer vs their baseline. Manual slider given our data size;
                 snapshotted into campaign projection for honest actual-vs-projected later.
               </p>
@@ -435,13 +434,13 @@ export default function SimulatorClient({
                 <Label>Start</Label>
                 <input type="date" value={startAt} onChange={(e) => setStartAt(e.target.value)}
                        className="flex-1 bg-transparent border px-3 py-2 text-sm"
-                       style={{ borderColor: COLORS.cardBorder, color: COLORS.textPrimary }} />
+                       style={{ borderColor: colors.cardBorder, color: colors.textPrimary }} />
               </Row>
               <Row>
                 <Label>End</Label>
                 <input type="date" value={endAt} onChange={(e) => setEndAt(e.target.value)}
                        className="flex-1 bg-transparent border px-3 py-2 text-sm"
-                       style={{ borderColor: COLORS.cardBorder, color: COLORS.textPrimary }} />
+                       style={{ borderColor: colors.cardBorder, color: colors.textPrimary }} />
               </Row>
             </Card>
           </section>
@@ -480,12 +479,12 @@ export default function SimulatorClient({
                       : `${formatRupiah(projection.expectedTradeSpend)} vs ${formatRupiah(remainingBudget)} remaining`} />
               {!gates.all_pass && (
                 <div className="mt-3">
-                  <p className="text-[10px] mb-1.5" style={{ color: COLORS.red }}>Justification required:</p>
+                  <p className="text-[10px] mb-1.5" style={{ color: colors.red }}>Justification required:</p>
                   <textarea value={justification} onChange={(e) => setJustification(e.target.value)}
                             placeholder="Why override the gate? (logged)"
                             className="w-full bg-transparent border px-3 py-2 text-xs"
                             rows={3}
-                            style={{ borderColor: COLORS.cardBorder, color: COLORS.textPrimary }} />
+                            style={{ borderColor: colors.cardBorder, color: colors.textPrimary }} />
                 </div>
               )}
             </Card>
@@ -493,17 +492,17 @@ export default function SimulatorClient({
             <div className="flex items-center gap-3">
               <button onClick={onSaveDraft} disabled={isPending}
                       className="flex-1 px-4 py-2.5 text-xs tracking-wider uppercase font-semibold border"
-                      style={{ borderColor: COLORS.cardBorder, color: COLORS.textPrimary }}>
+                      style={{ borderColor: colors.cardBorder, color: colors.textPrimary }}>
                 Save draft
               </button>
               <button onClick={onIssue} disabled={isPending}
                       className="flex-1 px-4 py-2.5 text-xs tracking-wider uppercase font-semibold"
-                      style={{ backgroundColor: COLORS.gold, color: COLORS.bg }}>
+                      style={{ backgroundColor: colors.gold, color: '#1C0810' }}>
                 {isPending ? 'Issuing…' : 'Issue campaign'}
               </button>
             </div>
             {status && (
-              <p className="text-[11px]" style={{ color: status.startsWith('error') ? COLORS.red : COLORS.emerald }}>{status}</p>
+              <p className="text-[11px]" style={{ color: status.startsWith('error') ? colors.red : colors.emerald }}>{status}</p>
             )}
           </aside>
         </div>
@@ -513,47 +512,57 @@ export default function SimulatorClient({
 }
 
 function Card({ children, highlight }: { children: React.ReactNode; highlight?: boolean }) {
+  const { theme } = useTheme()
+  const colors = getDashColors(theme)
   return (
     <div className="p-5" style={{
-      backgroundColor: COLORS.card,
-      border: `1px solid ${highlight ? COLORS.gold : COLORS.cardBorder}`,
+      backgroundColor: colors.card,
+      border: `1px solid ${highlight ? colors.gold : colors.cardBorder}`,
     }}>{children}</div>
   )
 }
 function H3({ children }: { children: React.ReactNode }) {
-  return <h3 className="font-display text-[1rem] text-[#FEF2E3] mb-3">{children}</h3>
+  return <h3 className="font-display text-[1rem] text-dash-text mb-3">{children}</h3>
 }
 function Row({ children }: { children: React.ReactNode }) {
   return <div className="flex items-center gap-3 mb-2">{children}</div>
 }
 function Label({ children }: { children: React.ReactNode }) {
-  return <span className="text-[11px] tracking-wider uppercase w-20" style={{ color: COLORS.textSecondary }}>{children}</span>
+  const { theme } = useTheme()
+  const colors = getDashColors(theme)
+  return <span className="text-[11px] tracking-wider uppercase w-20" style={{ color: colors.textSecondary }}>{children}</span>
 }
 function KV({ k, v, hint, tone, highlight, tip }: {
   k: string; v: string; hint?: string; tone?: 'dim' | 'good' | 'bad'; highlight?: boolean
   tip?: keyof typeof import('./glossary').GLOSSARY
 }) {
-  const color = tone === 'good' ? COLORS.emerald : tone === 'bad' ? COLORS.red : tone === 'dim' ? COLORS.textSecondary : COLORS.textPrimary
+  const { theme } = useTheme()
+  const colors = getDashColors(theme)
+  const color = tone === 'good' ? colors.emerald : tone === 'bad' ? colors.red : tone === 'dim' ? colors.textSecondary : colors.textPrimary
   return (
     <div className="flex items-baseline justify-between py-1">
-      <span className="text-[11px] inline-flex items-center gap-1" style={{ color: COLORS.textSecondary }}>
+      <span className="text-[11px] inline-flex items-center gap-1" style={{ color: colors.textSecondary }}>
         {k}{tip && <InfoTip term={tip} />}
       </span>
       <span className={`numeral ${highlight ? 'text-[1.1rem]' : 'text-sm'}`} style={{ color }}>
-        {v} {hint && <span className="text-[10px] ml-2" style={{ color: COLORS.textMuted }}>{hint}</span>}
+        {v} {hint && <span className="text-[10px] ml-2" style={{ color: colors.textMuted }}>{hint}</span>}
       </span>
     </div>
   )
 }
 function Hr() {
-  return <div style={{ borderTop: `1px solid ${COLORS.cardBorder}` }} className="my-2" />
+  const { theme } = useTheme()
+  const colors = getDashColors(theme)
+  return <div style={{ borderTop: `1px solid ${colors.cardBorder}` }} className="my-2" />
 }
 function Gate({ label, pass, detail }: { label: string; pass: boolean; detail: string }) {
+  const { theme } = useTheme()
+  const colors = getDashColors(theme)
   return (
     <div className="flex items-center gap-2 py-1">
-      <span style={{ color: pass ? COLORS.emerald : COLORS.red }}>{pass ? '✓' : '✗'}</span>
-      <span className="text-[11px]" style={{ color: COLORS.textPrimary }}>{label}</span>
-      <span className="text-[10px] ml-auto" style={{ color: COLORS.textMuted }}>{detail}</span>
+      <span style={{ color: pass ? colors.emerald : colors.red }}>{pass ? '✓' : '✗'}</span>
+      <span className="text-[11px]" style={{ color: colors.textPrimary }}>{label}</span>
+      <span className="text-[10px] ml-auto" style={{ color: colors.textMuted }}>{detail}</span>
     </div>
   )
 }

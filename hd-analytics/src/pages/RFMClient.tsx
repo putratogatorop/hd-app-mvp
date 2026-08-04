@@ -6,20 +6,11 @@ import {
   ResponsiveContainer, Cell,
 } from 'recharts'
 import AnalyticsTabs from '@/components/AnalyticsTabs'
+import ThemeToggle from '@/components/ThemeToggle'
 import FilterBar, { type FilterBarStore } from '@/components/analytics/FilterBar'
 import type { CustomerRFM, RFMData, RFMSegment, ScoreBand } from '@/lib/dashboard/real-metrics'
-
-// ── Theme ──────────────────────────────────────────────────────────────
-const DC = {
-  bg:            '#1C0810',
-  card:          '#2A0F1C',
-  border:        'rgba(184,146,42,0.18)',
-  divider:       'rgba(254,242,227,0.08)',
-  gold:          '#B8922A',
-  textPrimary:   '#FEF2E3',
-  textSecondary: 'rgba(254,242,227,0.65)',
-  textMuted:     'rgba(254,242,227,0.4)',
-}
+import { getDashColors } from '@/lib/dashboard/theme'
+import { useTheme } from '@/lib/dashboard/use-theme'
 
 const SEGMENT_COLORS: Record<RFMSegment, string> = {
   'Champions':           '#B8922A',
@@ -72,11 +63,13 @@ function bandLabel(band: ScoreBand, score: number, unit: 'days' | 'orders' | 'mo
 
 // ── Score pip visual ───────────────────────────────────────────────────
 function ScorePip({ score }: { score: number }) {
+  const { theme } = useTheme()
+  const DC = getDashColors(theme)
   return (
     <span className="inline-flex gap-[3px] items-center">
       {[1,2,3,4,5].map(i => (
         <span key={i} className="inline-block w-1.5 h-1.5 rounded-full"
-          style={{ backgroundColor: i <= score ? DC.gold : 'rgba(254,242,227,0.15)' }} />
+          style={{ backgroundColor: i <= score ? DC.gold : DC.divider }} />
       ))}
     </span>
   )
@@ -90,6 +83,8 @@ type SegmentBubble = {
 
 // ── Scatter tooltip ────────────────────────────────────────────────────
 function ScatterTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: SegmentBubble }> }) {
+  const { theme } = useTheme()
+  const DC = getDashColors(theme)
   if (!active || !payload?.length) return null
   const s = payload[0].payload
   return (
@@ -163,12 +158,15 @@ export default function RFMClient({ data, stores }: { data: RFMData; stores: Fil
     day: '2-digit', month: 'short', year: 'numeric',
   })
 
+  const { theme } = useTheme()
+  const DC = getDashColors(theme)
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: DC.bg, color: DC.textPrimary }}>
 
       {/* ── Header ── */}
       <header className="sticky top-0 z-30 backdrop-blur-xl"
-        style={{ backgroundColor: 'rgba(28,8,16,0.92)', borderBottom: `1px solid ${DC.divider}` }}>
+        style={{ backgroundColor: DC.headerBg, borderBottom: `1px solid ${DC.divider}` }}>
         <div className="max-w-7xl mx-auto px-5 sm:px-8 pt-5 pb-0">
           <div className="flex items-start justify-between flex-wrap gap-3">
             <div>
@@ -191,6 +189,7 @@ export default function RFMClient({ data, stores }: { data: RFMData; stores: Fil
                 <span style={{ color: DC.textMuted }}>Method&nbsp;</span>
                 <span style={{ color: DC.gold }}>Quintile scoring</span>
               </div>
+              <ThemeToggle />
             </div>
           </div>
           <div className="mt-5"><AnalyticsTabs /></div>
@@ -565,7 +564,7 @@ export default function RFMClient({ data, stores }: { data: RFMData; stores: Fil
                         </div>
                         {row.map((val, colIdx) => {
                           const intensity = val / maxCell
-                          const bg = intensity === 0 ? 'rgba(42,15,28,0.4)' : `rgba(184,146,42,${0.1 + intensity * 0.9})`
+                          const bg = intensity === 0 ? DC.divider : `rgba(184,146,42,${0.1 + intensity * 0.9})`
                           return (
                             <div key={colIdx}
                               className="aspect-square flex items-center justify-center numeral text-[0.75rem] rounded-sm hover:scale-105 transition-transform cursor-default"
@@ -649,7 +648,7 @@ export default function RFMClient({ data, stores }: { data: RFMData; stores: Fil
                   <tr><td colSpan={9} className="py-10 text-center font-display italic" style={{ color: DC.textMuted }}>No customers match.</td></tr>
                 ) : filtered.map(c => (
                   <tr key={c.userId} style={{ borderBottom: `1px solid ${DC.divider}` }}
-                    className="transition-colors hover:bg-[rgba(255,255,255,0.02)]">
+                    className="transition-colors hover:bg-dash-card-hover">
                     <td className="py-3 px-3">
                       <p className="font-display" style={{ color: DC.textPrimary }}>{c.name}</p>
                       <p className="numeral text-[0.65rem] mt-0.5" style={{ color: DC.textMuted }}>{c.email}</p>

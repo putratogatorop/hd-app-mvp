@@ -28,7 +28,7 @@ export default function AnalyticsTabs() {
             <span
               className="numeral text-[0.65rem] tracking-widest transition-colors"
               style={{
-                color: active ? '#B8922A' : 'rgba(254,242,227,0.3)',
+                color: active ? '#B8922A' : 'var(--dash-text-muted)',
               }}
             >
               {t.num}
@@ -38,7 +38,7 @@ export default function AnalyticsTabs() {
                 active ? 'italic' : ''
               }`}
               style={{
-                color: active ? '#FEF2E3' : 'rgba(254,242,227,0.55)',
+                color: active ? 'var(--dash-text)' : 'var(--dash-text-secondary)',
               }}
             >
               {t.label}

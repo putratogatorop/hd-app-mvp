@@ -28,6 +28,40 @@ html, body {
   font-family: var(--font-sans);
 }
 
+/* Dashboard theme tokens — mirrors src/lib/dashboard/theme.ts LIGHT/DARK.
+   Light is the default; [data-theme="dark"] is applied by the toggle. */
+[data-theme="light"] {
+  --dash-bg: #F7F7F9;
+  --dash-card: #FFFFFF;
+  --dash-card-hover: #F3F4F6;
+  --dash-header-bg: rgba(255, 255, 255, 0.85);
+  --dash-border: rgba(20, 20, 20, 0.08);
+  --dash-border-strong: rgba(20, 20, 20, 0.14);
+  --dash-card-border: #E5E7EB;
+  --dash-divider: rgba(20, 20, 20, 0.06);
+  --dash-text: #1A1414;
+  --dash-text-secondary: #6B7280;
+  --dash-text-muted: #9CA3AF;
+  --dash-on-accent: #FFFFFF;
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --dash-bg: #1C0810;
+  --dash-card: #2A0F1C;
+  --dash-card-hover: #341424;
+  --dash-header-bg: rgba(28, 8, 16, 0.88);
+  --dash-border: rgba(184, 146, 42, 0.18);
+  --dash-border-strong: rgba(184, 146, 42, 0.35);
+  --dash-card-border: #3d1825;
+  --dash-divider: rgba(254, 242, 227, 0.08);
+  --dash-text: #FEF2E3;
+  --dash-text-secondary: rgba(254, 242, 227, 0.65);
+  --dash-text-muted: rgba(254, 242, 227, 0.4);
+  --dash-on-accent: #FEF2E3;
+  color-scheme: dark;
+}
+
 body {
   font-feature-settings: "ss01", "ss02", "cv11";
 }
