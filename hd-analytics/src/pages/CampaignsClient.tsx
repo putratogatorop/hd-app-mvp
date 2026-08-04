@@ -7,6 +7,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from 'recharts'
 import AnalyticsTabs from '@/components/AnalyticsTabs'
+import ThemeToggle from '@/components/ThemeToggle'
 import type {
   CampaignOutcome,
   SegmentBaseline,
@@ -14,6 +15,8 @@ import type {
 } from '@/lib/dashboard/semantic/types'
 import { recipeFor } from '@/lib/dashboard/campaigns/playbook'
 import type { RFMSegment } from '@/lib/dashboard/real-metrics'
+import { getDashColors } from '@/lib/dashboard/theme'
+import { useTheme } from '@/lib/dashboard/use-theme'
 import { InfoTip, HowToRead } from './InfoTip'
 
 type WindowPreset = '7d' | '30d' | '90d' | '180d' | 'all'
@@ -43,21 +46,7 @@ function campaignOverlapsWindow(o: CampaignOutcome, since: Date | null): boolean
   return false
 }
 
-const COLORS = {
-  bg: '#1C0810',
-  card: '#2A0F1C',
-  cardBorder: 'rgba(184, 146, 42, 0.18)',
-  burgundy: '#650A30',
-  burgundyLight: '#801237',
-  gold: '#B8922A',
-  goldLight: '#F5E6C8',
-  emerald: '#4ECDC4',
-  red: '#D96C6C',
-  textPrimary: '#FEF2E3',
-  textSecondary: 'rgba(254, 242, 227, 0.55)',
-  textMuted: 'rgba(254, 242, 227, 0.35)',
-  gridLine: 'rgba(254, 242, 227, 0.08)',
-}
+type DashColors = ReturnType<typeof getDashColors>
 
 function formatRupiah(n: number): string {
   const abs = Math.abs(n)
@@ -72,19 +61,19 @@ function formatPct(n: number, decimals = 1): string {
   return `${(n * 100).toFixed(decimals)}%`
 }
 
-function mroiColor(mroi: number, hurdle: number): string {
-  if (mroi >= hurdle) return COLORS.emerald
-  if (mroi >= hurdle * 0.8) return COLORS.gold
-  return COLORS.red
+function mroiColor(mroi: number, hurdle: number, colors: DashColors): string {
+  if (mroi >= hurdle) return colors.emerald
+  if (mroi >= hurdle * 0.8) return colors.gold
+  return colors.red
 }
 
-function statusChip(status: string): { label: string; color: string } {
+function statusChip(status: string, colors: DashColors): { label: string; color: string } {
   switch (status) {
-    case 'draft':     return { label: 'DRAFT',     color: COLORS.textSecondary }
-    case 'active':    return { label: 'ACTIVE',    color: COLORS.emerald }
-    case 'completed': return { label: 'COMPLETED', color: COLORS.gold }
-    case 'archived':  return { label: 'ARCHIVED',  color: COLORS.textMuted }
-    default:          return { label: status.toUpperCase(), color: COLORS.textSecondary }
+    case 'draft':     return { label: 'DRAFT',     color: colors.textSecondary }
+    case 'active':    return { label: 'ACTIVE',    color: colors.emerald }
+    case 'completed': return { label: 'COMPLETED', color: colors.gold }
+    case 'archived':  return { label: 'ARCHIVED',  color: colors.textMuted }
+    default:          return { label: status.toUpperCase(), color: colors.textSecondary }
   }
 }
 
@@ -104,6 +93,8 @@ export default function CampaignsClient({
 }) {
   const router = useRouter()
   const sp = useSearchParams()
+  const { theme } = useTheme()
+  const colors = getDashColors(theme)
 
   const baselineBySegment = useMemo(() => {
     const m = new Map<string, SegmentBaseline>()
@@ -180,21 +171,24 @@ export default function CampaignsClient({
     }))
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
-      <header className="sticky top-0 z-30 backdrop-blur-xl border-b border-[#3d1825]" style={{ backgroundColor: 'rgba(15,15,18,0.85)' }}>
+    <div className="min-h-screen" style={{ backgroundColor: colors.bg }}>
+      <header className="sticky top-0 z-30 backdrop-blur-xl border-b border-dash-card-border" style={{ backgroundColor: colors.headerBg }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-3 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <span className="eyebrow text-[#B8922A]">HD Analytics</span>
-            <h1 className="font-display text-[1.6rem] tracking-editorial text-[#FEF2E3] leading-tight mt-0.5">
+            <span className="eyebrow text-hd-gold">HD Analytics</span>
+            <h1 className="font-display text-[1.6rem] tracking-editorial text-dash-text leading-tight mt-0.5">
               Promotional investment, <span className="italic">live.</span>
             </h1>
           </div>
-          <Link
-            href="/analytics/campaigns/new"
-            className="self-start sm:self-auto px-4 py-2 bg-[#B8922A] text-[#1C0810] text-xs font-semibold tracking-wider uppercase hover:bg-[#F5E6C8] transition-colors"
-          >
-            + New Campaign
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/analytics/campaigns/new"
+              className="self-start sm:self-auto px-4 py-2 bg-hd-gold text-[#1C0810] text-xs font-semibold tracking-wider uppercase hover:bg-hd-gold-light transition-colors"
+            >
+              + New Campaign
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2">
           <AnalyticsTabs />
@@ -218,7 +212,7 @@ export default function CampaignsClient({
             </li>
             <li>
               Hover the <span className="inline-flex items-center justify-center w-3.5 h-3.5 text-[9px] font-semibold rounded-full"
-                style={{ border: '1px solid rgba(184,146,42,0.35)', color: 'rgba(254,242,227,0.55)' }}>?</span>
+                style={{ border: '1px solid rgba(184,146,42,0.35)', color: 'var(--dash-text-muted)' }}>?</span>
               next to any term for a plain-language explanation.
             </li>
             <li>
@@ -239,7 +233,7 @@ export default function CampaignsClient({
 
         {/* Window picker */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="eyebrow" style={{ color: COLORS.textSecondary }}>Showing campaigns active in:</span>
+          <span className="eyebrow" style={{ color: colors.textSecondary }}>Showing campaigns active in:</span>
           {WINDOW_OPTIONS.map((opt) => {
             const active = opt.value === windowPreset
             return (
@@ -248,23 +242,23 @@ export default function CampaignsClient({
                 onClick={() => onWindowChange(opt.value)}
                 className="text-[11px] tracking-wider uppercase px-3 py-1.5 transition-colors"
                 style={{
-                  color: active ? COLORS.bg : COLORS.textPrimary,
-                  backgroundColor: active ? COLORS.gold : 'transparent',
-                  border: `1px solid ${active ? COLORS.gold : COLORS.cardBorder}`,
+                  color: active ? colors.bg : colors.textPrimary,
+                  backgroundColor: active ? colors.gold : 'transparent',
+                  border: `1px solid ${active ? colors.gold : colors.cardBorder}`,
                 }}
               >
                 {opt.label}
               </button>
             )
           })}
-          <span className="text-[11px] ml-auto" style={{ color: COLORS.textMuted }}>
+          <span className="text-[11px] ml-auto" style={{ color: colors.textMuted }}>
             {outcomes.length} of {allOutcomes.length} campaigns in view
           </span>
         </div>
 
         {/* Exec KPI strip */}
         <section>
-          <h2 className="eyebrow mb-3" style={{ color: COLORS.textSecondary }}>Exec command center</h2>
+          <h2 className="eyebrow mb-3" style={{ color: colors.textSecondary }}>Exec command center</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             <KPI label="Active campaigns" value={activeCampaigns.toString()} />
             <KPI
@@ -272,57 +266,57 @@ export default function CampaignsClient({
               tip="trade_spend"
               value={formatRupiah(mtdSpend)}
               sub={`${formatPct(mtdPacePct, 0)} of ${formatRupiah(mtdBudget)}`}
-              subColor={mtdPacePct > 0.9 ? COLORS.red : mtdPacePct > 0.6 ? COLORS.gold : COLORS.emerald}
+              subColor={mtdPacePct > 0.9 ? colors.red : mtdPacePct > 0.6 ? colors.gold : colors.emerald}
             />
             <KPI label="Incremental revenue" tip="incremental_revenue" value={formatRupiah(mtdIncrementalRevenue)} />
             <KPI
               label="Blended mROI"
               tip="mroi"
               value={`${blendedMroi.toFixed(2)}×`}
-              subColor={blendedMroi >= 1.5 ? COLORS.emerald : blendedMroi >= 1.0 ? COLORS.gold : COLORS.red}
+              subColor={blendedMroi >= 1.5 ? colors.emerald : blendedMroi >= 1.0 ? colors.gold : colors.red}
             />
             <KPI label="Redemption liability" tip="redemption_liability" value={formatRupiah(totalLiability)} />
             <KPI
               label="Avg cannibalization"
               tip="cannibalization"
               value={formatPct(avgCanni)}
-              subColor={avgCanni > 0.6 ? COLORS.red : avgCanni > 0.4 ? COLORS.gold : COLORS.emerald}
+              subColor={avgCanni > 0.6 ? colors.red : avgCanni > 0.4 ? colors.gold : colors.emerald}
             />
           </div>
         </section>
 
         {/* Trade spend pacing */}
         {pacingChart.length > 0 && (
-          <section style={{ backgroundColor: COLORS.card, border: `1px solid ${COLORS.cardBorder}` }} className="p-5">
+          <section style={{ backgroundColor: colors.card, border: `1px solid ${colors.cardBorder}` }} className="p-5">
             <div className="flex items-baseline justify-between mb-4">
-              <h3 className="font-display text-[1.1rem] text-[#FEF2E3]">Trade-spend pacing — this month</h3>
-              <span className="text-xs" style={{ color: COLORS.textSecondary }}>budget vs MTD spend per segment</span>
+              <h3 className="font-display text-[1.1rem] text-dash-text">Trade-spend pacing — this month</h3>
+              <span className="text-xs" style={{ color: colors.textSecondary }}>budget vs MTD spend per segment</span>
             </div>
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={pacingChart} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={COLORS.gridLine} />
-                <XAxis dataKey="segment" tick={{ fill: COLORS.textSecondary, fontSize: 10 }} />
-                <YAxis tick={{ fill: COLORS.textSecondary, fontSize: 10 }} tickFormatter={formatRupiah} />
-                <Tooltip contentStyle={{ backgroundColor: COLORS.card, border: `1px solid ${COLORS.cardBorder}`, color: COLORS.textPrimary }} formatter={(v) => formatRupiah(Number(v))} />
-                <Bar dataKey="Budget" fill={COLORS.gold} fillOpacity={0.25} />
-                <Bar dataKey="Spend" fill={COLORS.gold} />
+                <CartesianGrid strokeDasharray="3 3" stroke={colors.divider} />
+                <XAxis dataKey="segment" tick={{ fill: colors.textSecondary, fontSize: 10 }} />
+                <YAxis tick={{ fill: colors.textSecondary, fontSize: 10 }} tickFormatter={formatRupiah} />
+                <Tooltip contentStyle={{ backgroundColor: colors.card, border: `1px solid ${colors.cardBorder}`, color: colors.textPrimary }} formatter={(v) => formatRupiah(Number(v))} />
+                <Bar dataKey="Budget" fill={colors.gold} fillOpacity={0.25} />
+                <Bar dataKey="Spend" fill={colors.gold} />
               </BarChart>
             </ResponsiveContainer>
           </section>
         )}
 
         {/* Campaign list */}
-        <section style={{ backgroundColor: COLORS.card, border: `1px solid ${COLORS.cardBorder}` }} className="p-5">
-          <h3 className="font-display text-[1.1rem] text-[#FEF2E3] mb-3">Campaigns</h3>
+        <section style={{ backgroundColor: colors.card, border: `1px solid ${colors.cardBorder}` }} className="p-5">
+          <h3 className="font-display text-[1.1rem] text-dash-text mb-3">Campaigns</h3>
           {outcomes.length === 0 ? (
-            <p className="text-sm py-8 text-center" style={{ color: COLORS.textSecondary }}>
-              No campaigns yet. <Link href="/analytics/campaigns/new" className="text-[#B8922A] underline">Design the first one</Link>.
+            <p className="text-sm py-8 text-center" style={{ color: colors.textSecondary }}>
+              No campaigns yet. <Link href="/analytics/campaigns/new" className="text-hd-gold underline">Design the first one</Link>.
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ borderBottom: `1px solid ${COLORS.cardBorder}` }}>
+                  <tr style={{ borderBottom: `1px solid ${colors.cardBorder}` }}>
                     <Th>Name</Th>
                     <Th tip="segment">Segment</Th>
                     <Th>Status</Th>
@@ -337,17 +331,17 @@ export default function CampaignsClient({
                 </thead>
                 <tbody>
                   {outcomes.map((o) => {
-                    const sc = statusChip(o.status)
+                    const sc = statusChip(o.status, colors)
                     const mroi = Number(o.mroi)
                     const canni = Number(o.cannibalization_ratio)
                     return (
-                      <tr key={o.campaign_id} className="hover:bg-[rgba(184,146,42,0.05)] transition-colors" style={{ borderBottom: `1px solid ${COLORS.gridLine}` }}>
+                      <tr key={o.campaign_id} className="hover:bg-[rgba(184,146,42,0.05)] transition-colors" style={{ borderBottom: `1px solid ${colors.divider}` }}>
                         <Td>
-                          <Link href={`/analytics/campaigns/${o.campaign_id}`} className="text-[#FEF2E3] hover:text-[#B8922A] transition-colors">
+                          <Link href={`/analytics/campaigns/${o.campaign_id}`} className="text-dash-text hover:text-hd-gold transition-colors">
                             {o.name}
                           </Link>
                         </Td>
-                        <Td><span className="text-[11px] px-2 py-0.5 rounded" style={{ color: COLORS.gold, backgroundColor: 'rgba(184,146,42,0.1)' }}>{o.segment_key}</span></Td>
+                        <Td><span className="text-[11px] px-2 py-0.5 rounded" style={{ color: colors.gold, backgroundColor: 'rgba(184,146,42,0.1)' }}>{o.segment_key}</span></Td>
                         <Td><span className="text-[10px] font-semibold tracking-wider" style={{ color: sc.color }}>{sc.label}</span></Td>
                         <Td align="right">{o.issued}</Td>
                         <Td align="right">{o.redeemed}</Td>
@@ -355,12 +349,12 @@ export default function CampaignsClient({
                         <Td align="right">{formatRupiah(Number(o.actual_trade_spend))}</Td>
                         <Td align="right">{formatRupiah(Number(o.incremental_cm))}</Td>
                         <Td align="right">
-                          <span className="font-semibold" style={{ color: mroiColor(mroi, Number(o.mroi_hurdle)) }}>
+                          <span className="font-semibold" style={{ color: mroiColor(mroi, Number(o.mroi_hurdle), colors) }}>
                             {mroi.toFixed(2)}×
                           </span>
                         </Td>
                         <Td align="right">
-                          <span style={{ color: canni > 0.6 ? COLORS.red : canni > 0.4 ? COLORS.gold : COLORS.textSecondary }}>
+                          <span style={{ color: canni > 0.6 ? colors.red : canni > 0.4 ? colors.gold : colors.textSecondary }}>
                             {formatPct(canni, 0)}
                           </span>
                         </Td>
@@ -374,28 +368,28 @@ export default function CampaignsClient({
         </section>
 
         {/* Segment health grid */}
-        <section style={{ backgroundColor: COLORS.card, border: `1px solid ${COLORS.cardBorder}` }} className="p-5">
+        <section style={{ backgroundColor: colors.card, border: `1px solid ${colors.cardBorder}` }} className="p-5">
           <div className="flex items-baseline justify-between mb-4">
-            <h3 className="font-display text-[1.1rem] text-[#FEF2E3]">Segment health & recommended plays</h3>
-            <span className="text-xs" style={{ color: COLORS.textSecondary }}>from per-segment playbook</span>
+            <h3 className="font-display text-[1.1rem] text-dash-text">Segment health & recommended plays</h3>
+            <span className="text-xs" style={{ color: colors.textSecondary }}>from per-segment playbook</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
             {segmentHealth.map((s) => (
-              <div key={s.segment} className="p-3" style={{ border: `1px solid ${COLORS.cardBorder}`, backgroundColor: 'rgba(28,8,16,0.4)' }}>
+              <div key={s.segment} className="p-3" style={{ border: `1px solid ${colors.cardBorder}`, backgroundColor: colors.cardHover }}>
                 <div className="flex items-baseline justify-between mb-2">
-                  <span className="text-[10px] font-semibold tracking-wider uppercase" style={{ color: COLORS.gold }}>
+                  <span className="text-[10px] font-semibold tracking-wider uppercase" style={{ color: colors.gold }}>
                     {s.segment}
                   </span>
-                  <span className="numeral text-[0.9rem] text-[#FEF2E3]">{s.count}</span>
+                  <span className="numeral text-[0.9rem] text-dash-text">{s.count}</span>
                 </div>
-                <p className="text-[11px] mb-2 leading-snug" style={{ color: COLORS.textSecondary }}>
+                <p className="text-[11px] mb-2 leading-snug" style={{ color: colors.textSecondary }}>
                   {s.recipeIntent}
                 </p>
-                <div className="flex items-center gap-3 text-[10px]" style={{ color: COLORS.textMuted }}>
+                <div className="flex items-center gap-3 text-[10px]" style={{ color: colors.textMuted }}>
                   <span>AOV {formatRupiah(s.aov)}</span>
                   <span>Max {s.maxDiscount}%</span>
                   {s.avgMroi > 0 && (
-                    <span style={{ color: mroiColor(s.avgMroi, 1.5) }}>hist {s.avgMroi.toFixed(1)}×</span>
+                    <span style={{ color: mroiColor(s.avgMroi, 1.5, colors) }}>hist {s.avgMroi.toFixed(1)}×</span>
                   )}
                 </div>
               </div>
@@ -412,15 +406,17 @@ function KPI({ label, value, sub, subColor, tip }: {
   label: string; value: string; sub?: string; subColor?: string;
   tip?: keyof typeof import('./glossary').GLOSSARY
 }) {
+  const { theme } = useTheme()
+  const colors = getDashColors(theme)
   return (
-    <div className="p-4" style={{ backgroundColor: COLORS.card, border: `1px solid ${COLORS.cardBorder}` }}>
+    <div className="p-4" style={{ backgroundColor: colors.card, border: `1px solid ${colors.cardBorder}` }}>
       <div className="flex items-center gap-1.5 mb-2">
-        <p className="eyebrow" style={{ color: '#b8a89a' }}>{label}</p>
+        <p className="eyebrow" style={{ color: colors.textSecondary }}>{label}</p>
         {tip && <InfoTip term={tip} />}
       </div>
-      <p className="numeral text-[1.4rem] text-[#FEF2E3] leading-none">{value}</p>
+      <p className="numeral text-[1.4rem] text-dash-text leading-none">{value}</p>
       {sub && (
-        <p className="text-[10px] mt-1.5" style={{ color: subColor ?? COLORS.textSecondary }}>{sub}</p>
+        <p className="text-[10px] mt-1.5" style={{ color: subColor ?? colors.textSecondary }}>{sub}</p>
       )}
     </div>
   )
@@ -430,8 +426,10 @@ function Th({ children, align, tip }: {
   children: React.ReactNode; align?: 'right' | 'left';
   tip?: keyof typeof import('./glossary').GLOSSARY
 }) {
+  const { theme } = useTheme()
+  const colors = getDashColors(theme)
   return (
-    <th className={`text-[10px] font-semibold tracking-wider uppercase px-2 py-2 ${align === 'right' ? 'text-right' : 'text-left'}`} style={{ color: COLORS.textMuted }}>
+    <th className={`text-[10px] font-semibold tracking-wider uppercase px-2 py-2 ${align === 'right' ? 'text-right' : 'text-left'}`} style={{ color: colors.textMuted }}>
       <span className={`inline-flex items-center gap-1 ${align === 'right' ? 'flex-row-reverse' : ''}`}>
         {children}{tip && <InfoTip term={tip} />}
       </span>
@@ -439,8 +437,10 @@ function Th({ children, align, tip }: {
   )
 }
 function Td({ children, align }: { children: React.ReactNode; align?: 'right' | 'left' }) {
+  const { theme } = useTheme()
+  const colors = getDashColors(theme)
   return (
-    <td className={`px-2 py-2.5 ${align === 'right' ? 'text-right' : 'text-left'}`} style={{ color: COLORS.textPrimary }}>
+    <td className={`px-2 py-2.5 ${align === 'right' ? 'text-right' : 'text-left'}`} style={{ color: colors.textPrimary }}>
       {children}
     </td>
   )

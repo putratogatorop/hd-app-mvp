@@ -1,46 +1,55 @@
 /**
- * Shared editorial theme for the analytics surfaces.
- * Keeps the dark "maison after hours" feel but uses HD brand tokens
- * so charts/cards align with the customer app aesthetic.
+ * Shared theme for the analytics surfaces. Light (neutral SaaS white) is the
+ * default; dark ("maison after hours" burgundy noir) is available as a toggle.
+ * Burgundy/gold/emerald/red are brand accents and stay constant across both
+ * themes — only surface and text colors change.
  */
 
-export const DASH_COLORS = {
-  // Surfaces
-  bg: '#1C0810',            // warm burgundy-tinted noir
-  bgSoft: '#25121A',        // slightly raised bg for gradients
-  card: '#2A0F1C',          // card surface
-  cardHover: '#341424',
-  border: 'rgba(184, 146, 42, 0.18)',
-  borderStrong: 'rgba(184, 146, 42, 0.35)',
-  divider: 'rgba(254, 242, 227, 0.08)',
+export type ThemeName = 'light' | 'dark'
 
-  // HD brand
+const ACCENTS = {
   burgundy: '#650A30',
   burgundyLight: '#801237',
-  burgundyDark: '#40061E',
   gold: '#B8922A',
   goldLight: '#F5E6C8',
-  cream: '#FEF2E3',
-
-  // Text
-  textPrimary: '#FEF2E3',   // cream
-  textSecondary: 'rgba(254, 242, 227, 0.65)',
-  textMuted: 'rgba(254, 242, 227, 0.4)',
-
-  // Status
   emerald: '#4ECDC4',
   emeraldSoft: 'rgba(78, 205, 196, 0.15)',
   red: '#D96C6C',
   redSoft: 'rgba(217, 108, 108, 0.15)',
 }
 
-// Recharts-friendly axis/grid defaults
-export const axisStyle = {
-  fill: DASH_COLORS.textMuted,
-  fontSize: 10,
-  fontFamily: 'var(--font-instrument, sans-serif)',
+const DARK = {
+  ...ACCENTS,
+  bg: '#1C0810',
+  card: '#2A0F1C',
+  cardHover: '#341424',
+  headerBg: 'rgba(28, 8, 16, 0.88)',
+  border: 'rgba(184, 146, 42, 0.18)',
+  borderStrong: 'rgba(184, 146, 42, 0.35)',
+  cardBorder: '#3d1825',
+  divider: 'rgba(254, 242, 227, 0.08)',
+  textPrimary: '#FEF2E3',
+  textSecondary: 'rgba(254, 242, 227, 0.65)',
+  textMuted: 'rgba(254, 242, 227, 0.4)',
+  onAccent: '#FEF2E3',
 }
-export const gridStyle = {
-  stroke: DASH_COLORS.divider,
-  strokeDasharray: '2 4',
+
+const LIGHT = {
+  ...ACCENTS,
+  bg: '#F7F7F9',
+  card: '#FFFFFF',
+  cardHover: '#F3F4F6',
+  headerBg: 'rgba(255, 255, 255, 0.85)',
+  border: 'rgba(20, 20, 20, 0.08)',
+  borderStrong: 'rgba(20, 20, 20, 0.14)',
+  cardBorder: '#E5E7EB',
+  divider: 'rgba(20, 20, 20, 0.06)',
+  textPrimary: '#1A1414',
+  textSecondary: '#6B7280',
+  textMuted: '#9CA3AF',
+  onAccent: '#FFFFFF',
+}
+
+export function getDashColors(theme: ThemeName) {
+  return theme === 'dark' ? DARK : LIGHT
 }

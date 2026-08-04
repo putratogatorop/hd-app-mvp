@@ -27,7 +27,7 @@ export function InfoTip({ term, className }: { term: keyof typeof GLOSSARY; clas
         className="inline-flex items-center justify-center w-3.5 h-3.5 text-[9px] font-semibold rounded-full transition-colors"
         style={{
           border: '1px solid rgba(184,146,42,0.35)',
-          color: open ? '#1C0810' : 'rgba(254,242,227,0.55)',
+          color: open ? '#1C0810' : 'var(--dash-text-muted)',
           backgroundColor: open ? '#B8922A' : 'transparent',
         }}
       >
@@ -38,9 +38,9 @@ export function InfoTip({ term, className }: { term: keyof typeof GLOSSARY; clas
           role="tooltip"
           className="absolute left-0 top-full mt-1.5 z-50 w-64 p-2.5 text-[11px] leading-snug rounded shadow-lg"
           style={{
-            backgroundColor: '#1C0810',
+            backgroundColor: 'var(--dash-card)',
             border: '1px solid rgba(184,146,42,0.4)',
-            color: '#FEF2E3',
+            color: 'var(--dash-text)',
           }}
         >
           {text}
@@ -67,12 +67,12 @@ export function HowToRead({ title, children }: { title: string; children: React.
         <span className="text-xs tracking-wider uppercase font-semibold" style={{ color: '#B8922A' }}>
           {open ? '▾' : '▸'} {title}
         </span>
-        <span className="text-[10px]" style={{ color: 'rgba(254,242,227,0.45)' }}>
+        <span className="text-[10px]" style={{ color: 'var(--dash-text-muted)' }}>
           {open ? 'hide' : 'click to expand'}
         </span>
       </button>
       {open && (
-        <div className="px-4 pb-4 pt-1 text-sm leading-relaxed" style={{ color: '#FEF2E3' }}>
+        <div className="px-4 pb-4 pt-1 text-sm leading-relaxed" style={{ color: 'var(--dash-text)' }}>
           {children}
         </div>
       )}

@@ -70,20 +70,20 @@ export default function DrillModal({ open, onClose, spec }: Props) {
         onClick={onClose}
         aria-hidden
       />
-      <div className="relative w-full max-w-4xl max-h-[85vh] bg-[#2A0F1C] border border-[#B8922A]/30 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+      <div className="relative w-full max-w-4xl max-h-[85vh] bg-dash-card border border-hd-gold/30 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#3d1825]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-dash-card-border">
           <div>
-            <p className="eyebrow text-[#B8922A]">Drill-down</p>
-            <h3 className="font-display text-[1.25rem] text-[#FEF2E3]">{spec.title}</h3>
-            <p className="text-[11px] text-[#b8a89a] mt-0.5">
+            <p className="eyebrow text-hd-gold">Drill-down</p>
+            <h3 className="font-display text-[1.25rem] text-dash-text">{spec.title}</h3>
+            <p className="text-[11px] text-dash-text-secondary mt-0.5">
               {loading ? 'Loading…' : `${rows.length} of ${total} orders`}
               {rows.length > 0 && total > rows.length && ' (showing first 200)'}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full text-[#b8a89a] hover:bg-[#3d1825] hover:text-[#FEF2E3]"
+            className="w-8 h-8 rounded-full text-dash-text-secondary hover:bg-dash-card-border hover:text-dash-text"
             aria-label="Close"
           >
             ✕
@@ -93,39 +93,39 @@ export default function DrillModal({ open, onClose, spec }: Props) {
         {/* Body */}
         <div className="flex-1 overflow-y-auto">
           {error && (
-            <div className="p-6 text-sm text-red-400">Error: {error}</div>
+            <div className="p-6 text-sm text-red-500">Error: {error}</div>
           )}
           {!error && rows.length === 0 && !loading && (
             <div className="p-8 text-center">
-              <p className="font-display italic text-[#b8a89a]">No orders match this slice.</p>
+              <p className="font-display italic text-dash-text-secondary">No orders match this slice.</p>
             </div>
           )}
           {rows.length > 0 && (
             <table className="w-full text-xs">
-              <thead className="sticky top-0 bg-[#2A0F1C]">
-                <tr className="border-b border-[#3d1825]">
-                  <th className="text-left py-2 px-4 text-[#b8a89a] font-medium">When</th>
-                  <th className="text-left py-2 px-3 text-[#b8a89a] font-medium">Customer</th>
-                  <th className="text-left py-2 px-3 text-[#b8a89a] font-medium">Store</th>
-                  <th className="text-left py-2 px-3 text-[#b8a89a] font-medium">Channel</th>
-                  <th className="text-left py-2 px-3 text-[#b8a89a] font-medium">Tier</th>
-                  <th className="text-right py-2 px-4 text-[#b8a89a] font-medium">Revenue</th>
+              <thead className="sticky top-0 bg-dash-card">
+                <tr className="border-b border-dash-card-border">
+                  <th className="text-left py-2 px-4 text-dash-text-secondary font-medium">When</th>
+                  <th className="text-left py-2 px-3 text-dash-text-secondary font-medium">Customer</th>
+                  <th className="text-left py-2 px-3 text-dash-text-secondary font-medium">Store</th>
+                  <th className="text-left py-2 px-3 text-dash-text-secondary font-medium">Channel</th>
+                  <th className="text-left py-2 px-3 text-dash-text-secondary font-medium">Tier</th>
+                  <th className="text-right py-2 px-4 text-dash-text-secondary font-medium">Revenue</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r) => (
-                  <tr key={r.order_id} className="border-b border-[#3d1825]/50 hover:bg-[#3d1825]/30">
-                    <td className="py-2 px-4 text-[#b8a89a] font-mono text-[10px] whitespace-nowrap">
+                  <tr key={r.order_id} className="border-b border-dash-card-border/50 hover:bg-dash-card-border/30">
+                    <td className="py-2 px-4 text-dash-text-secondary font-mono text-[10px] whitespace-nowrap">
                       {new Date(r.created_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                     </td>
-                    <td className="py-2 px-3 text-[#FEF2E3]">
+                    <td className="py-2 px-3 text-dash-text">
                       {r.customer_name ?? '—'}
-                      {r.is_gift && <span className="ml-1 text-[9px] px-1 rounded bg-[#B8922A]/20 text-[#B8922A]">GIFT</span>}
+                      {r.is_gift && <span className="ml-1 text-[9px] px-1 rounded bg-hd-gold/20 text-hd-gold">GIFT</span>}
                     </td>
-                    <td className="py-2 px-3 text-[#b8a89a]">{r.store_name ?? '—'}</td>
-                    <td className="py-2 px-3 text-[#b8a89a]">{r.channel ?? '—'}</td>
-                    <td className="py-2 px-3 text-[#b8a89a] capitalize">{r.tier ?? '—'}</td>
-                    <td className="py-2 px-4 text-right text-[#FEF2E3] font-medium tabular-nums whitespace-nowrap">
+                    <td className="py-2 px-3 text-dash-text-secondary">{r.store_name ?? '—'}</td>
+                    <td className="py-2 px-3 text-dash-text-secondary">{r.channel ?? '—'}</td>
+                    <td className="py-2 px-3 text-dash-text-secondary capitalize">{r.tier ?? '—'}</td>
+                    <td className="py-2 px-4 text-right text-dash-text font-medium tabular-nums whitespace-nowrap">
                       {rupiah(Number(r.net_revenue))}
                     </td>
                   </tr>

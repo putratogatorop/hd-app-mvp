@@ -116,15 +116,15 @@ export default function FilterBar({ stores, show, lockedGift }: Props) {
     >
       {/* ── Period pills ── */}
       {showPeriod && (
-        <div className="inline-flex items-center gap-1 rounded-full bg-[#2A0F1C] border border-[#3d1825] p-0.5">
+        <div className="inline-flex items-center gap-1 rounded-full bg-dash-card border border-dash-card-border p-0.5">
           {PERIODS.map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
               className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all ${
                 period === p
-                  ? 'bg-[#650A30] text-[#FEF2E3] shadow'
-                  : 'text-[#b8a89a] hover:text-[#FEF2E3]'
+                  ? 'bg-hd-burgundy text-dash-on-accent shadow'
+                  : 'text-dash-text-secondary hover:text-dash-text'
               }`}
             >
               {p === 'custom' ? 'Custom' : p}
@@ -135,19 +135,19 @@ export default function FilterBar({ stores, show, lockedGift }: Props) {
 
       {/* ── Custom date range ── */}
       {showPeriod && period === 'custom' && (
-        <div className="inline-flex items-center gap-1 text-[11px] text-[#b8a89a]">
+        <div className="inline-flex items-center gap-1 text-[11px] text-dash-text-secondary">
           <input
             type="date"
             value={fromDate}
             onChange={(e) => push({ from: e.target.value })}
-            className="bg-[#2A0F1C] border border-[#3d1825] rounded px-2 py-1 text-[#FEF2E3] text-[11px]"
+            className="bg-dash-card border border-dash-card-border rounded px-2 py-1 text-dash-text text-[11px]"
           />
           <span>→</span>
           <input
             type="date"
             value={toDate}
             onChange={(e) => push({ to: e.target.value })}
-            className="bg-[#2A0F1C] border border-[#3d1825] rounded px-2 py-1 text-[#FEF2E3] text-[11px]"
+            className="bg-dash-card border border-dash-card-border rounded px-2 py-1 text-dash-text text-[11px]"
           />
         </div>
       )}
@@ -178,7 +178,7 @@ export default function FilterBar({ stores, show, lockedGift }: Props) {
       )}
 
       {showGift && (
-        <div className="inline-flex items-center gap-1 rounded-full bg-[#2A0F1C] border border-[#3d1825] p-0.5">
+        <div className="inline-flex items-center gap-1 rounded-full bg-dash-card border border-dash-card-border p-0.5">
           {([
             { v: undefined, label: 'All' },
             { v: false, label: 'Self' },
@@ -189,8 +189,8 @@ export default function FilterBar({ stores, show, lockedGift }: Props) {
               onClick={() => push({ gift: opt.v as boolean | undefined })}
               className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${
                 gift === opt.v
-                  ? 'bg-[#650A30] text-[#FEF2E3]'
-                  : 'text-[#b8a89a] hover:text-[#FEF2E3]'
+                  ? 'bg-hd-burgundy text-dash-on-accent'
+                  : 'text-dash-text-secondary hover:text-dash-text'
               }`}
             >
               {opt.label}
@@ -202,7 +202,7 @@ export default function FilterBar({ stores, show, lockedGift }: Props) {
       {canReset && (
         <button
           onClick={() => router.push(pathname)}
-          className="text-[11px] text-[#b8a89a] hover:text-[#FEF2E3] underline underline-offset-2 ml-auto"
+          className="text-[11px] text-dash-text-secondary hover:text-dash-text underline underline-offset-2 ml-auto"
         >
           Reset
         </button>
@@ -241,8 +241,8 @@ function MultiSelect({
         onClick={() => setOpen((v) => !v)}
         className={`px-3 py-1 rounded-full text-[11px] font-medium border transition-all ${
           selected.length > 0
-            ? 'bg-[#650A30] text-[#FEF2E3] border-[#B8922A]/40'
-            : 'bg-[#2A0F1C] text-[#b8a89a] border-[#3d1825] hover:text-[#FEF2E3]'
+            ? 'bg-hd-burgundy text-dash-on-accent border-hd-gold/40'
+            : 'bg-dash-card text-dash-text-secondary border-dash-card-border hover:text-dash-text'
         }`}
       >
         {label}: {summary} <span className="ml-1 opacity-60">▾</span>
@@ -254,9 +254,9 @@ function MultiSelect({
             onClick={() => setOpen(false)}
             aria-hidden
           />
-          <div className="absolute z-40 mt-1 min-w-[200px] max-h-[280px] overflow-y-auto bg-[#2A0F1C] border border-[#3d1825] rounded-lg shadow-xl p-1">
+          <div className="absolute z-40 mt-1 min-w-[200px] max-h-[280px] overflow-y-auto bg-dash-card border border-dash-card-border rounded-lg shadow-xl p-1">
             {options.length === 0 && (
-              <div className="px-3 py-2 text-[11px] text-[#b8a89a]">No options</div>
+              <div className="px-3 py-2 text-[11px] text-dash-text-secondary">No options</div>
             )}
             {options.map((o) => {
               const active = selected.includes(o.value)
@@ -265,12 +265,12 @@ function MultiSelect({
                   key={o.value}
                   onClick={() => toggle(o.value)}
                   className={`w-full text-left flex items-center gap-2 px-3 py-1.5 rounded text-[11px] transition-colors ${
-                    active ? 'bg-[#650A30] text-[#FEF2E3]' : 'text-[#b8a89a] hover:bg-[#3d1825] hover:text-[#FEF2E3]'
+                    active ? 'bg-hd-burgundy text-dash-on-accent' : 'text-dash-text-secondary hover:bg-dash-card-border hover:text-dash-text'
                   }`}
                 >
                   <span
                     className={`w-3 h-3 rounded-sm border flex items-center justify-center ${
-                      active ? 'bg-[#B8922A] border-[#B8922A] text-[#1C0810]' : 'border-[#3d1825]'
+                      active ? 'bg-hd-gold border-hd-gold text-[#1C0810]' : 'border-dash-card-border'
                     }`}
                   >
                     {active ? '✓' : ''}
@@ -282,7 +282,7 @@ function MultiSelect({
             {selected.length > 0 && (
               <button
                 onClick={() => onChange([])}
-                className="w-full text-left px-3 py-1.5 text-[10px] text-[#b8a89a] hover:text-[#FEF2E3] border-t border-[#3d1825] mt-1 pt-2"
+                className="w-full text-left px-3 py-1.5 text-[10px] text-dash-text-secondary hover:text-dash-text border-t border-dash-card-border mt-1 pt-2"
               >
                 Clear
               </button>

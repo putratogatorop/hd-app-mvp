@@ -41,7 +41,7 @@ export default function CampaignDetailPage() {
 
   if (!id) {
     return (
-      <div style={{ padding: '2rem', color: '#FEF2E3', backgroundColor: '#1C0810', minHeight: '100vh' }}>
+      <div style={{ padding: '2rem', color: 'var(--dash-text)', backgroundColor: 'var(--dash-bg)', minHeight: '100vh' }}>
         Missing campaign id.
       </div>
     )
@@ -49,7 +49,7 @@ export default function CampaignDetailPage() {
   if (!state) return null
   if (!state.campaign) {
     return (
-      <div style={{ padding: '2rem', color: '#FEF2E3', backgroundColor: '#1C0810', minHeight: '100vh' }}>
+      <div style={{ padding: '2rem', color: 'var(--dash-text)', backgroundColor: 'var(--dash-bg)', minHeight: '100vh' }}>
         Campaign not found.
       </div>
     )
